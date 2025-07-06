@@ -1,0 +1,392 @@
+@model phonev2.Models.NhaCungCap
+@{
+    Layout = "_AdminLayout";
+}
+
+@section PageActions {
+    <div class="btn-group">
+        <a asp-action="Edit" asp-route-id="@Model.MaNhaCungCap" class="btn btn-warning">
+            <i class="fas fa-edit me-1"></i> Chỉnh Sửa
+        </a>
+        <a asp-action="Delete" asp-route-id="@Model.MaNhaCungCap" class="btn btn-danger">
+            <i class="fas fa-trash me-1"></i> Xóa
+        </a>
+        <a asp-action="Index" class="btn btn-secondary">
+            <i class="fas fa-arrow-left me-1"></i> Quay Lại
+        </a>
+    </div>
+}
+
+<div class="row">
+    <!-- Main Info Card -->
+    <div class="col-lg-8">
+        <div class="card shadow mb-4">
+            <div class="card-header bg-info text-white">
+                <h4 class="mb-0">
+                    <i class="fas fa-building me-2"></i>
+                    @Model.TenNhaCungCap
+                </h4>
+                <small class="opacity-75">Mã nhà cung cấp: #@Model.MaNhaCungCap</small>
+            </div>
+            <div class="card-body">
+                <!-- Supplier Info Grid -->
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <h6 class="text-muted mb-2">
+                            <i class="fas fa-phone me-2"></i>Số Điện Thoại
+                        </h6>
+                        <h4 class="text-success mb-0">
+                            <a href="tel:@Model.SoDienThoai" class="text-decoration-none text-success">
+                                @Model.SoDienThoai
+                            </a>
+                        </h4>
+                    </div>
+                    <div class="col-md-6">
+                        <h6 class="text-muted mb-2">
+                            <i class="fas fa-envelope me-2"></i>Email
+                        </h6>
+                        <h4 class="text-primary mb-0">
+                            <a href="mailto:@Model.Email" class="text-decoration-none text-primary">
+                                @Model.Email
+                            </a>
+                        </h4>
+                    </div>
+                </div>
+
+                <!-- Address -->
+                <div class="mb-4">
+                    <h6 class="text-muted mb-3">
+                        <i class="fas fa-map-marker-alt me-2"></i>Địa Chỉ Chi Tiết
+                    </h6>
+                    <div class="bg-light p-3 rounded">
+                        <p class="mb-0 lh-lg">
+                            <i class="fas fa-map-marker-alt me-2 text-danger"></i>
+                            @Model.DiaChi
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Status -->
+                <div class="mb-4">
+                    <h6 class="text-muted mb-2">
+                        <i class="fas fa-handshake me-2"></i>Trạng Thái Hợp Tác
+                    </h6>
+                    <span class="badge @(Model.TrangThai ? "bg-success" : "bg-secondary") fs-6 px-3 py-2">
+                        <i class="fas @(Model.TrangThai ? "fa-handshake" : "fa-pause-circle") me-2"></i>
+                        @Model.TrangThaiText
+                    </span>
+                </div>
+
+                <!-- Business Card Preview -->
+                <div class="mb-4">
+                    <h6 class="text-muted mb-3">
+                        <i class="fas fa-id-card me-2"></i>Thẻ Thông Tin Nhà Cung Cấp
+                    </h6>
+                    <div class="card border-2 @(Model.TrangThai ? "border-success" : "border-secondary")">
+                        <div class="card-body bg-gradient">
+                            <div class="row align-items-center">
+                                <div class="col-md-8">
+                                    <h5 class="card-title mb-2 text-primary">
+                                        <i class="fas fa-building me-2"></i>
+                                        @Model.TenNhaCungCap
+                                    </h5>
+                                    <p class="card-text mb-1">
+                                        <i class="fas fa-map-marker-alt me-1 text-danger"></i>
+                                        @Model.DiaChiNgan
+                                    </p>
+                                    <div class="d-flex gap-3 mt-2">
+                                        <span class="text-success">
+                                            <i class="fas fa-phone me-1"></i>
+                                            @Model.SoDienThoai
+                                        </span>
+                                        <span class="text-primary">
+                                            <i class="fas fa-envelope me-1"></i>
+                                            @Model.Email
+                                        </span>
+                                    </div>
+                                </div>
+                                <div class="col-md-4 text-end">
+                                    <div class="qr-placeholder">
+                                        <div class="bg-light border rounded p-3 text-center">
+                                            <i class="fas fa-qrcode fa-3x text-muted mb-2"></i>
+                                            <small class="text-muted d-block">QR Contact</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Transaction History (Placeholder) -->
+        <div class="card shadow">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-history me-2"></i>
+                    Lịch Sử Giao Dịch
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row text-center">
+                    <div class="col-md-3">
+                        <div class="border-end">
+                            <h3 class="text-primary mb-1">0</h3>
+                            <small class="text-muted">Phiếu nhập</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="border-end">
+                            <h3 class="text-success mb-1">0 VNĐ</h3>
+                            <small class="text-muted">Tổng giá trị</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="border-end">
+                            <h3 class="text-warning mb-1">0</h3>
+                            <small class="text-muted">Loại sản phẩm</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <h3 class="text-info mb-1">-</h3>
+                        <small class="text-muted">Lần nhập cuối</small>
+                    </div>
+                </div>
+                <hr class="my-3">
+                <p class="text-muted text-center mb-0">
+                    <i class="fas fa-info-circle me-1"></i>
+                    Lịch sử sẽ hiển thị khi có dữ liệu phiếu nhập
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sidebar Info -->
+    <div class="col-lg-4">
+        <!-- Quick Info -->
+        <div class="card shadow mb-4">
+            <div class="card-header">
+                <h6 class="mb-0">
+                    <i class="fas fa-info-circle me-2"></i>
+                    Thông Tin Nhanh
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <span class="text-muted">Mã NCC:</span>
+                    <strong>#@Model.MaNhaCungCap</strong>
+                </div>
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <span class="text-muted">Ngày thêm:</span>
+                    <strong>@Model.NgayTao.ToString("dd/MM/yyyy")</strong>
+                </div>
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <span class="text-muted">Thời gian thêm:</span>
+                    <strong>@Model.NgayTao.ToString("HH:mm")</strong>
+                </div>
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <span class="text-muted">Độ dài tên:</span>
+                    <strong>@Model.TenNhaCungCap.Length ký tự</strong>
+                </div>
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <span class="text-muted">Thời gian hợp tác:</span>
+                    <strong>@((DateTime.Now - Model.NgayTao).Days) ngày</strong>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="card shadow mb-4">
+            <div class="card-header">
+                <h6 class="mb-0">
+                    <i class="fas fa-bolt me-2"></i>
+                    Thao Tác Nhanh
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <button type="button" class="btn btn-outline-primary toggle-status" 
+                            data-id="@Model.MaNhaCungCap" 
+                            data-status="@Model.TrangThai.ToString().ToLower()">
+                        <i class="fas @(Model.TrangThai ? "fa-pause" : "fa-play") me-2"></i>
+                        @(Model.TrangThai ? "Tạm ngừng hợp tác" : "Kích hoạt hợp tác")
+                    </button>
+                    
+                    <a href="tel:@Model.SoDienThoai" class="btn btn-outline-success">
+                        <i class="fas fa-phone me-2"></i>
+                        Gọi Điện
+                    </a>
+                    
+                    <a href="mailto:@Model.Email" class="btn btn-outline-primary">
+                        <i class="fas fa-envelope me-2"></i>
+                        Gửi Email
+                    </a>
+                    
+                    <button type="button" class="btn btn-outline-info" onclick="printSupplierInfo()">
+                        <i class="fas fa-print me-2"></i>
+                        In Thông Tin
+                    </button>
+                    
+                    <button type="button" class="btn btn-outline-secondary" onclick="shareSupplier()">
+                        <i class="fas fa-share me-2"></i>
+                        Chia Sẻ
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Contact Map (Placeholder) -->
+        <div class="card shadow mb-4">
+            <div class="card-header">
+                <h6 class="mb-0">
+                    <i class="fas fa-map me-2"></i>
+                    Vị Trí
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="bg-light rounded p-4 text-center">
+                    <i class="fas fa-map-marked-alt fa-3x text-muted mb-3"></i>
+                    <p class="text-muted mb-2">Bản đồ vị trí</p>
+                    <small class="text-muted">@Model.DiaChi</small>
+                    <hr class="my-3">
+                    <button class="btn btn-outline-primary btn-sm">
+                        <i class="fas fa-directions me-1"></i>
+                        Xem Chỉ Đường
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Performance Rating (Placeholder) -->
+        <div class="card shadow">
+            <div class="card-header">
+                <h6 class="mb-0">
+                    <i class="fas fa-star me-2"></i>
+                    Đánh Giá Hợp Tác
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="text-center mb-3">
+                    <h2 class="text-warning mb-0">★★★★☆</h2>
+                    <p class="text-muted mb-0">4.0/5.0</p>
+                </div>
+                <hr>
+                <div class="small">
+                    <div class="d-flex justify-content-between mb-1">
+                        <span>Chất lượng sản phẩm:</span>
+                        <strong>4.2/5</strong>
+                    </div>
+                    <div class="d-flex justify-content-between mb-1">
+                        <span>Tốc độ giao hàng:</span>
+                        <strong>4.0/5</strong>
+                    </div>
+                    <div class="d-flex justify-content-between mb-1">
+                        <span>Dịch vụ khách hàng:</span>
+                        <strong>3.8/5</strong>
+                    </div>
+                    <div class="d-flex justify-content-between">
+                        <span>Giá cả cạnh tranh:</span>
+                        <strong>4.1/5</strong>
+                    </div>
+                </div>
+                <hr class="my-2">
+                <p class="text-muted text-center small mb-0">
+                    <i class="fas fa-info-circle me-1"></i>
+                    Đánh giá dựa trên lịch sử giao dịch
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Toggle Status AJAX
+        $('.toggle-status').on('click', function() {
+            const btn = $(this);
+            const id = btn.data('id');
+            const currentStatus = btn.data('status') === 'true';
+            
+            btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin me-2"></i>Đang xử lý...');
+            
+            $.post('@Url.Action("ToggleStatus")', { id: id })
+                .done(function(response) {
+                    if (response.success) {
+                        location.reload(); // Reload to update all status displays
+                    } else {
+                        alert('Có lỗi xảy ra: ' + response.message);
+                        btn.prop('disabled', false);
+                    }
+                })
+                .fail(function() {
+                    alert('Không thể kết nối đến server!');
+                    btn.prop('disabled', false);
+                });
+        });
+        
+        // Print function
+        function printSupplierInfo() {
+            const printContent = `
+                <h2>Thông Tin Nhà Cung Cấp</h2>
+                <p><strong>Mã:</strong> #@Model.MaNhaCungCap</p>
+                <p><strong>Tên:</strong> @Model.TenNhaCungCap</p>
+                <p><strong>Điện thoại:</strong> @Model.SoDienThoai</p>
+                <p><strong>Email:</strong> @Model.Email</p>
+                <p><strong>Địa chỉ:</strong> @Html.Raw(Model.DiaChi.Replace("\n", "<br>"))</p>
+                <p><strong>Trạng thái:</strong> @Model.TrangThaiText</p>
+                <p><strong>Ngày thêm:</strong> @Model.NgayTao.ToString("dd/MM/yyyy HH:mm")</p>
+            `;
+            
+            const printWindow = window.open('', '_blank');
+            printWindow.document.write(`
+                <html>
+                    <head>
+                        <title>Thông Tin Nhà Cung Cấp - @Model.TenNhaCungCap</title>
+                        <style>
+                            body { font-family: Arial, sans-serif; margin: 20px; }
+                            h2 { color: #333; border-bottom: 2px solid #007bff; padding-bottom: 10px; }
+                            p { margin: 10px 0; }
+                            strong { color: #333; }
+                        </style>
+                    </head>
+                    <body>
+                        ${printContent}
+                    </body>
+                </html>
+            `);
+            printWindow.document.close();
+            printWindow.print();
+        }
+        
+        // Share function
+        function shareSupplier() {
+            const supplierInfo = `Nhà cung cấp: @Model.TenNhaCungCap
+Điện thoại: @Model.SoDienThoai
+Email: @Model.Email
+Địa chỉ: @Model.DiaChi
+Trạng thái: @Model.TrangThaiText`;
+            
+            if (navigator.share) {
+                navigator.share({
+                    title: 'Nhà Cung Cấp - @Model.TenNhaCungCap',
+                    text: supplierInfo
+                });
+            } else {
+                // Fallback: copy to clipboard
+                navigator.clipboard.writeText(supplierInfo).then(function() {
+                    alert('Đã sao chép thông tin nhà cung cấp vào clipboard!');
+                }).catch(function() {
+                    // Fallback for older browsers
+                    const textArea = document.createElement('textarea');
+                    textArea.value = supplierInfo;
+                    document.body.appendChild(textArea);
+                    textArea.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(textArea);
+                    alert('Đã sao chép thông tin nhà cung cấp vào clipboard!');
+                });
+            }
+        }
+    </script>
+}

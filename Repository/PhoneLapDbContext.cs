@@ -13,11 +13,12 @@ namespace phonev2.Repository
         public DbSet<DichVu> DichVu { get; set; }
         public DbSet<LoaiLinhKien> LoaiLinhKien { get; set; }
         public DbSet<LinhKien> LinhKien { get; set; }
+        public DbSet<NhaCungCap> NhaCungCap { get; set; }
 
         // Các DbSet khác sẽ được thêm sau
-        // public DbSet<NhaCungCap> NhaCungCap { get; set; }
         // public DbSet<KhachHang> KhachHang { get; set; }
         // public DbSet<NhanVien> NhanVien { get; set; }
+        // public DbSet<ThietBi> ThietBi { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -79,6 +80,24 @@ namespace phonev2.Repository
                       .WithMany()
                       .HasForeignKey(e => e.MaLoaiLinhKien)
                       .OnDelete(DeleteBehavior.Restrict);
+            });
+
+            // Cấu hình bảng NhaCungCap
+            modelBuilder.Entity<NhaCungCap>(entity =>
+            {
+                entity.HasKey(e => e.MaNhaCungCap);
+                entity.Property(e => e.TenNhaCungCap).IsRequired().HasMaxLength(100);
+                entity.Property(e => e.DiaChi).IsRequired().HasMaxLength(255);
+                entity.Property(e => e.SoDienThoai).IsRequired().HasMaxLength(15);
+                entity.Property(e => e.Email).IsRequired().HasMaxLength(100);
+                entity.Property(e => e.NgayTao).HasDefaultValueSql("GETDATE()");
+                entity.Property(e => e.TrangThai).HasDefaultValue(true);
+                
+                // Index cho tìm kiếm nhanh
+                entity.HasIndex(e => e.TenNhaCungCap);
+                entity.HasIndex(e => e.Email).IsUnique();
+                entity.HasIndex(e => e.SoDienThoai);
+                entity.HasIndex(e => e.TrangThai);
             });
         }
     }

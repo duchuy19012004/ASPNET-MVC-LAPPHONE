@@ -36,8 +36,7 @@ namespace phonev2.Controllers
 
         public IActionResult NhaCungCap()
         {
-            ViewData["Title"] = "Quản Lý Nhà Cung Cấp";
-            return View();
+            return RedirectToAction("Index", "NhaCungCap");
         }
 
         public IActionResult DichVu()
