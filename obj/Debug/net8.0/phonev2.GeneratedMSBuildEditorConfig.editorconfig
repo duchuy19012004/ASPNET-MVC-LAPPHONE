@@ -60,6 +60,30 @@ build_metadata.AdditionalFiles.CssScope =
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcSG9tZVxQcml2YWN5LmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
+[C:/Users/juven/Desktop/phonev2/Views/LinhKien/Create.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcTGluaEtpZW5cQ3JlYXRlLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/juven/Desktop/phonev2/Views/LinhKien/Delete.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcTGluaEtpZW5cRGVsZXRlLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/juven/Desktop/phonev2/Views/LinhKien/Details.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcTGluaEtpZW5cRGV0YWlscy5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/juven/Desktop/phonev2/Views/LinhKien/Edit.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcTGluaEtpZW5cRWRpdC5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/juven/Desktop/phonev2/Views/LinhKien/Index.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcTGluaEtpZW5cSW5kZXguY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/juven/Desktop/phonev2/Views/LinhKien/LowStockAlert.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcTGluaEtpZW5cTG93U3RvY2tBbGVydC5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
 [C:/Users/juven/Desktop/phonev2/Views/LoaiLinhKien/Create.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcTG9haUxpbmhLaWVuXENyZWF0ZS5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 

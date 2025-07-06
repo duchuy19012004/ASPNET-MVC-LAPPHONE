@@ -59,8 +59,7 @@ namespace phonev2.Controllers
 
         public IActionResult LinhKien()
         {
-            ViewData["Title"] = "Quản Lý Linh Kiện";
-            return View();
+            return RedirectToAction("Index", "LinhKien");
         }
 
         public IActionResult ThietBi()

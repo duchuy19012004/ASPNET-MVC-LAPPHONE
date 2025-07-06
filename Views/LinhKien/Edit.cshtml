@@ -1,0 +1,607 @@
+@model phonev2.Models.LinhKien
+@{
+    Layout = "_AdminLayout";
+}
+
+@section PageActions {
+    <div class="btn-group">
+        <a asp-action="Details" asp-route-id="@Model.MaLinhKien" class="btn btn-info">
+            <i class="fas fa-eye me-1"></i> Xem Chi Tiết
+        </a>
+        <a asp-action="Index" class="btn btn-secondary">
+            <i class="fas fa-arrow-left me-1"></i> Quay Lại
+        </a>
+    </div>
+}
+
+<div class="row justify-content-center">
+    <div class="col-lg-10">
+        <div class="card shadow">
+            <div class="card-header bg-warning text-dark">
+                <h5 class="mb-0">
+                    <i class="fas fa-edit me-2"></i>
+                    Chỉnh Sửa Linh Kiện: @Model.TenLinhKien
+                </h5>
+                <small class="text-muted">
+                    Mã linh kiện: #@Model.MaLinhKien | Tạo ngày: @Model.NgayTao.ToString("dd/MM/yyyy HH:mm")
+                </small>
+            </div>
+            <div class="card-body">
+                <form asp-action="Edit" method="post" novalidate>
+                    <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+                    
+                    <!-- Hidden fields -->
+                    <input asp-for="MaLinhKien" type="hidden" />
+                    <input asp-for="NgayTao" type="hidden" />
+                    
+                    <!-- Row 1: Tên linh kiện và Loại -->
+                    <div class="row mb-3">
+                        <div class="col-md-8">
+                            <label asp-for="TenLinhKien" class="form-label fw-bold">
+                                <i class="fas fa-microchip me-1 text-primary"></i>
+                                @Html.DisplayNameFor(model => model.TenLinhKien)
+                                <span class="text-danger">*</span>
+                            </label>
+                            <input asp-for="TenLinhKien" class="form-control form-control-lg" 
+                                   placeholder="VD: RAM DDR4 8GB Kingston, CPU Intel Core i5-11400..." 
+                                   autocomplete="off" />
+                            <span asp-validation-for="TenLinhKien" class="text-danger"></span>
+                        </div>
+                        
+                        <div class="col-md-4">
+                            <label asp-for="MaLoaiLinhKien" class="form-label fw-bold">
+                                <i class="fas fa-tags me-1 text-info"></i>
+                                @Html.DisplayNameFor(model => model.MaLoaiLinhKien)
+                                <span class="text-danger">*</span>
+                            </label>
+                            <select asp-for="MaLoaiLinhKien" class="form-select form-select-lg" asp-items="ViewBag.LoaiLinhKienList">
+                                <option value="">-- Chọn loại linh kiện --</option>
+                            </select>
+                            <span asp-validation-for="MaLoaiLinhKien" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <!-- Row 2: Hãng sản xuất và Thông số kỹ thuật -->
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <label asp-for="HangSanXuat" class="form-label fw-bold">
+                                <i class="fas fa-industry me-1 text-secondary"></i>
+                                @Html.DisplayNameFor(model => model.HangSanXuat)
+                            </label>
+                            <input asp-for="HangSanXuat" class="form-control" 
+                                   placeholder="VD: Kingston, Samsung, Intel, AMD..." 
+                                   list="brandSuggestions" autocomplete="off" />
+                            <datalist id="brandSuggestions">
+                                <option value="Kingston"></option>
+                                <option value="Samsung"></option>
+                                <option value="Intel"></option>
+                                <option value="AMD"></option>
+                                <option value="ASUS"></option>
+                                <option value="MSI"></option>
+                                <option value="Gigabyte"></option>
+                                <option value="Corsair"></option>
+                                <option value="G.Skill"></option>
+                                <option value="Western Digital"></option>
+                                <option value="Seagate"></option>
+                                <option value="NVIDIA"></option>
+                            </datalist>
+                            <span asp-validation-for="HangSanXuat" class="text-danger"></span>
+                        </div>
+                        
+                        <div class="col-md-8">
+                            <label asp-for="ThongSoKyThuat" class="form-label fw-bold">
+                                <i class="fas fa-cogs me-1 text-info"></i>
+                                @Html.DisplayNameFor(model => model.ThongSoKyThuat)
+                            </label>
+                            <textarea asp-for="ThongSoKyThuat" class="form-control" rows="3" 
+                                      placeholder="VD: DDR4-3200, CL16, 1.35V, Non-ECC, Unbuffered..."></textarea>
+                            <span asp-validation-for="ThongSoKyThuat" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <!-- Row 3: Giá nhập, Giá bán và Số lượng -->
+                    <div class="row mb-3">
+                        <div class="col-md-3">
+                            <label asp-for="GiaNhap" class="form-label fw-bold">
+                                <i class="fas fa-file-import me-1 text-warning"></i>
+                                @Html.DisplayNameFor(model => model.GiaNhap)
+                                <span class="text-danger">*</span>
+                            </label>
+                            <div class="input-group">
+                                <input asp-for="GiaNhap" class="form-control" 
+                                       type="number" 
+                                       min="0" />
+                                <span class="input-group-text">VNĐ</span>
+                            </div>
+                            <span asp-validation-for="GiaNhap" class="text-danger"></span>
+                            <div class="form-text">
+                                <i class="fas fa-info-circle me-1"></i>
+                                Hiện tại: <strong>@Model.GiaNhapText</strong>
+                            </div>
+                            <!-- Real-time price display -->
+                            <div class="mt-1" id="costDisplay" style="display: none;">
+                                <small class="text-warning fw-bold" id="formattedCost">0 VNĐ</small>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-3">
+                            <label asp-for="GiaBan" class="form-label fw-bold">
+                                <i class="fas fa-tag me-1 text-success"></i>
+                                @Html.DisplayNameFor(model => model.GiaBan)
+                                <span class="text-danger">*</span>
+                            </label>
+                            <div class="input-group">
+                                <input asp-for="GiaBan" class="form-control" 
+                                       type="number" 
+                                       min="0" />
+                                <span class="input-group-text">VNĐ</span>
+                            </div>
+                            <span asp-validation-for="GiaBan" class="text-danger"></span>
+                            <div class="form-text">
+                                <i class="fas fa-info-circle me-1"></i>
+                                Hiện tại: <strong>@Model.GiaBanText</strong>
+                            </div>
+                            <!-- Real-time price display -->
+                            <div class="mt-1" id="priceDisplay" style="display: none;">
+                                <small class="text-success fw-bold" id="formattedPrice">0 VNĐ</small>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-3">
+                            <label asp-for="SoLuongTon" class="form-label fw-bold">
+                                <i class="fas fa-boxes me-1 text-primary"></i>
+                                @Html.DisplayNameFor(model => model.SoLuongTon)
+                                <span class="text-danger">*</span>
+                            </label>
+                            <div class="input-group">
+                                <input asp-for="SoLuongTon" class="form-control" 
+                                       type="number" 
+                                       min="0" />
+                                <span class="input-group-text">cái</span>
+                            </div>
+                            <span asp-validation-for="SoLuongTon" class="text-danger"></span>
+                            <div class="form-text">
+                                <i class="fas fa-info-circle me-1"></i>
+                                Hiện tại: <strong>@Model.SoLuongTon cái</strong>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-3">
+                            <label class="form-label fw-bold">
+                                <i class="fas fa-dollar-sign me-1 text-info"></i>
+                                Lợi Nhuận Hiện Tại
+                            </label>
+                            <div class="p-3 bg-light rounded text-center">
+                                <h5 class="@(Model.LoiNhuan > 0 ? "text-success" : Model.LoiNhuan < 0 ? "text-danger" : "text-muted") mb-1">
+                                    @Model.LoiNhuanText
+                                </h5>
+                                <small class="text-muted">(@Model.TyLeLoiNhuan%)</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Row 4: Profit Analysis -->
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">
+                                <i class="fas fa-calculator me-1 text-info"></i>
+                                Phân Tích Lợi Nhuận Mới
+                            </label>
+                            <div class="card bg-light">
+                                <div class="card-body">
+                                    <div class="row text-center">
+                                        <div class="col-4">
+                                            <div class="border-end">
+                                                <h5 class="text-success mb-1" id="profitAmount">@Model.LoiNhuanText</h5>
+                                                <small class="text-muted">Lợi nhuận/cái</small>
+                                            </div>
+                                        </div>
+                                        <div class="col-4">
+                                            <div class="border-end">
+                                                <h5 class="text-primary mb-1" id="profitPercent">@Model.TyLeLoiNhuan%</h5>
+                                                <small class="text-muted">Tỷ lệ lợi nhuận</small>
+                                            </div>
+                                        </div>
+                                        <div class="col-4">
+                                            <h5 class="text-warning mb-1" id="totalProfit">@((Model.LoiNhuan * Model.SoLuongTon).ToString("N0")) VNĐ</h5>
+                                            <small class="text-muted">Lợi nhuận tổng</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">
+                                <i class="fas fa-lightbulb me-1 text-warning"></i>
+                                Gợi Ý Giá Bán Mới
+                            </label>
+                            <div class="bg-light p-3 rounded">
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span>Lợi nhuận 20%:</span>
+                                    <strong class="text-success" id="suggest20">@((Model.GiaNhap * 1.2M).ToString("N0")) VNĐ</strong>
+                                </div>
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span>Lợi nhuận 30%:</span>
+                                    <strong class="text-warning" id="suggest30">@((Model.GiaNhap * 1.3M).ToString("N0")) VNĐ</strong>
+                                </div>
+                                <div class="d-flex justify-content-between">
+                                    <span>Lợi nhuận 50%:</span>
+                                    <strong class="text-danger" id="suggest50">@((Model.GiaNhap * 1.5M).ToString("N0")) VNĐ</strong>
+                                </div>
+                                <hr class="my-2">
+                                <div class="d-grid gap-2">
+                                    <div class="btn-group btn-group-sm">
+                                        <button type="button" class="btn btn-outline-success apply-suggestion" data-percent="20">Áp dụng 20%</button>
+                                        <button type="button" class="btn btn-outline-warning apply-suggestion" data-percent="30">Áp dụng 30%</button>
+                                        <button type="button" class="btn btn-outline-danger apply-suggestion" data-percent="50">Áp dụng 50%</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Row 4: Trạng thái -->
+                    <div class="row mb-4">
+                        <div class="col-md-12">
+                            <label class="form-label fw-bold">
+                                <i class="fas fa-toggle-on me-1 text-primary"></i>
+                                Trạng Thái
+                            </label>
+                            <div class="form-check form-switch">
+                                <input asp-for="TrangThai" class="form-check-input" type="checkbox" 
+                                       id="trangThaiSwitch" />
+                                <label class="form-check-label" for="trangThaiSwitch">
+                                    <span class="switch-label">@(Model.TrangThai ? "Linh kiện đang được bán" : "Linh kiện ngừng bán")</span>
+                                </label>
+                            </div>
+                            <div class="form-text">
+                                <i class="fas fa-info-circle me-1"></i>
+                                Chỉ những linh kiện đang hoạt động mới hiển thị trong danh sách bán hàng
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Changes Summary -->
+                    <div class="row mb-4">
+                        <div class="col-md-12">
+                            <div class="card bg-light border-warning">
+                                <div class="card-header">
+                                    <h6 class="mb-0">
+                                        <i class="fas fa-history me-2"></i>
+                                        So Sánh Thay Đổi
+                                    </h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <h6 class="text-muted">Thông tin hiện tại:</h6>
+                                            <ul class="list-unstyled">
+                                                <li><strong>Tên:</strong> @Model.TenLinhKien</li>
+                                                <li><strong>Hãng:</strong> @(Model.HangSanXuat ?? "Chưa có")</li>
+                                                <li><strong>Giá nhập:</strong> @Model.GiaNhapText</li>
+                                                <li><strong>Giá bán:</strong> @Model.GiaBanText</li>
+                                                <li><strong>Tồn kho:</strong> @Model.SoLuongTon cái</li>
+                                                <li><strong>Trạng thái:</strong> @Model.TrangThaiText</li>
+                                            </ul>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <h6 class="text-muted">Thay đổi mới:</h6>
+                                            <div id="changesSummary">
+                                                <p class="text-muted"><em>Thay đổi sẽ hiển thị khi bạn chỉnh sửa</em></p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Preview Card -->
+                    <div class="row mb-4">
+                        <div class="col-md-12">
+                            <label class="form-label fw-bold">
+                                <i class="fas fa-eye me-1 text-secondary"></i>
+                                Xem Trước Thay Đổi
+                            </label>
+                            <div class="card border-2 border-dashed border-warning" id="previewCard">
+                                <div class="card-body">
+                                    <div class="row align-items-center">
+                                        <div class="col-md-6">
+                                            <h6 class="card-title mb-1" id="previewName">
+                                                <i class="fas fa-microchip me-2"></i>
+                                                <span>@Model.TenLinhKien</span>
+                                            </h6>
+                                            <p class="card-text text-muted mb-1" id="previewBrand">
+                                                <i class="fas fa-industry me-1"></i>
+                                                <span>@(Model.HangSanXuat ?? "Chưa có hãng")</span>
+                                            </p>
+                                            <p class="card-text text-muted mb-0" id="previewCategory">
+                                                <i class="fas fa-tags me-1"></i>
+                                                <span>@Model.LoaiLinhKien?.TenLoaiLinhKien</span>
+                                            </p>
+                                        </div>
+                                        <div class="col-md-3 text-center">
+                                            <div class="price-display">
+                                                <h4 class="text-success mb-0" id="previewPrice">@Model.GiaBanText</h4>
+                                                <small class="text-muted" id="previewCost">Giá nhập: @Model.GiaNhapText</small>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3 text-center">
+                                            <div class="stock-display">
+                                                <span class="@Model.TonKhoCssClass fs-6 px-3 py-2" id="previewStock">
+                                                    <i class="fas fa-boxes me-1"></i>
+                                                    <span>@Model.SoLuongTon cái</span>
+                                                </span>
+                                                <br>
+                                                <small class="text-muted" id="previewStockStatus">@Model.TrangThaiTonKho</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    @if (!string.IsNullOrEmpty(Model.ThongSoKyThuat))
+                                    {
+                                        <hr>
+                                        <div class="row" id="previewSpecs">
+                                            <div class="col-12">
+                                                <strong class="text-muted">Thông số kỹ thuật:</strong>
+                                                <p class="mb-0" id="previewSpecsText">@Model.ThongSoKyThuat</p>
+                                            </div>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-between">
+                        <a asp-action="Delete" asp-route-id="@Model.MaLinhKien" 
+                           class="btn btn-outline-danger"
+                           onclick="return confirm('Bạn có chắc chắn muốn xóa linh kiện này?')">
+                            <i class="fas fa-trash me-1"></i>
+                            Xóa Linh Kiện
+                        </a>
+                        
+                        <div>
+                            <a asp-action="Index" class="btn btn-secondary btn-lg me-2">
+                                <i class="fas fa-times me-1"></i>
+                                Hủy Bỏ
+                            </a>
+                            <button type="submit" class="btn btn-warning btn-lg">
+                                <i class="fas fa-save me-1"></i>
+                                Cập Nhật
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    
+    <script>
+        $(document).ready(function() {
+            // Store original values for comparison
+            const originalValues = {
+                name: '@Html.Raw(Model.TenLinhKien.Replace("'", "\\'"))',
+                brand: '@Html.Raw((Model.HangSanXuat ?? "").Replace("'", "\\'"))',
+                specs: '@Html.Raw((Model.ThongSoKyThuat ?? "").Replace("'", "\\'").Replace("\n", "\\n").Replace("\r", ""))',
+                costPrice: @Model.GiaNhap,
+                sellPrice: @Model.GiaBan,
+                stock: @Model.SoLuongTon,
+                category: @Model.MaLoaiLinhKien,
+                status: @Model.TrangThai.ToString().ToLower()
+            };
+            
+            // Format number with dots (Vietnamese style)
+            function formatCurrency(num) {
+                if (!num || num == 0) return '0 VNĐ';
+                return parseInt(num).toLocaleString('vi-VN') + ' VNĐ';
+            }
+            
+            // Update price displays
+            function updatePriceDisplays() {
+                const costPrice = parseFloat($('#GiaNhap').val()) || 0;
+                const sellPrice = parseFloat($('#GiaBan').val()) || 0;
+                const quantity = parseInt($('#SoLuongTon').val()) || 0;
+                
+                // Format and show prices
+                if (costPrice > 0 && costPrice !== originalValues.costPrice) {
+                    $('#formattedCost').text(formatCurrency(costPrice));
+                    $('#costDisplay').fadeIn(200);
+                } else {
+                    $('#costDisplay').fadeOut(200);
+                }
+                
+                if (sellPrice > 0 && sellPrice !== originalValues.sellPrice) {
+                    $('#formattedPrice').text(formatCurrency(sellPrice));
+                    $('#priceDisplay').fadeIn(200);
+                } else {
+                    $('#priceDisplay').fadeOut(200);
+                }
+                
+                // Calculate profit
+                const profit = sellPrice - costPrice;
+                const profitPercent = costPrice > 0 ? Math.round((profit / costPrice) * 100) : 0;
+                const totalProfit = profit * quantity;
+                
+                $('#profitAmount').text(formatCurrency(profit));
+                $('#profitPercent').text(profitPercent + '%');
+                $('#totalProfit').text(formatCurrency(totalProfit));
+                
+                // Update profit colors
+                $('#profitAmount').removeClass('text-success text-danger text-muted')
+                    .addClass(profit > 0 ? 'text-success' : profit < 0 ? 'text-danger' : 'text-muted');
+                
+                // Update suggestions based on current cost price
+                if (costPrice > 0) {
+                    $('#suggest20').text(formatCurrency(costPrice * 1.2));
+                    $('#suggest30').text(formatCurrency(costPrice * 1.3));
+                    $('#suggest50').text(formatCurrency(costPrice * 1.5));
+                }
+            }
+            
+            // Update preview and track changes
+            function updatePreview() {
+                const name = $('#TenLinhKien').val() || originalValues.name;
+                const brand = $('#HangSanXuat').val() || 'Chưa có hãng';
+                const categoryText = $('#MaLoaiLinhKien option:selected').text() || 'Chưa chọn loại';
+                const specs = $('#ThongSoKyThuat').val();
+                const sellPrice = parseFloat($('#GiaBan').val()) || 0;
+                const costPrice = parseFloat($('#GiaNhap').val()) || 0;
+                const quantity = parseInt($('#SoLuongTon').val()) || 0;
+                
+                $('#previewName span').text(name);
+                $('#previewBrand span').text(brand);
+                $('#previewCategory span').text(categoryText);
+                $('#previewPrice').text(formatCurrency(sellPrice));
+                $('#previewCost').text('Giá nhập: ' + formatCurrency(costPrice));
+                $('#previewStock span').text(quantity + ' cái');
+                
+                // Update stock status
+                let stockStatus, stockClass;
+                if (quantity === 0) {
+                    stockStatus = 'Hết hàng';
+                    stockClass = 'badge bg-danger';
+                } else if (quantity <= 5) {
+                    stockStatus = 'Sắp hết';
+                    stockClass = 'badge bg-warning';
+                } else if (quantity <= 20) {
+                    stockStatus = 'Ít hàng';
+                    stockClass = 'badge bg-info';
+                } else {
+                    stockStatus = 'Còn nhiều';
+                    stockClass = 'badge bg-success';
+                }
+                
+                $('#previewStockStatus').text(stockStatus);
+                $('#previewStock').attr('class', `${stockClass} fs-6 px-3 py-2`);
+                
+                // Update specs
+                if (specs && specs.trim()) {
+                    $('#previewSpecsText').text(specs);
+                    if ($('#previewSpecs').length === 0) {
+                        $('#previewCard .card-body').append(`
+                            <hr>
+                            <div class="row" id="previewSpecs">
+                                <div class="col-12">
+                                    <strong class="text-muted">Thông số kỹ thuật:</strong>
+                                    <p class="mb-0" id="previewSpecsText">${specs}</p>
+                                </div>
+                            </div>
+                        `);
+                    }
+                } else {
+                    $('#previewSpecs').remove();
+                }
+                
+                // Update price displays
+                updatePriceDisplays();
+                
+                // Track changes
+                trackChanges();
+            }
+            
+            // Apply suggestion buttons
+            $('.apply-suggestion').on('click', function() {
+                const percent = parseFloat($(this).data('percent'));
+                const costPrice = parseFloat($('#GiaNhap').val()) || originalValues.costPrice;
+                
+                if (costPrice > 0) {
+                    const suggestedPrice = Math.round(costPrice * (1 + percent / 100));
+                    $('#GiaBan').val(suggestedPrice);
+                    updatePreview();
+                }
+            });
+            
+            // Track and display changes
+            function trackChanges() {
+                const currentName = $('#TenLinhKien').val();
+                const currentBrand = $('#HangSanXuat').val();
+                const currentSpecs = $('#ThongSoKyThuat').val();
+                const currentCostPrice = parseFloat($('#GiaNhap').val()) || 0;
+                const currentSellPrice = parseFloat($('#GiaBan').val()) || 0;
+                const currentStock = parseInt($('#SoLuongTon').val()) || 0;
+                const currentCategory = parseInt($('#MaLoaiLinhKien').val()) || 0;
+                const currentStatus = $('#trangThaiSwitch').is(':checked');
+                
+                let changes = [];
+                
+                if (currentName !== originalValues.name) {
+                    changes.push(`<li><strong>Tên:</strong> ${originalValues.name} → ${currentName}</li>`);
+                }
+                if (currentBrand !== originalValues.brand) {
+                    changes.push(`<li><strong>Hãng:</strong> ${originalValues.brand || 'Chưa có'} → ${currentBrand || 'Chưa có'}</li>`);
+                }
+                if (currentSpecs !== originalValues.specs) {
+                    changes.push(`<li><strong>Thông số:</strong> Đã thay đổi</li>`);
+                }
+                if (currentCostPrice !== originalValues.costPrice) {
+                    changes.push(`<li><strong>Giá nhập:</strong> ${formatCurrency(originalValues.costPrice)} → ${formatCurrency(currentCostPrice)}</li>`);
+                }
+                if (currentSellPrice !== originalValues.sellPrice) {
+                    changes.push(`<li><strong>Giá bán:</strong> ${formatCurrency(originalValues.sellPrice)} → ${formatCurrency(currentSellPrice)}</li>`);
+                }
+                if (currentStock !== originalValues.stock) {
+                    changes.push(`<li><strong>Tồn kho:</strong> ${originalValues.stock} → ${currentStock} cái</li>`);
+                }
+                if (currentCategory !== originalValues.category) {
+                    changes.push(`<li><strong>Loại:</strong> Đã thay đổi</li>`);
+                }
+                if (currentStatus !== originalValues.status) {
+                    changes.push(`<li><strong>Trạng thái:</strong> ${originalValues.status ? 'Đang bán' : 'Ngừng bán'} → ${currentStatus ? 'Đang bán' : 'Ngừng bán'}</li>`);
+                }
+                
+                if (changes.length > 0) {
+                    $('#changesSummary').html(`<ul class="list-unstyled text-warning">${changes.join('')}</ul>`);
+                } else {
+                    $('#changesSummary').html('<p class="text-muted"><em>Chưa có thay đổi nào</em></p>');
+                }
+                
+                // Highlight changed fields
+                highlightChangedFields();
+            }
+            
+            // Highlight changed fields
+            function highlightChangedFields() {
+                const fields = [
+                    { id: '#TenLinhKien', original: originalValues.name, current: $('#TenLinhKien').val() },
+                    { id: '#HangSanXuat', original: originalValues.brand, current: $('#HangSanXuat').val() },
+                    { id: '#ThongSoKyThuat', original: originalValues.specs, current: $('#ThongSoKyThuat').val() },
+                    { id: '#GiaNhap', original: originalValues.costPrice, current: parseFloat($('#GiaNhap').val()) || 0 },
+                    { id: '#GiaBan', original: originalValues.sellPrice, current: parseFloat($('#GiaBan').val()) || 0 },
+                    { id: '#SoLuongTon', original: originalValues.stock, current: parseInt($('#SoLuongTon').val()) || 0 },
+                    { id: '#MaLoaiLinhKien', original: originalValues.category, current: parseInt($('#MaLoaiLinhKien').val()) || 0 },
+                    { id: '#trangThaiSwitch', original: originalValues.status, current: $('#trangThaiSwitch').is(':checked') }
+                ];
+                
+                fields.forEach(field => {
+                    const element = $(field.id);
+                    if (field.original !== field.current) {
+                        element.addClass('border-warning').removeClass('border-success');
+                    } else {
+                        element.removeClass('border-warning').addClass('border-success');
+                    }
+                });
+            }
+            
+            // Update preview on input change
+            $('#TenLinhKien, #HangSanXuat, #MaLoaiLinhKien, #ThongSoKyThuat, #GiaNhap, #GiaBan, #SoLuongTon, #trangThaiSwitch').on('input change', updatePreview);
+            
+            // Price formatting
+            $('#GiaNhap, #GiaBan').on('input', updatePriceDisplays);
+            
+            // Switch label change
+            $('#trangThaiSwitch').on('change', function() {
+                const label = $(this).is(':checked') ? 'Linh kiện đang được bán' : 'Linh kiện ngừng bán';
+                $('.switch-label').text(label);
+            });
+            
+            // Initial setup
+            updatePreview();
+        });
+    </script>
+}
