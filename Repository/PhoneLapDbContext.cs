@@ -14,10 +14,10 @@ namespace phonev2.Repository
         public DbSet<LoaiLinhKien> LoaiLinhKien { get; set; }
         public DbSet<LinhKien> LinhKien { get; set; }
         public DbSet<NhaCungCap> NhaCungCap { get; set; }
+        public DbSet<NhanVien> NhanVien { get; set; }
 
         // Các DbSet khác sẽ được thêm sau
         // public DbSet<KhachHang> KhachHang { get; set; }
-        // public DbSet<NhanVien> NhanVien { get; set; }
         // public DbSet<ThietBi> ThietBi { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -98,6 +98,37 @@ namespace phonev2.Repository
                 entity.HasIndex(e => e.Email).IsUnique();
                 entity.HasIndex(e => e.SoDienThoai);
                 entity.HasIndex(e => e.TrangThai);
+            });
+
+            // Cấu hình bảng NhanVien
+            modelBuilder.Entity<NhanVien>(entity =>
+            {
+                entity.HasKey(e => e.MaNhanVien);
+                entity.Property(e => e.HoTen).IsRequired().HasMaxLength(100);
+                entity.Property(e => e.SoDienThoai).IsRequired().HasMaxLength(15);
+                entity.Property(e => e.Email).IsRequired().HasMaxLength(100);
+                entity.Property(e => e.DiaChi).IsRequired().HasMaxLength(255);
+                entity.Property(e => e.ChucVu).IsRequired().HasMaxLength(50);
+                entity.Property(e => e.Luong).HasColumnType("decimal(18,2)").IsRequired();
+                entity.Property(e => e.NgaySinh).IsRequired();
+                entity.Property(e => e.NgayVaoLam).IsRequired();
+                entity.Property(e => e.NgayNghiViec).IsRequired(false);
+                entity.Property(e => e.TrangThai).HasDefaultValue(true);
+                
+                // Index cho tìm kiếm nhanh
+                entity.HasIndex(e => e.HoTen);
+                entity.HasIndex(e => e.Email).IsUnique();
+                entity.HasIndex(e => e.SoDienThoai);
+                entity.HasIndex(e => e.ChucVu);
+                entity.HasIndex(e => e.TrangThai);
+                entity.HasIndex(e => e.NgayVaoLam);
+                entity.HasIndex(e => e.NgayNghiViec);
+                
+                // Check constraints
+                entity.HasCheckConstraint("CK_NhanVien_Luong", "Luong >= 0");
+                entity.HasCheckConstraint("CK_NhanVien_NgaySinh", "NgaySinh <= GETDATE()");
+                entity.HasCheckConstraint("CK_NhanVien_NgayVaoLam", "NgayVaoLam >= NgaySinh");
+                entity.HasCheckConstraint("CK_NhanVien_NgayNghiViec", "NgayNghiViec IS NULL OR NgayNghiViec >= NgayVaoLam");
             });
         }
     }

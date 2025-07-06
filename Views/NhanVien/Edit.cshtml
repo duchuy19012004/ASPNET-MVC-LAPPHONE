@@ -1,0 +1,689 @@
+@model phonev2.Models.NhanVien
+
+@{
+    Layout = "_AdminLayout";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1 class="h3 mb-0">@ViewData["Title"]</h1>
+        <p class="text-muted mb-0">Cập nhật thông tin nhân viên @Model.HoTen</p>
+    </div>
+    <div>
+        <a asp-action="Index" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left me-1"></i> Quay lại
+        </a>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-user-edit me-2"></i>
+                    Chỉnh Sửa Thông Tin
+                </h5>
+            </div>
+            <div class="card-body">
+                <form asp-action="Edit" method="post" id="employeeEditForm">
+                    <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+                    
+                    <input type="hidden" asp-for="MaNhanVien" />
+
+                    <!-- Thông tin cá nhân -->
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <h6 class="text-primary mb-3">
+                                <i class="fas fa-user me-2"></i>
+                                Thông Tin Cá Nhân
+                            </h6>
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-8">
+                            <div class="mb-3">
+                                <label asp-for="HoTen" class="form-label required"></label>
+                                <input asp-for="HoTen" class="form-control" placeholder="Nhập họ và tên đầy đủ" />
+                                <span asp-validation-for="HoTen" class="text-danger"></span>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label asp-for="NgaySinh" class="form-label required"></label>
+                                <input asp-for="NgaySinh" class="form-control" type="date" />
+                                <span asp-validation-for="NgaySinh" class="text-danger"></span>
+                                <div class="form-text" id="ageDisplay">Tuổi hiện tại: @Model.Tuoi</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label asp-for="SoDienThoai" class="form-label required"></label>
+                                <input asp-for="SoDienThoai" class="form-control" placeholder="0xxxxxxxxx" />
+                                <span asp-validation-for="SoDienThoai" class="text-danger"></span>
+                                <div class="form-text">Định dạng: 0xxxxxxxxx (10-11 số)</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label asp-for="Email" class="form-label required"></label>
+                                <input asp-for="Email" class="form-control" type="email" placeholder="email@example.com" />
+                                <span asp-validation-for="Email" class="text-danger"></span>
+                                <div class="form-text">Email duy nhất cho mỗi nhân viên</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="DiaChi" class="form-label required"></label>
+                        <textarea asp-for="DiaChi" class="form-control" rows="3" placeholder="Nhập địa chỉ đầy đủ"></textarea>
+                        <span asp-validation-for="DiaChi" class="text-danger"></span>
+                    </div>
+
+                    <!-- Thông tin công việc -->
+                    <div class="row mb-4 mt-4">
+                        <div class="col-12">
+                            <h6 class="text-primary mb-3">
+                                <i class="fas fa-briefcase me-2"></i>
+                                Thông Tin Công Việc
+                            </h6>
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label asp-for="ChucVu" class="form-label required"></label>
+                                <select asp-for="ChucVu" class="form-select" id="chucVuSelect">
+                                    <option value="">-- Chọn chức vụ --</option>
+                                    <option value="Quản lý">Quản lý</option>
+                                    <option value="Kỹ thuật viên">Kỹ thuật viên</option>
+                                    <option value="Nhân viên bán hàng">Nhân viên bán hàng</option>
+                                    <option value="Nhân viên kho">Nhân viên kho</option>
+                                    <option value="Kế toán">Kế toán</option>
+                                    <option value="Bảo vệ">Bảo vệ</option>
+                                    <option value="Tạp vụ">Tạp vụ</option>
+                                    <option value="Khác">Khác (nhập thủ công)</option>
+                                </select>
+                                <input type="text" id="chucVuCustom" class="form-control mt-2" style="display: none;" placeholder="Nhập chức vụ khác..." />
+                                <span asp-validation-for="ChucVu" class="text-danger"></span>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label asp-for="NgayVaoLam" class="form-label required"></label>
+                                <input asp-for="NgayVaoLam" class="form-control" type="date" />
+                                <span asp-validation-for="NgayVaoLam" class="text-danger"></span>
+                                <div class="form-text" id="workExpDisplay">Kinh nghiệm: @Model.GetWorkExperience()</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label asp-for="Luong" class="form-label required"></label>
+                                <div class="input-group">
+                                    <input asp-for="Luong" class="form-control" type="number" min="0" step="100000" />
+                                    <span class="input-group-text">VNĐ</span>
+                                </div>
+                                <span asp-validation-for="Luong" class="text-danger"></span>
+                                <div class="form-text" id="salaryDisplay">@Model.LuongText/tháng</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label asp-for="TrangThai" class="form-label"></label>
+                                <select asp-for="TrangThai" class="form-select">
+                                    <option value="true">Đang làm việc</option>
+                                    <option value="false">Tạm nghỉ</option>
+                                </select>
+                                <span asp-validation-for="TrangThai" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Ngày nghỉ việc (nếu có) -->
+                    @if (Model.NgayNghiViec.HasValue)
+                    {
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label asp-for="NgayNghiViec" class="form-label"></label>
+                                    <input asp-for="NgayNghiViec" class="form-control" type="date" />
+                                    <span asp-validation-for="NgayNghiViec" class="text-danger"></span>
+                                    <div class="form-text text-warning">
+                                        <i class="fas fa-exclamation-triangle me-1"></i>
+                                        Nhân viên đã nghỉ việc từ @Model.NgayNghiViec.Value.ToString("dd/MM/yyyy")
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6 d-flex align-items-end">
+                                <button type="button" class="btn btn-success" id="reactivateBtn">
+                                    <i class="fas fa-user-plus me-1"></i>
+                                    Cho Quay Lại Làm Việc
+                                </button>
+                            </div>
+                        </div>
+                    }
+                    else
+                    {
+                        <input type="hidden" asp-for="NgayNghiViec" />
+                    }
+
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    @if (!Model.NgayNghiViec.HasValue && Model.TrangThai)
+                                    {
+                                        <button type="button" class="btn btn-warning" id="retireBtn">
+                                            <i class="fas fa-user-minus me-1"></i>
+                                            Cho Nghỉ Việc
+                                        </button>
+                                    }
+                                </div>
+                                <div class="d-flex gap-2">
+                                    <a asp-action="Index" class="btn btn-outline-secondary">
+                                        <i class="fas fa-times me-1"></i> Hủy
+                                    </a>
+                                    <button type="submit" class="btn btn-warning" id="submitBtn">
+                                        <i class="fas fa-save me-1"></i> Cập Nhật
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <!-- Current Info Card -->
+        <div class="card">
+            <div class="card-header">
+                <h6 class="mb-0">
+                    <i class="fas fa-info-circle me-2"></i>
+                    Thông Tin Hiện Tại
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="text-center mb-3">
+                    <div class="avatar-circle-large mx-auto mb-3">
+                        @Model.HoTen.Substring(0, 1).ToUpper()
+                    </div>
+                    <h6>@Model.HoTen</h6>
+                    <span class="badge bg-info">@Model.ChucVu</span>
+                    @if (Model.IsSeniorEmployee())
+                    {
+                        <span class="badge bg-primary ms-1">Senior</span>
+                    }
+                </div>
+                
+                <table class="table table-sm">
+                    <tr>
+                        <td><strong>Mã NV:</strong></td>
+                        <td>#@Model.MaNhanVien</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Tuổi:</strong></td>
+                        <td>@Model.Tuoi tuổi (@Model.GetAgeGroup())</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Kinh nghiệm:</strong></td>
+                        <td>@Model.GetWorkExperience()</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Lương hiện tại:</strong></td>
+                        <td class="text-success fw-bold">@Model.LuongText</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Trạng thái:</strong></td>
+                        <td>
+                            <span class="badge @(Model.IsActiveEmployee() ? "bg-success" : "bg-secondary")">
+                                @Model.TrangThaiText
+                            </span>
+                        </td>
+                    </tr>
+                    @if (Model.NgayNghiViec.HasValue)
+                    {
+                        <tr>
+                            <td><strong>Nghỉ việc:</strong></td>
+                            <td class="text-danger">@Model.NgayNghiViec.Value.ToString("dd/MM/yyyy")</td>
+                        </tr>
+                    }
+                </table>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="card mt-3">
+            <div class="card-header">
+                <h6 class="mb-0">
+                    <i class="fas fa-bolt me-2"></i>
+                    Thao Tác Nhanh
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <a asp-action="Details" asp-route-id="@Model.MaNhanVien" class="btn btn-outline-info">
+                        <i class="fas fa-eye me-1"></i> Xem Chi Tiết
+                    </a>
+                    
+                    @if (Model.IsActiveEmployee())
+                    {
+                        <button type="button" class="btn btn-outline-secondary toggle-status" data-id="@Model.MaNhanVien">
+                            <i class="fas fa-pause me-1"></i> Tạm Ngừng
+                        </button>
+                    }
+                    else if (!Model.NgayNghiViec.HasValue)
+                    {
+                        <button type="button" class="btn btn-outline-success toggle-status" data-id="@Model.MaNhanVien">
+                            <i class="fas fa-play me-1"></i> Kích Hoạt
+                        </button>
+                    }
+                    
+                    <a asp-action="Delete" asp-route-id="@Model.MaNhanVien" class="btn btn-outline-danger">
+                        <i class="fas fa-trash me-1"></i> Xóa Nhân Viên
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Validation Summary -->
+        <div class="card mt-3">
+            <div class="card-header">
+                <h6 class="mb-0">
+                    <i class="fas fa-check-circle me-2"></i>
+                    Kiểm Tra Thay Đổi
+                </h6>
+            </div>
+            <div class="card-body">
+                <ul class="list-unstyled mb-0 small" id="changesList">
+                    <li class="text-muted">
+                        <i class="fas fa-info-circle me-2"></i>
+                        Thay đổi sẽ được hiển thị ở đây
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- History Log -->
+        <div class="card mt-3">
+            <div class="card-header">
+                <h6 class="mb-0">
+                    <i class="fas fa-history me-2"></i>
+                    Lịch Sử Thay Đổi
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="timeline">
+                    <div class="timeline-item">
+                        <div class="timeline-marker bg-primary"></div>
+                        <div class="timeline-content">
+                            <h6 class="timeline-title">Vào làm</h6>
+                            <p class="timeline-text">@Model.NgayVaoLam.ToString("dd/MM/yyyy")</p>
+                        </div>
+                    </div>
+                    @if (Model.NgayNghiViec.HasValue)
+                    {
+                        <div class="timeline-item">
+                            <div class="timeline-marker bg-warning"></div>
+                            <div class="timeline-content">
+                                <h6 class="timeline-title">Nghỉ việc</h6>
+                                <p class="timeline-text">@Model.NgayNghiViec.Value.ToString("dd/MM/yyyy")</p>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    
+    <script>
+        $(document).ready(function() {
+            // Store original values for change detection
+            const originalValues = {
+                HoTen: $('#HoTen').val(),
+                NgaySinh: $('#NgaySinh').val(),
+                SoDienThoai: $('#SoDienThoai').val(),
+                Email: $('#Email').val(),
+                DiaChi: $('#DiaChi').val(),
+                ChucVu: $('#ChucVu').val(),
+                NgayVaoLam: $('#NgayVaoLam').val(),
+                Luong: $('#Luong').val(),
+                TrangThai: $('#TrangThai').val(),
+                NgayNghiViec: $('#NgayNghiViec').val()
+            };
+            
+            // Set current job title in select
+            const currentChucVu = '@Model.ChucVu';
+            const predefinedRoles = ['Quản lý', 'Kỹ thuật viên', 'Nhân viên bán hàng', 'Nhân viên kho', 'Kế toán', 'Bảo vệ', 'Tạp vụ'];
+            
+            if (predefinedRoles.includes(currentChucVu)) {
+                $('#chucVuSelect').val(currentChucVu);
+            } else {
+                $('#chucVuSelect').val('Khác');
+                $('#chucVuCustom').show().val(currentChucVu);
+            }
+            
+            // Custom job title handling
+            $('#chucVuSelect').on('change', function() {
+                const selectedValue = $(this).val();
+                if (selectedValue === 'Khác') {
+                    $('#chucVuCustom').show().focus();
+                    if (predefinedRoles.includes($('#ChucVu').val())) {
+                        $('#ChucVu').val('');
+                    }
+                } else {
+                    $('#chucVuCustom').hide();
+                    $('#ChucVu').val(selectedValue);
+                }
+                detectChanges();
+            });
+            
+            $('#chucVuCustom').on('input', function() {
+                $('#ChucVu').val($(this).val());
+                detectChanges();
+            });
+            
+            // Age calculation on birth date change
+            $('#NgaySinh').on('change', function() {
+                const birthDate = new Date($(this).val());
+                const today = new Date();
+                let age = today.getFullYear() - birthDate.getFullYear();
+                const monthDiff = today.getMonth() - birthDate.getMonth();
+                
+                if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+                    age--;
+                }
+                
+                if ($(this).val()) {
+                    $('#ageDisplay').text(`Tuổi hiện tại: ${age}`);
+                    
+                    if (age < 18) {
+                        $('#ageDisplay').addClass('text-danger').text(`Tuổi hiện tại: ${age} (Phải từ 18 tuổi trở lên)`);
+                    } else {
+                        $('#ageDisplay').removeClass('text-danger');
+                    }
+                }
+                detectChanges();
+            });
+            
+            // Work experience calculation
+            $('#NgayVaoLam').on('change', function() {
+                if ($(this).val()) {
+                    const startDate = new Date($(this).val());
+                    const today = new Date();
+                    const years = today.getFullYear() - startDate.getFullYear();
+                    
+                    $('#workExpDisplay').text(`Kinh nghiệm: ${years} năm`);
+                }
+                detectChanges();
+            });
+            
+            // Salary formatting
+            $('#Luong').on('input', function() {
+                const value = parseInt($(this).val()) || 0;
+                $('#salaryDisplay').text(`${value.toLocaleString('vi-VN')} VNĐ/tháng`);
+                detectChanges();
+            });
+            
+            // Auto format phone number
+            $('#SoDienThoai').on('input', function() {
+                let value = $(this).val().replace(/\D/g, '');
+                if (value.length > 11) {
+                    value = value.substring(0, 11);
+                }
+                $(this).val(value);
+                detectChanges();
+            });
+            
+            // Detect changes in all form fields
+            $('#HoTen, #NgaySinh, #SoDienThoai, #Email, #DiaChi, #NgayVaoLam, #Luong, #TrangThai, #NgayNghiViec').on('input change', detectChanges);
+            
+            function detectChanges() {
+                const changes = [];
+                const currentValues = {
+                    HoTen: $('#HoTen').val(),
+                    NgaySinh: $('#NgaySinh').val(),
+                    SoDienThoai: $('#SoDienThoai').val(),
+                    Email: $('#Email').val(),
+                    DiaChi: $('#DiaChi').val(),
+                    ChucVu: $('#ChucVu').val(),
+                    NgayVaoLam: $('#NgayVaoLam').val(),
+                    Luong: $('#Luong').val(),
+                    TrangThai: $('#TrangThai').val(),
+                    NgayNghiViec: $('#NgayNghiViec').val()
+                };
+                
+                const fieldNames = {
+                    HoTen: 'Họ và tên',
+                    NgaySinh: 'Ngày sinh',
+                    SoDienThoai: 'Số điện thoại',
+                    Email: 'Email',
+                    DiaChi: 'Địa chỉ',
+                    ChucVu: 'Chức vụ',
+                    NgayVaoLam: 'Ngày vào làm',
+                    Luong: 'Lương',
+                    TrangThai: 'Trạng thái',
+                    NgayNghiViec: 'Ngày nghỉ việc'
+                };
+                
+                Object.keys(originalValues).forEach(key => {
+                    if (originalValues[key] !== currentValues[key]) {
+                        const oldVal = originalValues[key] || 'Trống';
+                        const newVal = currentValues[key] || 'Trống';
+                        
+                        if (key === 'Luong') {
+                            changes.push(`${fieldNames[key]}: ${parseInt(oldVal).toLocaleString()} → ${parseInt(newVal).toLocaleString()} VNĐ`);
+                        } else if (key === 'TrangThai') {
+                            const oldStatus = oldVal === 'true' ? 'Đang làm việc' : 'Tạm nghỉ';
+                            const newStatus = newVal === 'true' ? 'Đang làm việc' : 'Tạm nghỉ';
+                            changes.push(`${fieldNames[key]}: ${oldStatus} → ${newStatus}`);
+                        } else {
+                            changes.push(`${fieldNames[key]}: ${oldVal} → ${newVal}`);
+                        }
+                    }
+                });
+                
+                const changesList = $('#changesList');
+                if (changes.length > 0) {
+                    let html = '';
+                    changes.forEach(change => {
+                        html += `<li class="mb-1"><i class="fas fa-edit text-warning me-2"></i><small>${change}</small></li>`;
+                    });
+                    changesList.html(html);
+                } else {
+                    changesList.html('<li class="text-muted"><i class="fas fa-info-circle me-2"></i>Chưa có thay đổi nào</li>');
+                }
+            }
+            
+            // Retire employee
+            $('#retireBtn').on('click', function() {
+                const ngayNghiViec = prompt('Nhập ngày nghỉ việc (dd/mm/yyyy) hoặc để trống để dùng ngày hiện tại:', '');
+                
+                if (ngayNghiViec !== null) {
+                    $.post('@Url.Action("Retire")', { 
+                        id: @Model.MaNhanVien, 
+                        ngayNghiViec: ngayNghiViec || null 
+                    })
+                    .done(function(result) {
+                        if (result.success) {
+                            toastr.success(result.message);
+                            location.reload();
+                        } else {
+                            toastr.error(result.message || 'Có lỗi xảy ra!');
+                        }
+                    })
+                    .fail(function() {
+                        toastr.error('Không thể kết nối đến server!');
+                    });
+                }
+            });
+            
+            // Reactivate employee
+            $('#reactivateBtn').on('click', function() {
+                if (confirm('Bạn có chắc chắn muốn cho nhân viên này quay lại làm việc?')) {
+                    $.post('@Url.Action("Reactivate")', { id: @Model.MaNhanVien })
+                        .done(function(result) {
+                            if (result.success) {
+                                toastr.success(result.message);
+                                location.reload();
+                            } else {
+                                toastr.error(result.message || 'Có lỗi xảy ra!');
+                            }
+                        })
+                        .fail(function() {
+                            toastr.error('Không thể kết nối đến server!');
+                        });
+                }
+            });
+            
+            // Toggle status
+            $('.toggle-status').on('click', function() {
+                const id = $(this).data('id');
+                const isActive = $(this).hasClass('btn-outline-secondary');
+                
+                if (confirm(isActive ? 'Bạn có muốn kích hoạt lại nhân viên này?' : 'Bạn có muốn tạm ngừng nhân viên này?')) {
+                    $.post('@Url.Action("ToggleStatus")', { id: id })
+                        .done(function(result) {
+                            if (result.success) {
+                                toastr.success('Đã cập nhật trạng thái thành công!');
+                                location.reload();
+                            } else {
+                                toastr.error(result.message || 'Có lỗi xảy ra!');
+                            }
+                        })
+                        .fail(function() {
+                            toastr.error('Không thể kết nối đến server!');
+                        });
+                }
+            });
+            
+            // Form submission
+            $('#employeeEditForm').on('submit', function(e) {
+                // Show loading
+                $('#submitBtn').prop('disabled', true)
+                              .html('<i class="fas fa-spinner fa-spin me-1"></i>Đang cập nhật...');
+                
+                // Confirm if there are significant changes
+                const changesList = $('#changesList').text();
+                if (changesList !== 'Chưa có thay đổi nào' && !confirm('Bạn có chắc chắn muốn lưu những thay đổi này?')) {
+                    e.preventDefault();
+                    $('#submitBtn').prop('disabled', false)
+                                  .html('<i class="fas fa-save me-1"></i>Cập Nhật');
+                    return false;
+                }
+            });
+            
+            // Initial change detection
+            detectChanges();
+        });
+    </script>
+}
+
+<style>
+    .required::after {
+        content: " *";
+        color: red;
+    }
+    
+    .avatar-circle-large {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        background: linear-gradient(45deg, #ffc107, #ff8c00);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: bold;
+        font-size: 28px;
+    }
+    
+    .timeline {
+        position: relative;
+        padding-left: 30px;
+    }
+    
+    .timeline-item {
+        position: relative;
+        margin-bottom: 20px;
+    }
+    
+    .timeline-marker {
+        position: absolute;
+        left: -35px;
+        top: 5px;
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        border: 2px solid white;
+        box-shadow: 0 0 0 2px #dee2e6;
+    }
+    
+    .timeline-content {
+        background: #f8f9fa;
+        padding: 10px 15px;
+        border-radius: 8px;
+        border-left: 3px solid #007bff;
+    }
+    
+    .timeline-title {
+        font-size: 0.9rem;
+        font-weight: 600;
+        margin-bottom: 5px;
+        color: #495057;
+    }
+    
+    .timeline-text {
+        font-size: 0.8rem;
+        margin-bottom: 0;
+        color: #6c757d;
+    }
+    
+    .timeline::before {
+        content: '';
+        position: absolute;
+        left: -30px;
+        top: 0;
+        bottom: 0;
+        width: 2px;
+        background: #dee2e6;
+    }
+    
+    .form-control:focus {
+        border-color: #ffc107;
+        box-shadow: 0 0 0 0.2rem rgba(255, 193, 7, 0.25);
+    }
+    
+    .btn-warning:hover {
+        background-color: #e0a800;
+        border-color: #d39e00;
+    }
+    
+    .card {
+        border: none;
+        box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    }
+    
+    .table td {
+        padding: 0.5rem;
+        border-top: 1px solid #dee2e6;
+    }
+    
+    .badge {
+        font-size: 0.8em;
+        padding: 0.375rem 0.75rem;
+    }
+</style>

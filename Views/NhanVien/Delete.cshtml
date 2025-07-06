@@ -1,0 +1,535 @@
+@model phonev2.Models.NhanVien
+
+@{
+    Layout = "_AdminLayout";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1 class="h3 mb-0 text-danger">@ViewData["Title"]</h1>
+        <p class="text-muted mb-0">Xác nhận xóa nhân viên khỏi hệ thống</p>
+    </div>
+    <div>
+        <a asp-action="Index" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left me-1"></i> Quay lại
+        </a>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card border-danger">
+            <div class="card-header bg-danger text-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    Xác Nhận Xóa Nhân Viên
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-warning" role="alert">
+                    <i class="fas fa-warning me-2"></i>
+                    <strong>Cảnh báo:</strong> Bạn đang thực hiện xóa vĩnh viễn nhân viên này khỏi hệ thống. 
+                    Hành động này không thể hoàn tác!
+                </div>
+
+                <!-- Employee Info Display -->
+                <div class="employee-preview mb-4">
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="avatar-circle-large me-3">
+                            @Model.HoTen.Substring(0, 1).ToUpper()
+                        </div>
+                        <div>
+                            <h4 class="mb-0">@Model.HoTen</h4>
+                            <span class="badge bg-info">@Model.ChucVu</span>
+                            <span class="badge @(Model.IsActiveEmployee() ? "bg-success" : "bg-secondary") ms-1">
+                                @Model.TrangThaiText
+                            </span>
+                            @if (Model.IsSeniorEmployee())
+                            {
+                                <span class="badge bg-warning text-dark ms-1">Senior</span>
+                            }
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label class="form-label text-muted">Mã Nhân Viên</label>
+                            <div class="form-control-plaintext fw-bold">#@Model.MaNhanVien</div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label class="form-label text-muted">Tuổi</label>
+                            <div class="form-control-plaintext">@Model.Tuoi tuổi (@Model.GetAgeGroup())</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label class="form-label text-muted">Số Điện Thoại</label>
+                            <div class="form-control-plaintext">
+                                <i class="fas fa-phone me-2 text-success"></i>
+                                <a href="tel:@Model.SoDienThoai" class="text-decoration-none">@Model.SoDienThoai</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label class="form-label text-muted">Email</label>
+                            <div class="form-control-plaintext">
+                                <i class="fas fa-envelope me-2 text-primary"></i>
+                                <a href="mailto:@Model.Email" class="text-decoration-none">@Model.Email</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label text-muted">Địa Chỉ</label>
+                    <div class="form-control-plaintext">
+                        <i class="fas fa-map-marker-alt me-2 text-info"></i>
+                        @Model.DiaChi
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label class="form-label text-muted">Ngày Sinh</label>
+                            <div class="form-control-plaintext">
+                                <i class="fas fa-birthday-cake me-2 text-warning"></i>
+                                @Model.NgaySinh.ToString("dd/MM/yyyy")
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label class="form-label text-muted">Ngày Vào Làm</label>
+                            <div class="form-control-plaintext">
+                                <i class="fas fa-briefcase me-2 text-info"></i>
+                                @Model.NgayVaoLam.ToString("dd/MM/yyyy")
+                                <span class="badge bg-light text-dark ms-2">@Model.GetWorkExperience()</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label class="form-label text-muted">Lương</label>
+                            <div class="form-control-plaintext">
+                                <i class="fas fa-dollar-sign me-2 text-success"></i>
+                                <span class="text-success fw-bold">@Model.LuongText</span>
+                            </div>
+                        </div>
+                    </div>
+                    @if (Model.NgayNghiViec.HasValue)
+                    {
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label text-muted">Ngày Nghỉ Việc</label>
+                                <div class="form-control-plaintext">
+                                    <i class="fas fa-sign-out-alt me-2 text-danger"></i>
+                                    <span class="text-danger">@Model.NgayNghiViec.Value.ToString("dd/MM/yyyy")</span>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label text-muted">Trạng Thái</label>
+                                <div class="form-control-plaintext">
+                                    <span class="badge @(Model.IsActiveEmployee() ? "bg-success" : "bg-secondary") fs-6">
+                                        <i class="fas @(Model.IsActiveEmployee() ? "fa-user-check" : "fa-user-times") me-1"></i>
+                                        @Model.TrangThaiText
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+
+                <hr class="my-4">
+
+                <form asp-action="Delete" method="post">
+                    <input type="hidden" asp-for="MaNhanVien" />
+                    
+                    <div class="d-flex justify-content-end gap-2">
+                        <a asp-action="Index" class="btn btn-outline-secondary">
+                            <i class="fas fa-times me-1"></i> Hủy bỏ
+                        </a>
+                        <button type="submit" class="btn btn-danger" id="deleteBtn">
+                            <i class="fas fa-trash me-1"></i> Xác nhận xóa
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <!-- Warning Card -->
+        <div class="card border-warning">
+            <div class="card-header bg-warning text-dark">
+                <h6 class="mb-0">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    Lưu Ý Quan Trọng
+                </h6>
+            </div>
+            <div class="card-body">
+                <ul class="list-unstyled mb-0">
+                    <li class="mb-3">
+                        <i class="fas fa-exclamation-circle text-danger me-2"></i>
+                        <small>Việc xóa nhân viên sẽ ảnh hưởng đến các phiếu sửa chữa và hóa đơn đã có</small>
+                    </li>
+                    <li class="mb-3">
+                        <i class="fas fa-database text-warning me-2"></i>
+                        <small>Dữ liệu liên quan có thể bị mất hoặc không nhất quán</small>
+                    </li>
+                    <li class="mb-3">
+                        <i class="fas fa-undo text-info me-2"></i>
+                        <small>Hành động này không thể hoàn tác sau khi thực hiện</small>
+                    </li>
+                    <li class="mb-0">
+                        <i class="fas fa-lightbulb text-success me-2"></i>
+                        <small>Khuyến nghị: Thay đổi trạng thái thành "Tạm nghỉ" thay vì xóa</small>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Alternative Actions -->
+        <div class="card mt-3 border-success">
+            <div class="card-header bg-success text-white">
+                <h6 class="mb-0">
+                    <i class="fas fa-hand-point-right me-2"></i>
+                    Thay Thế Khuyến Nghị
+                </h6>
+            </div>
+            <div class="card-body">
+                <p class="mb-3 small">Thay vì xóa, bạn có thể:</p>
+                <div class="d-grid gap-2">
+                    <a asp-action="Edit" asp-route-id="@Model.MaNhanVien" class="btn btn-sm btn-outline-warning">
+                        <i class="fas fa-edit me-1"></i> Chỉnh sửa thông tin
+                    </a>
+                    
+                    @if (Model.IsActiveEmployee())
+                    {
+                        <button type="button" class="btn btn-sm btn-outline-secondary toggle-status" 
+                                data-id="@Model.MaNhanVien">
+                            <i class="fas fa-pause me-1"></i> Tạm ngừng
+                        </button>
+                        <button type="button" class="btn btn-sm btn-outline-warning retire-btn" 
+                                data-id="@Model.MaNhanVien">
+                            <i class="fas fa-user-minus me-1"></i> Cho nghỉ việc
+                        </button>
+                    }
+                    else if (Model.NgayNghiViec.HasValue)
+                    {
+                        <button type="button" class="btn btn-sm btn-outline-success reactivate-btn" 
+                                data-id="@Model.MaNhanVien">
+                            <i class="fas fa-user-plus me-1"></i> Quay lại làm việc
+                        </button>
+                    }
+                    else
+                    {
+                        <button type="button" class="btn btn-sm btn-outline-success toggle-status" 
+                                data-id="@Model.MaNhanVien">
+                            <i class="fas fa-play me-1"></i> Kích hoạt
+                        </button>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <!-- Impact Analysis -->
+        <div class="card mt-3">
+            <div class="card-header">
+                <h6 class="mb-0">
+                    <i class="fas fa-chart-bar me-2"></i>
+                    Phân Tích Tác Động
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="row text-center">
+                    <div class="col-6">
+                        <div class="border-end">
+                            <h4 class="text-muted mb-0">0</h4>
+                            <small class="text-muted">Phiếu sửa chữa</small>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <h4 class="text-muted mb-0">0</h4>
+                        <small class="text-muted">Hóa đơn</small>
+                    </div>
+                </div>
+                <hr>
+                <div class="row text-center">
+                    <div class="col-6">
+                        <div class="border-end">
+                            <h4 class="text-muted mb-0">0</h4>
+                            <small class="text-muted">Phiếu nhập</small>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <h4 class="text-primary mb-0">@Model.GetWorkExperience()</h4>
+                        <small class="text-muted">Kinh nghiệm</small>
+                    </div>
+                </div>
+                <hr>
+                <small class="text-muted">
+                    <i class="fas fa-info-circle me-1"></i>
+                    Dữ liệu sẽ được cập nhật sau khi có các module liên quan
+                </small>
+            </div>
+        </div>
+
+        <!-- Employee Summary -->
+        <div class="card mt-3">
+            <div class="card-header">
+                <h6 class="mb-0">
+                    <i class="fas fa-user-circle me-2"></i>
+                    Tóm Tắt Nhân Viên
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="employee-summary">
+                    <div class="summary-item">
+                        <div class="row">
+                            <div class="col-6">
+                                <small class="text-muted">Thâm niên:</small>
+                                <div class="fw-bold">@Model.GetWorkExperience()</div>
+                            </div>
+                            <div class="col-6">
+                                <small class="text-muted">Tuổi:</small>
+                                <div class="fw-bold">@Model.Tuoi (@Model.GetAgeGroup())</div>
+                            </div>
+                        </div>
+                    </div>
+                    <hr>
+                    <div class="summary-item">
+                        <small class="text-muted">Lương hiện tại:</small>
+                        <div class="fw-bold text-success">@Model.LuongText</div>
+                    </div>
+                    <hr>
+                    <div class="summary-item">
+                        <small class="text-muted">Đánh giá:</small>
+                        <div class="fw-bold">
+                            @if (Model.IsSeniorEmployee())
+                            {
+                                <span class="text-warning">
+                                    <i class="fas fa-star me-1"></i>
+                                    Nhân viên kinh nghiệm
+                                </span>
+                            }
+                            else
+                            {
+                                <span class="text-info">
+                                    <i class="fas fa-user me-1"></i>
+                                    Nhân viên @Model.GetAgeGroup().ToLower()
+                                </span>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // Enhanced delete confirmation with multiple steps
+            $('#deleteBtn').on('click', function(e) {
+                e.preventDefault();
+                
+                // Step 1: Initial warning
+                if (confirm('⚠️ CẢNH BÁO: Bạn có chắc chắn muốn XÓA VĨNH VIỄN nhân viên "@Model.HoTen"?\n\nHành động này KHÔNG THỂ HOÀN TÁC!')) {
+                    
+                    // Step 2: Type confirmation
+                    const confirmText = prompt('Để xác nhận, vui lòng nhập "XOA" (viết hoa):');
+                    if (confirmText === 'XOA') {
+                        
+                        // Step 3: Final confirmation with delay
+                        $(this).prop('disabled', true)
+                               .html('<i class="fas fa-spinner fa-spin me-1"></i> Đang xóa...');
+                        
+                        setTimeout(() => {
+                            if (confirm('🚨 LẦN CUỐI: Bạn có THỰC SỰ muốn xóa nhân viên này không?\n\nClick OK để XÓA VĨNH VIỄN hoặc Cancel để HỦY BỎ.')) {
+                                $('form').submit();
+                            } else {
+                                // Restore button
+                                $('#deleteBtn').prop('disabled', false)
+                                              .html('<i class="fas fa-trash me-1"></i> Xác nhận xóa');
+                            }
+                        }, 2000);
+                        
+                    } else if (confirmText !== null) {
+                        toastr.error('Bạn đã nhập sai! Vui lòng nhập "XOA" để xác nhận.');
+                    }
+                }
+            });
+
+            // Alternative actions
+            $('.toggle-status').on('click', function() {
+                const id = $(this).data('id');
+                const isActive = $(this).hasClass('btn-outline-secondary');
+                
+                if (confirm(isActive ? 'Bạn có muốn kích hoạt lại nhân viên này?' : 'Bạn có muốn tạm ngừng nhân viên này?')) {
+                    $.post('@Url.Action("ToggleStatus")', { id: id })
+                        .done(function(result) {
+                            if (result.success) {
+                                toastr.success('Đã cập nhật trạng thái thành công!');
+                                setTimeout(() => {
+                                    window.location.href = '@Url.Action("Edit", new { id = Model.MaNhanVien })';
+                                }, 1000);
+                            } else {
+                                toastr.error(result.message || 'Có lỗi xảy ra!');
+                            }
+                        })
+                        .fail(function() {
+                            toastr.error('Không thể kết nối đến server!');
+                        });
+                }
+            });
+
+            $('.retire-btn').on('click', function() {
+                const id = $(this).data('id');
+                const ngayNghiViec = prompt('Nhập ngày nghỉ việc (dd/mm/yyyy) hoặc để trống để dùng ngày hiện tại:', '');
+                
+                if (ngayNghiViec !== null) {
+                    $.post('@Url.Action("Retire")', { 
+                        id: id, 
+                        ngayNghiViec: ngayNghiViec || null 
+                    })
+                    .done(function(result) {
+                        if (result.success) {
+                            toastr.success(result.message);
+                            setTimeout(() => {
+                                window.location.href = '@Url.Action("Edit", new { id = Model.MaNhanVien })';
+                            }, 1000);
+                        } else {
+                            toastr.error(result.message || 'Có lỗi xảy ra!');
+                        }
+                    })
+                    .fail(function() {
+                        toastr.error('Không thể kết nối đến server!');
+                    });
+                }
+            });
+
+            $('.reactivate-btn').on('click', function() {
+                const id = $(this).data('id');
+                
+                if (confirm('Bạn có chắc chắn muốn cho nhân viên này quay lại làm việc?')) {
+                    $.post('@Url.Action("Reactivate")', { id: id })
+                        .done(function(result) {
+                            if (result.success) {
+                                toastr.success(result.message);
+                                setTimeout(() => {
+                                    window.location.href = '@Url.Action("Edit", new { id = Model.MaNhanVien })';
+                                }, 1000);
+                            } else {
+                                toastr.error(result.message || 'Có lỗi xảy ra!');
+                            }
+                        })
+                        .fail(function() {
+                            toastr.error('Không thể kết nối đến server!');
+                        });
+                }
+            });
+
+            // Auto redirect after 10 minutes to prevent accidental deletion
+            setTimeout(function() {
+                if (confirm('Bạn đã ở trang này quá lâu. Có muốn quay về trang danh sách để đảm bảo an toàn?')) {
+                    window.location.href = '@Url.Action("Index")';
+                }
+            }, 600000); // 10 minutes
+        });
+    </script>
+}
+
+<style>
+    .card.border-danger {
+        border-color: #dc3545 !important;
+    }
+    
+    .card.border-warning {
+        border-color: #ffc107 !important;
+    }
+    
+    .card.border-success {
+        border-color: #198754 !important;
+    }
+    
+    .form-control-plaintext {
+        padding: 0.375rem 0;
+        margin-bottom: 0;
+        background-color: transparent;
+        border: none;
+        font-weight: 500;
+    }
+    
+    .avatar-circle-large {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        background: linear-gradient(45deg, #dc3545, #c82333);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: bold;
+        font-size: 28px;
+        border: 3px solid rgba(220, 53, 69, 0.2);
+    }
+    
+    .employee-preview {
+        background: #f8f9fa;
+        padding: 20px;
+        border-radius: 8px;
+        border-left: 4px solid #dc3545;
+    }
+    
+    .btn-danger:hover {
+        background-color: #c82333;
+        border-color: #bd2130;
+        transform: translateY(-1px);
+        transition: all 0.3s ease;
+    }
+    
+    .alert-warning {
+        border-left: 4px solid #ffc107;
+    }
+    
+    @@keyframes shake {
+        0%, 100% { transform: translateX(0); }
+        25% { transform: translateX(-5px); }
+        75% { transform: translateX(5px); }
+    }
+    
+    .btn-danger:active {
+        animation: shake 0.5s ease-in-out;
+    }
+    
+    .summary-item {
+        margin-bottom: 0;
+    }
+    
+    .employee-summary hr {
+        margin: 0.75rem 0;
+        opacity: 0.5;
+    }
+    
+    .badge {
+        font-size: 0.8em;
+    }
+</style>

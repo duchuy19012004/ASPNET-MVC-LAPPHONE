@@ -1,0 +1,775 @@
+@model IEnumerable<phonev2.Models.NhanVien>
+@{
+    Layout = "_AdminLayout";
+}
+
+@section PageActions {
+    <div class="btn-group">
+        <a asp-action="Create" class="btn btn-primary">
+            <i class="fas fa-user-plus me-1"></i> Thêm Nhân Viên Mới
+        </a>
+        <button type="button" class="btn btn-info" data-bs-toggle="modal" data-bs-target="#statsModal">
+            <i class="fas fa-chart-bar me-1"></i> Thống Kê
+        </button>
+        <a asp-action="SalaryReport" class="btn btn-success">
+            <i class="fas fa-dollar-sign me-1"></i> Báo Cáo Lương
+        </a>
+        <a asp-action="ExportExcel" class="btn btn-outline-success">
+            <i class="fas fa-file-excel me-1"></i> Xuất Excel
+        </a>
+    </div>
+}
+
+<!-- Search & Filter Section -->
+<div class="card mb-4">
+    <div class="card-body">
+        <form asp-action="Index" method="get" class="row g-3">
+            <div class="col-md-3">
+                <label class="form-label">Tìm kiếm</label>
+                <div class="input-group">
+                    <input type="text" name="searchString" value="@ViewData["CurrentFilter"]" 
+                           class="form-control" placeholder="Tên, email, SĐT, chức vụ...">
+                    <button class="btn btn-outline-secondary" type="submit">
+                        <i class="fas fa-search"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">Chức vụ</label>
+                <select name="chucVuFilter" class="form-select" onchange="this.form.submit()">
+                    <option value="">Tất cả chức vụ</option>
+                    @foreach (var chucVu in ViewBag.ChucVuList as List<string> ?? new List<string>())
+                    {
+                        <option value="@chucVu" selected="@(ViewData["CurrentChucVu"]?.ToString() == chucVu)">
+                            @chucVu
+                        </option>
+                    }
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">Trạng thái</label>
+                <select name="trangThaiFilter" class="form-select" onchange="this.form.submit()">
+                    <option value="">Tất cả</option>
+                    <option value="active" selected="@(ViewData["CurrentTrangThai"]?.ToString() == "active")">Đang làm việc</option>
+                    <option value="inactive" selected="@(ViewData["CurrentTrangThai"]?.ToString() == "inactive")">Tạm nghỉ</option>
+                    <option value="retired" selected="@(ViewData["CurrentTrangThai"]?.ToString() == "retired")">Đã nghỉ việc</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">Sắp xếp theo</label>
+                <select name="sortOrder" class="form-select" onchange="this.form.submit()">
+                    <option value="">Tên A-Z</option>
+                    <option value="name_desc" selected="@(ViewData["CurrentSort"]?.ToString() == "name_desc")">Tên Z-A</option>
+                    <option value="chucvu" selected="@(ViewData["CurrentSort"]?.ToString() == "chucvu")">Chức vụ A-Z</option>
+                    <option value="chucvu_desc" selected="@(ViewData["CurrentSort"]?.ToString() == "chucvu_desc")">Chức vụ Z-A</option>
+                    <option value="luong" selected="@(ViewData["CurrentSort"]?.ToString() == "luong")">Lương thấp → cao</option>
+                    <option value="luong_desc" selected="@(ViewData["CurrentSort"]?.ToString() == "luong_desc")">Lương cao → thấp</option>
+                    <option value="ngayvaolam" selected="@(ViewData["CurrentSort"]?.ToString() == "ngayvaolam")">Vào làm cũ → mới</option>
+                    <option value="ngayvaolam_desc" selected="@(ViewData["CurrentSort"]?.ToString() == "ngayvaolam_desc")">Vào làm mới → cũ</option>
+                    <option value="tuoi" selected="@(ViewData["CurrentSort"]?.ToString() == "tuoi")">Tuổi ít → nhiều</option>
+                    <option value="tuoi_desc" selected="@(ViewData["CurrentSort"]?.ToString() == "tuoi_desc")">Tuổi nhiều → ít</option>
+                </select>
+            </div>
+            <div class="col-md-3 d-flex align-items-end">
+                <div class="btn-group w-100">
+                    <a asp-action="Index" class="btn btn-outline-secondary">
+                        <i class="fas fa-redo me-1"></i> Reset
+                    </a>
+                    <button type="button" class="btn btn-outline-info" onclick="toggleAdvancedFilter()">
+                        <i class="fas fa-filter me-1"></i> Bộ lọc
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Advanced Filter (Initially Hidden) -->
+<div class="card mb-4" id="advancedFilter" style="display: none;">
+    <div class="card-header">
+        <h6 class="mb-0">
+            <i class="fas fa-sliders-h me-2"></i>
+            Bộ Lọc Nâng Cao
+        </h6>
+    </div>
+    <div class="card-body">
+        <form asp-action="Index" method="get" class="row g-3">
+            <div class="col-md-3">
+                <label class="form-label">Độ tuổi</label>
+                <div class="row">
+                    <div class="col-6">
+                        <input type="number" name="minAge" class="form-control" placeholder="Từ" min="18" max="70">
+                    </div>
+                    <div class="col-6">
+                        <input type="number" name="maxAge" class="form-control" placeholder="Đến" min="18" max="70">
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Lương (VNĐ)</label>
+                <div class="row">
+                    <div class="col-6">
+                        <input type="number" name="minSalary" class="form-control" placeholder="Từ" min="0">
+                    </div>
+                    <div class="col-6">
+                        <input type="number" name="maxSalary" class="form-control" placeholder="Đến" min="0">
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Năm kinh nghiệm</label>
+                <div class="row">
+                    <div class="col-6">
+                        <input type="number" name="minExp" class="form-control" placeholder="Từ" min="0">
+                    </div>
+                    <div class="col-6">
+                        <input type="number" name="maxExp" class="form-control" placeholder="Đến" min="0">
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 d-flex align-items-end">
+                <button type="submit" class="btn btn-primary w-100">
+                    <i class="fas fa-search me-1"></i> Áp dụng
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Results Summary -->
+<div class="row mb-3">
+    <div class="col-md-8">
+        @if (!string.IsNullOrEmpty(ViewData["CurrentFilter"]?.ToString()))
+        {
+            <div class="alert alert-info d-inline-block me-2 mb-0 py-2">
+                <i class="fas fa-search me-1"></i>
+                Kết quả tìm kiếm: "<strong>@ViewData["CurrentFilter"]</strong>"
+                <a asp-action="Index" class="btn btn-sm btn-outline-secondary ms-2">
+                    <i class="fas fa-times"></i>
+                </a>
+            </div>
+        }
+    </div>
+    <div class="col-md-4 text-end">
+        <small class="text-muted">
+            Hiển thị @Model.Count() nhân viên
+            @if (ViewBag.TotalPages > 1)
+            {
+                <span>- Trang @ViewBag.CurrentPage/@ViewBag.TotalPages</span>
+            }
+        </small>
+    </div>
+</div>
+
+<!-- Employee Table -->
+<div class="card shadow">
+    <div class="card-body p-0">
+        @if (Model.Any())
+        {
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="table-dark">
+                        <tr>
+                            <th class="text-white fw-bold">
+                                <a asp-action="Index" asp-route-sortOrder="@ViewData["NameSortParm"]" 
+                                   asp-route-searchString="@ViewData["CurrentFilter"]"
+                                   asp-route-chucVuFilter="@ViewData["CurrentChucVu"]"
+                                   asp-route-trangThaiFilter="@ViewData["CurrentTrangThai"]"
+                                   class="text-white text-decoration-none fw-bold">
+                                    Nhân Viên
+                                    @if (ViewData["CurrentSort"]?.ToString() == "name_desc")
+                                    {
+                                        <i class="fas fa-sort-down"></i>
+                                    }
+                                    else if (string.IsNullOrEmpty(ViewData["CurrentSort"]?.ToString()))
+                                    {
+                                        <i class="fas fa-sort-up"></i>
+                                    }
+                                    else
+                                    {
+                                        <i class="fas fa-sort"></i>
+                                    }
+                                </a>
+                            </th>
+                            <th class="text-white fw-bold">
+                                <a asp-action="Index" asp-route-sortOrder="@ViewData["ChucVuSortParm"]" 
+                                   asp-route-searchString="@ViewData["CurrentFilter"]"
+                                   asp-route-chucVuFilter="@ViewData["CurrentChucVu"]"
+                                   asp-route-trangThaiFilter="@ViewData["CurrentTrangThai"]"
+                                   class="text-white text-decoration-none fw-bold">
+                                    Chức Vụ
+                                    @if (ViewData["CurrentSort"]?.ToString() == "chucvu")
+                                    {
+                                        <i class="fas fa-sort-up"></i>
+                                    }
+                                    else if (ViewData["CurrentSort"]?.ToString() == "chucvu_desc")
+                                    {
+                                        <i class="fas fa-sort-down"></i>
+                                    }
+                                    else
+                                    {
+                                        <i class="fas fa-sort"></i>
+                                    }
+                                </a>
+                            </th>
+                            <th class="text-white fw-bold">Liên Hệ</th>
+                            <th class="text-white fw-bold">
+                                <a asp-action="Index" asp-route-sortOrder="@ViewData["LuongSortParm"]" 
+                                   asp-route-searchString="@ViewData["CurrentFilter"]"
+                                   asp-route-chucVuFilter="@ViewData["CurrentChucVu"]"
+                                   asp-route-trangThaiFilter="@ViewData["CurrentTrangThai"]"
+                                   class="text-white text-decoration-none fw-bold">
+                                    Lương
+                                    @if (ViewData["CurrentSort"]?.ToString() == "luong")
+                                    {
+                                        <i class="fas fa-sort-up"></i>
+                                    }
+                                    else if (ViewData["CurrentSort"]?.ToString() == "luong_desc")
+                                    {
+                                        <i class="fas fa-sort-down"></i>
+                                    }
+                                    else
+                                    {
+                                        <i class="fas fa-sort"></i>
+                                    }
+                                </a>
+                            </th>
+                            <th class="text-white fw-bold">
+                                <a asp-action="Index" asp-route-sortOrder="@ViewData["TuoiSortParm"]" 
+                                   asp-route-searchString="@ViewData["CurrentFilter"]"
+                                   asp-route-chucVuFilter="@ViewData["CurrentChucVu"]"
+                                   asp-route-trangThaiFilter="@ViewData["CurrentTrangThai"]"
+                                   class="text-white text-decoration-none fw-bold">
+                                    Tuổi/Kinh nghiệm
+                                    @if (ViewData["CurrentSort"]?.ToString() == "tuoi")
+                                    {
+                                        <i class="fas fa-sort-up"></i>
+                                    }
+                                    else if (ViewData["CurrentSort"]?.ToString() == "tuoi_desc")
+                                    {
+                                        <i class="fas fa-sort-down"></i>
+                                    }
+                                    else
+                                    {
+                                        <i class="fas fa-sort"></i>
+                                    }
+                                </a>
+                            </th>
+                            <th class="text-white fw-bold">Trạng Thái</th>
+                            <th class="text-white fw-bold">
+                                <a asp-action="Index" asp-route-sortOrder="@ViewData["NgayVaoLamSortParm"]" 
+                                   asp-route-searchString="@ViewData["CurrentFilter"]"
+                                   asp-route-chucVuFilter="@ViewData["CurrentChucVu"]"
+                                   asp-route-trangThaiFilter="@ViewData["CurrentTrangThai"]"
+                                   class="text-white text-decoration-none fw-bold">
+                                    Ngày Vào Làm
+                                    @if (ViewData["CurrentSort"]?.ToString() == "ngayvaolam")
+                                    {
+                                        <i class="fas fa-sort-up"></i>
+                                    }
+                                    else if (ViewData["CurrentSort"]?.ToString() == "ngayvaolam_desc")
+                                    {
+                                        <i class="fas fa-sort-down"></i>
+                                    }
+                                    else
+                                    {
+                                        <i class="fas fa-sort"></i>
+                                    }
+                                </a>
+                            </th>
+                            <th width="120" class="text-white fw-bold">Thao Tác</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model)
+                        {
+                            <tr class="@(!item.TrangThai || item.NgayNghiViec.HasValue ? "table-warning" : "")">
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <div class="avatar-circle me-3">
+                                            @item.HoTen.Substring(0, 1).ToUpper()
+                                        </div>
+                                        <div>
+                                            <strong class="text-dark">@item.HoTen</strong>
+                                            @if (!item.TrangThai)
+                                            {
+                                                <span class="badge bg-warning text-dark ms-2">Tạm nghỉ</span>
+                                            }
+                                            @if (item.NgayNghiViec.HasValue)
+                                            {
+                                                <span class="badge bg-secondary ms-2">Đã nghỉ việc</span>
+                                            }
+                                            @if (item.IsSeniorEmployee())
+                                            {
+                                                <span class="badge bg-primary ms-2">Senior</span>
+                                            }
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="badge bg-info text-white px-3 py-2">
+                                        <i class="fas fa-user-tie me-1"></i>
+                                        @item.ChucVu
+                                    </span>
+                                </td>
+                                <td>
+                                    <div>
+                                        <a href="tel:@item.SoDienThoai" class="text-decoration-none text-success fw-bold">
+                                            <i class="fas fa-phone me-1"></i>
+                                            @item.SoDienThoai
+                                        </a>
+                                    </div>
+                                    <div>
+                                        <a href="mailto:@item.Email" class="text-decoration-none text-primary fw-bold">
+                                            <i class="fas fa-envelope me-1"></i>
+                                            @item.Email
+                                        </a>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="fw-bold text-success fs-6">@item.LuongText</div>
+                                </td>
+                                <td>
+                                    <div>
+                                        <span class="badge bg-light text-dark border fw-bold">
+                                            <i class="fas fa-birthday-cake me-1 text-warning"></i>
+                                            @item.Tuoi tuổi
+                                        </span>
+                                    </div>
+                                    <div class="mt-1">
+                                        <small class="text-dark fw-bold">
+                                            <i class="fas fa-briefcase me-1 text-info"></i>
+                                            @item.GetWorkExperience()
+                                        </small>
+                                    </div>
+                                </td>
+                                <td>
+                                    <button type="button" 
+                                            class="btn btn-sm @(item.IsActiveEmployee() ? "btn-success" : "btn-secondary") toggle-status" 
+                                            data-id="@item.MaNhanVien"
+                                            data-status="@item.TrangThai.ToString().ToLower()">
+                                        <i class="fas @(item.IsActiveEmployee() ? "fa-user-check" : "fa-user-times") me-1"></i>
+                                        @item.TrangThaiText
+                                    </button>
+                                </td>
+                                <td>
+                                    <small class="text-dark fw-bold">@item.NgayVaoLam.ToString("dd/MM/yyyy")</small>
+                                    @if (item.NgayNghiViec.HasValue)
+                                    {
+                                        <br>
+                                        <small class="text-danger fw-bold">
+                                            <i class="fas fa-sign-out-alt me-1"></i>
+                                            @item.NgayNghiViec.Value.ToString("dd/MM/yyyy")
+                                        </small>
+                                    }
+                                </td>
+                                <td>
+                                    <div class="btn-group" role="group">
+                                        <a asp-action="Details" asp-route-id="@item.MaNhanVien" 
+                                           class="btn btn-sm btn-outline-info" title="Xem chi tiết">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        <a asp-action="Edit" asp-route-id="@item.MaNhanVien" 
+                                           class="btn btn-sm btn-outline-warning" title="Chỉnh sửa">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        @if (item.IsActiveEmployee())
+                                        {
+                                            <button type="button" class="btn btn-sm btn-outline-secondary retire-btn" 
+                                                    data-id="@item.MaNhanVien" title="Cho nghỉ việc">
+                                                <i class="fas fa-user-minus"></i>
+                                            </button>
+                                        }
+                                        else if (item.NgayNghiViec.HasValue)
+                                        {
+                                            <button type="button" class="btn btn-sm btn-outline-success reactivate-btn" 
+                                                    data-id="@item.MaNhanVien" title="Quay lại làm việc">
+                                                <i class="fas fa-user-plus"></i>
+                                            </button>
+                                        }
+                                        <a asp-action="Delete" asp-route-id="@item.MaNhanVien" 
+                                           class="btn btn-sm btn-outline-danger" title="Xóa">
+                                            <i class="fas fa-trash"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination -->
+            @if (ViewBag.TotalPages > 1)
+            {
+                <div class="card-footer">
+                    <nav aria-label="Employee pagination">
+                        <ul class="pagination justify-content-center mb-0">
+                            <li class="page-item @(ViewBag.CurrentPage == 1 ? "disabled" : "")">
+                                <a class="page-link" asp-action="Index" 
+                                   asp-route-page="@(ViewBag.CurrentPage - 1)"
+                                   asp-route-searchString="@ViewData["CurrentFilter"]"
+                                   asp-route-chucVuFilter="@ViewData["CurrentChucVu"]"
+                                   asp-route-trangThaiFilter="@ViewData["CurrentTrangThai"]"
+                                   asp-route-sortOrder="@ViewData["CurrentSort"]">
+                                    <i class="fas fa-chevron-left"></i>
+                                </a>
+                            </li>
+
+                            @for (int i = Math.Max(1, ViewBag.CurrentPage - 2); i <= Math.Min(ViewBag.TotalPages, ViewBag.CurrentPage + 2); i++)
+                            {
+                                <li class="page-item @(i == ViewBag.CurrentPage ? "active" : "")">
+                                    <a class="page-link" asp-action="Index" 
+                                       asp-route-page="@i"
+                                       asp-route-searchString="@ViewData["CurrentFilter"]"
+                                       asp-route-chucVuFilter="@ViewData["CurrentChucVu"]"
+                                       asp-route-trangThaiFilter="@ViewData["CurrentTrangThai"]"
+                                       asp-route-sortOrder="@ViewData["CurrentSort"]">
+                                        @i
+                                    </a>
+                                </li>
+                            }
+
+                            <li class="page-item @(ViewBag.CurrentPage == ViewBag.TotalPages ? "disabled" : "")">
+                                <a class="page-link" asp-action="Index" 
+                                   asp-route-page="@(ViewBag.CurrentPage + 1)"
+                                   asp-route-searchString="@ViewData["CurrentFilter"]"
+                                   asp-route-chucVuFilter="@ViewData["CurrentChucVu"]"
+                                   asp-route-trangThaiFilter="@ViewData["CurrentTrangThai"]"
+                                   asp-route-sortOrder="@ViewData["CurrentSort"]">
+                                    <i class="fas fa-chevron-right"></i>
+                                </a>
+                            </li>
+                        </ul>
+                    </nav>
+                </div>
+            }
+        }
+        else
+        {
+            <div class="text-center py-5">
+                <i class="fas fa-users fa-3x text-muted mb-3"></i>
+                <h5 class="text-muted">Không tìm thấy nhân viên nào</h5>
+                @if (!string.IsNullOrEmpty(ViewData["CurrentFilter"]?.ToString()))
+                {
+                    <p class="text-muted">Thử thay đổi từ khóa tìm kiếm hoặc bộ lọc</p>
+                    <a asp-action="Index" class="btn btn-outline-secondary">
+                        <i class="fas fa-redo me-1"></i> Reset tìm kiếm
+                    </a>
+                }
+                else
+                {
+                    <p class="text-muted">Hãy thêm nhân viên đầu tiên cho công ty</p>
+                    <a asp-action="Create" class="btn btn-primary">
+                        <i class="fas fa-user-plus me-1"></i> Thêm Nhân Viên Mới
+                    </a>
+                }
+            </div>
+        }
+    </div>
+</div>
+
+<!-- Stats Modal -->
+<div class="modal fade" id="statsModal" tabindex="-1" aria-labelledby="statsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="statsModalLabel">
+                    <i class="fas fa-chart-bar me-2"></i>
+                    Thống Kê Nhân Viên
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div id="statsContent">
+                    <div class="text-center">
+                        <div class="spinner-border" role="status">
+                            <span class="visually-hidden">Đang tải...</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // Toggle advanced filter
+            window.toggleAdvancedFilter = function() {
+                $('#advancedFilter').slideToggle();
+            };
+
+            // Toggle employee status
+            $('.toggle-status').on('click', function() {
+                const id = $(this).data('id');
+                const currentStatus = $(this).data('status') === 'true';
+                
+                if (confirm(currentStatus ? 'Bạn có muốn tạm ngừng nhân viên này?' : 'Bạn có muốn kích hoạt lại nhân viên này?')) {
+                    $.post('@Url.Action("ToggleStatus")', { id: id })
+                        .done(function(result) {
+                            if (result.success) {
+                                toastr.success('Đã cập nhật trạng thái thành công!');
+                                location.reload();
+                            } else {
+                                toastr.error(result.message || 'Có lỗi xảy ra!');
+                            }
+                        })
+                        .fail(function() {
+                            toastr.error('Không thể kết nối đến server!');
+                        });
+                }
+            });
+
+            // Retire employee
+            $('.retire-btn').on('click', function() {
+                const id = $(this).data('id');
+                const ngayNghiViec = prompt('Nhập ngày nghỉ việc (dd/mm/yyyy) hoặc để trống để dùng ngày hiện tại:', '');
+                
+                if (ngayNghiViec !== null) {
+                    $.post('@Url.Action("Retire")', { 
+                        id: id, 
+                        ngayNghiViec: ngayNghiViec || null 
+                    })
+                    .done(function(result) {
+                        if (result.success) {
+                            toastr.success(result.message);
+                            location.reload();
+                        } else {
+                            toastr.error(result.message || 'Có lỗi xảy ra!');
+                        }
+                    })
+                    .fail(function() {
+                        toastr.error('Không thể kết nối đến server!');
+                    });
+                }
+            });
+
+            // Reactivate employee
+            $('.reactivate-btn').on('click', function() {
+                const id = $(this).data('id');
+                
+                if (confirm('Bạn có chắc chắn muốn cho nhân viên này quay lại làm việc?')) {
+                    $.post('@Url.Action("Reactivate")', { id: id })
+                        .done(function(result) {
+                            if (result.success) {
+                                toastr.success(result.message);
+                                location.reload();
+                            } else {
+                                toastr.error(result.message || 'Có lỗi xảy ra!');
+                            }
+                        })
+                        .fail(function() {
+                            toastr.error('Không thể kết nối đến server!');
+                        });
+                }
+            });
+
+            // Load stats when modal opens
+            $('#statsModal').on('show.bs.modal', function() {
+                $.get('@Url.Action("GetEmployeeStats")')
+                    .done(function(data) {
+                        let html = `
+                            <div class="row text-center mb-4">
+                                <div class="col-md-3">
+                                    <div class="card bg-primary text-white">
+                                        <div class="card-body">
+                                            <h3>${data.total}</h3>
+                                            <small>Tổng nhân viên</small>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="card bg-success text-white">
+                                        <div class="card-body">
+                                            <h3>${data.active}</h3>
+                                            <small>Đang làm việc</small>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="card bg-warning text-dark">
+                                        <div class="card-body">
+                                            <h3>${data.retired}</h3>
+                                            <small>Đã nghỉ việc</small>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="card bg-info text-white">
+                                        <div class="card-body">
+                                            <h3>${data.avgAge}</h3>
+                                            <small>Tuổi trung bình</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <h6>Phân bố theo chức vụ:</h6>
+                                    <ul class="list-group">`;
+                        
+                        data.positions.forEach(function(pos) {
+                            html += `<li class="list-group-item d-flex justify-content-between align-items-center">
+                                        ${pos.position}
+                                        <span class="badge bg-primary rounded-pill">${pos.count}</span>
+                                     </li>`;
+                        });
+                        
+                        html += `</ul>
+                                </div>
+                                <div class="col-md-6">
+                                    <h6>Thông tin khác:</h6>
+                                    <div class="card">
+                                        <div class="card-body">
+                                            <p class="mb-2">
+                                                <strong>Lương trung bình:</strong> 
+                                                <span class="text-success">${data.avgSalary.toLocaleString()} VNĐ</span>
+                                            </p>
+                                            <p class="mb-0">
+                                                <strong>Tỷ lệ hoạt động:</strong> 
+                                                <span class="text-info">${((data.active/data.total)*100).toFixed(1)}%</span>
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>`;
+                        
+                        $('#statsContent').html(html);
+                    })
+                    .fail(function() {
+                        $('#statsContent').html('<div class="alert alert-danger">Không thể tải thống kê</div>');
+                    });
+            });
+        });
+    </script>
+}
+
+<style>
+    .avatar-circle {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: linear-gradient(45deg, #007bff, #0056b3);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: bold;
+        font-size: 16px;
+    }
+    
+    .table-hover tbody tr:hover {
+        background-color: rgba(0, 123, 255, 0.1);
+    }
+    
+    .btn-group .btn {
+        border-radius: 0.25rem;
+        margin-right: 2px;
+    }
+    
+    .btn-group .btn:last-child {
+        margin-right: 0;
+    }
+    
+    .badge {
+        font-size: 0.75em;
+    }
+    
+    .table td {
+        vertical-align: middle;
+        color: #212529 !important; /* Force dark text */
+    }
+    
+    .table td strong {
+        color: #000 !important; /* Force black for names */
+    }
+    
+    .table td small {
+        color: #495057 !important; /* Dark gray for small text */
+    }
+    
+    .text-muted {
+        color: #6c757d !important;
+    }
+    
+    .card {
+        border: none;
+        box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    }
+    
+    .page-link {
+        color: #007bff;
+    }
+    
+    .page-item.active .page-link {
+        background-color: #007bff;
+        border-color: #007bff;
+    }
+    
+    /* Force readability - CRITICAL CSS */
+    .table {
+        color: #000 !important;
+    }
+    
+    .table thead th {
+        background-color: #212529 !important;
+        color: #fff !important;
+        font-weight: 700 !important;
+        border-bottom: 2px solid #dee2e6;
+    }
+    
+    .table tbody tr td {
+        color: #000 !important;
+        font-weight: 600 !important;
+        border-bottom: 1px solid #dee2e6;
+        padding: 1rem 0.75rem;
+    }
+    
+    .table tbody tr td strong {
+        color: #000 !important;
+        font-weight: 700 !important;
+    }
+    
+    .table tbody tr td a {
+        font-weight: 600 !important;
+        text-decoration: none !important;
+    }
+    
+    .table tbody tr td small {
+        color: #333 !important;
+        font-weight: 600 !important;
+    }
+    
+    .table tbody tr:hover {
+        background-color: rgba(0, 123, 255, 0.1) !important;
+    }
+    
+    .badge.bg-info {
+        background-color: #0dcaf0 !important;
+        color: #000 !important;
+        font-weight: 700 !important;
+    }
+    
+    .badge.bg-light {
+        background-color: #f8f9fa !important;
+        color: #000 !important;
+        font-weight: 600 !important;
+        border: 1px solid #dee2e6 !important;
+    }
+    
+    /* Override any Bootstrap defaults */
+    .text-muted {
+        color: #495057 !important;
+        font-weight: 600 !important;
+    }
+    
+    .fw-bold {
+        font-weight: 700 !important;
+    }
+    
+    .text-dark {
+        color: #000 !important;
+    }
+</style>

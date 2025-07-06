@@ -1,0 +1,265 @@
+@model phonev2.Models.NhanVien
+
+@{
+    Layout = "_AdminLayout";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1 class="h3 mb-0">@ViewData["Title"]</h1>
+        <p class="text-muted mb-0">Thêm thông tin nhân viên mới vào hệ thống</p>
+    </div>
+    <div>
+        <a asp-action="Index" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left me-1"></i> Quay lại
+        </a>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-user-plus me-2"></i>
+                    Thông Tin Nhân Viên
+                </h5>
+            </div>
+            <div class="card-body">
+                <form asp-action="Create" method="post" id="employeeForm">
+                    <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+
+                    <!-- Thông tin cá nhân -->
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <h6 class="text-primary mb-3">
+                                <i class="fas fa-user me-2"></i>
+                                Thông Tin Cá Nhân
+                            </h6>
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-8">
+                            <div class="mb-3">
+                                <label asp-for="HoTen" class="form-label required"></label>
+                                <input asp-for="HoTen" class="form-control" placeholder="Nhập họ và tên đầy đủ" />
+                                <span asp-validation-for="HoTen" class="text-danger"></span>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label asp-for="NgaySinh" class="form-label required"></label>
+                                <input asp-for="NgaySinh" class="form-control" type="date" />
+                                <span asp-validation-for="NgaySinh" class="text-danger"></span>
+                                <div class="form-text" id="ageDisplay">Tuổi sẽ được tính tự động</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label asp-for="SoDienThoai" class="form-label required"></label>
+                                <input asp-for="SoDienThoai" class="form-control" placeholder="0xxxxxxxxx" />
+                                <span asp-validation-for="SoDienThoai" class="text-danger"></span>
+                                <div class="form-text">Định dạng: 0xxxxxxxxx (10-11 số)</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label asp-for="Email" class="form-label required"></label>
+                                <input asp-for="Email" class="form-control" type="email" placeholder="email@example.com" />
+                                <span asp-validation-for="Email" class="text-danger"></span>
+                                <div class="form-text">Email duy nhất cho mỗi nhân viên</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="DiaChi" class="form-label required"></label>
+                        <textarea asp-for="DiaChi" class="form-control" rows="3" placeholder="Nhập địa chỉ đầy đủ"></textarea>
+                        <span asp-validation-for="DiaChi" class="text-danger"></span>
+                    </div>
+
+                    <!-- Thông tin công việc -->
+                    <div class="row mb-4 mt-4">
+                        <div class="col-12">
+                            <h6 class="text-primary mb-3">
+                                <i class="fas fa-briefcase me-2"></i>
+                                Thông Tin Công Việc
+                            </h6>
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label asp-for="ChucVu" class="form-label required"></label>
+                                <select asp-for="ChucVu" class="form-select" id="chucVuSelect">
+                                    <option value="">-- Chọn chức vụ --</option>
+                                    <option value="Quản lý">Quản lý</option>
+                                    <option value="Kỹ thuật viên">Kỹ thuật viên</option>
+                                    <option value="Nhân viên bán hàng">Nhân viên bán hàng</option>
+                                    <option value="Nhân viên kho">Nhân viên kho</option>
+                                    <option value="Kế toán">Kế toán</option>
+                                    <option value="Bảo vệ">Bảo vệ</option>
+                                    <option value="Tạp vụ">Tạp vụ</option>
+                                    <option value="Khác">Khác (nhập thủ công)</option>
+                                </select>
+                                <input type="text" id="chucVuCustom" class="form-control mt-2" style="display: none;" placeholder="Nhập chức vụ khác..." />
+                                <span asp-validation-for="ChucVu" class="text-danger"></span>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label asp-for="NgayVaoLam" class="form-label required"></label>
+                                <input asp-for="NgayVaoLam" class="form-control" type="date" />
+                                <span asp-validation-for="NgayVaoLam" class="text-danger"></span>
+                                <div class="form-text" id="workExpDisplay">Kinh nghiệm sẽ được tính từ ngày này</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label asp-for="Luong" class="form-label required"></label>
+                                <div class="input-group">
+                                    <input asp-for="Luong" class="form-control" type="number" min="0" step="100000" placeholder="0" />
+                                    <span class="input-group-text">VNĐ</span>
+                                </div>
+                                <span asp-validation-for="Luong" class="text-danger"></span>
+                                <div class="form-text" id="salaryDisplay">Lương cơ bản hàng tháng</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label asp-for="TrangThai" class="form-label"></label>
+                                <select asp-for="TrangThai" class="form-select">
+                                    <option value="true">Đang làm việc</option>
+                                    <option value="false">Tạm nghỉ</option>
+                                </select>
+                                <span asp-validation-for="TrangThai" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="d-flex justify-content-end gap-2">
+                                <a asp-action="Index" class="btn btn-outline-secondary">
+                                    <i class="fas fa-times me-1"></i> Hủy
+                                </a>
+                                <button type="submit" class="btn btn-primary" id="submitBtn">
+                                    <i class="fas fa-save me-1"></i> Lưu Nhân Viên
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <!-- Preview Card -->
+        <div class="card">
+            <div class="card-header">
+                <h6 class="mb-0">
+                    <i class="fas fa-eye me-2"></i>
+                    Xem Trước
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="text-center mb-3">
+                    <div class="avatar-circle-large mx-auto mb-3" id="previewAvatar">
+                        ?
+                    </div>
+                    <h6 id="previewName" class="text-muted">Họ và tên sẽ hiển thị ở đây</h6>
+                    <span class="badge bg-info" id="previewChucVu">Chưa chọn chức vụ</span>
+                </div>
+                
+                <table class="table table-sm">
+                    <tr>
+                        <td><strong>Tuổi:</strong></td>
+                        <td id="previewAge">--</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Điện thoại:</strong></td>
+                        <td id="previewPhone">Chưa nhập</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Email:</strong></td>
+                        <td id="previewEmail">Chưa nhập</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Lương:</strong></td>
+                        <td id="previewSalary" class="text-success fw-bold">0 VNĐ</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Ngày vào làm:</strong></td>
+                        <td id="previewStartDate">--</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Trạng thái:</strong></td>
+                        <td>
+                            <span class="badge bg-success" id="previewStatus">Đang làm việc</span>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+        
+    <script src="~/js/nhanvien-create.js" asp-append-version="true"></script>
+}
+
+<style>
+    .required::after {
+        content: " *";
+        color: red;
+    }
+    
+    .avatar-circle-large {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        background: linear-gradient(45deg, #007bff, #0056b3);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: bold;
+        font-size: 28px;
+    }
+    
+    .form-control:focus {
+        border-color: #007bff;
+        box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+    }
+    
+    .card {
+        border: none;
+        box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    }
+    
+    .btn-primary:hover {
+        background-color: #0056b3;
+        border-color: #004085;
+    }
+    
+    .table td {
+        padding: 0.5rem;
+        border-top: 1px solid #dee2e6;
+    }
+    
+    .badge {
+        font-size: 0.8em;
+        padding: 0.375rem 0.75rem;
+    }
+</style>
