@@ -43,8 +43,7 @@ namespace phonev2.Controllers
 
         public IActionResult DichVu()
         {
-            ViewData["Title"] = "Quản Lý Dịch Vụ";
-            return View();
+            return RedirectToAction("Index", "DichVu");
         }
 
         public IActionResult NhanVien()

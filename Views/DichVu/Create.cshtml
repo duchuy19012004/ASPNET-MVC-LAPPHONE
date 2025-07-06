@@ -1,0 +1,251 @@
+@model phonev2.Models.DichVu
+@{
+    Layout = "_AdminLayout";
+}
+
+@section PageActions {
+    <a asp-action="Index" class="btn btn-secondary">
+        <i class="fas fa-arrow-left me-1"></i> Quay Lại Danh Sách
+    </a>
+}
+
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card shadow">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-plus-circle me-2"></i>
+                    Thêm Dịch Vụ Mới
+                </h5>
+            </div>
+            <div class="card-body">
+                <form asp-action="Create" method="post" novalidate>
+                    <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+                    
+                    <!-- Row 1: Tên dịch vụ -->
+                    <div class="row mb-3">
+                        <div class="col-md-12">
+                            <label asp-for="TenDichVu" class="form-label fw-bold">
+                                <i class="fas fa-tag me-1 text-primary"></i>
+                                @Html.DisplayNameFor(model => model.TenDichVu)
+                                <span class="text-danger">*</span>
+                            </label>
+                            <input asp-for="TenDichVu" class="form-control form-control-lg" 
+                                   placeholder="VD: Thay màn hình iPhone 13" 
+                                   autocomplete="off" />
+                            <span asp-validation-for="TenDichVu" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <!-- Row 2: Giá và Thời gian -->
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label asp-for="GiaDichVu" class="form-label fw-bold">
+                                <i class="fas fa-money-bill-wave me-1 text-success"></i>
+                                @Html.DisplayNameFor(model => model.GiaDichVu)
+                                <span class="text-danger">*</span>
+                            </label>
+                            <div class="input-group">
+                                <input asp-for="GiaDichVu" class="form-control" 
+                                       placeholder="0" 
+                                       type="number" 
+                                       step="1000"
+                                       min="0" />
+                                <span class="input-group-text">VNĐ</span>
+                            </div>
+                            <span asp-validation-for="GiaDichVu" class="text-danger"></span>
+                            <div class="form-text">
+                                <i class="fas fa-info-circle me-1"></i>
+                                Nhập giá dịch vụ (VNĐ)
+                            </div>
+                            <!-- Formatted price display -->
+                            <div class="mt-1" id="priceDisplay" style="display: none;">
+                                <small class="text-primary fw-bold" id="formattedPrice">0 VNĐ</small>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <label asp-for="ThoiGianSua" class="form-label fw-bold">
+                                <i class="fas fa-clock me-1 text-warning"></i>
+                                @Html.DisplayNameFor(model => model.ThoiGianSua)
+                            </label>
+                            <div class="input-group">
+                                <input asp-for="ThoiGianSua" class="form-control" 
+                                       placeholder="60" 
+                                       type="number" 
+                                       min="1" />
+                                <span class="input-group-text">phút</span>
+                            </div>
+                            <span asp-validation-for="ThoiGianSua" class="text-danger"></span>
+                            <div class="form-text">
+                                <i class="fas fa-info-circle me-1"></i>
+                                Thời gian ước tính để hoàn thành
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Row 3: Mô tả -->
+                    <div class="row mb-3">
+                        <div class="col-md-12">
+                            <label asp-for="MoTa" class="form-label fw-bold">
+                                <i class="fas fa-align-left me-1 text-info"></i>
+                                @Html.DisplayNameFor(model => model.MoTa)
+                            </label>
+                            <textarea asp-for="MoTa" class="form-control" rows="4" 
+                                      placeholder="Mô tả chi tiết về dịch vụ, quy trình thực hiện, lưu ý đặc biệt..."></textarea>
+                            <span asp-validation-for="MoTa" class="text-danger"></span>
+                            <div class="form-text">
+                                <i class="fas fa-info-circle me-1"></i>
+                                Mô tả chi tiết giúp khách hàng hiểu rõ hơn về dịch vụ
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Row 4: Trạng thái -->
+                    <div class="row mb-4">
+                        <div class="col-md-12">
+                            <label class="form-label fw-bold">
+                                <i class="fas fa-toggle-on me-1 text-primary"></i>
+                                Trạng Thái
+                            </label>
+                            <div class="form-check form-switch">
+                                <input asp-for="TrangThai" class="form-check-input" type="checkbox" 
+                                       id="trangThaiSwitch" checked />
+                                <label class="form-check-label" for="trangThaiSwitch">
+                                    <span class="switch-label">Dịch vụ đang hoạt động</span>
+                                </label>
+                            </div>
+                            <div class="form-text">
+                                <i class="fas fa-info-circle me-1"></i>
+                                Chỉ những dịch vụ đang hoạt động mới hiển thị cho khách hàng
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Preview Card -->
+                    <div class="row mb-4">
+                        <div class="col-md-12">
+                            <label class="form-label fw-bold">
+                                <i class="fas fa-eye me-1 text-secondary"></i>
+                                Xem Trước
+                            </label>
+                            <div class="card border-2 border-dashed" id="previewCard">
+                                <div class="card-body">
+                                    <div class="row align-items-center">
+                                        <div class="col-md-8">
+                                            <h6 class="card-title mb-1" id="previewName">
+                                                <i class="fas fa-tools me-2"></i>
+                                                <span class="text-muted">Tên dịch vụ sẽ hiển thị ở đây</span>
+                                            </h6>
+                                            <p class="card-text text-muted mb-0" id="previewDesc">
+                                                Mô tả dịch vụ sẽ hiển thị ở đây
+                                            </p>
+                                        </div>
+                                        <div class="col-md-4 text-end">
+                                            <div class="price-display">
+                                                <span class="h5 text-success mb-0" id="previewPrice">0 VNĐ</span>
+                                                <br>
+                                                <small class="text-muted" id="previewTime">
+                                                    <i class="fas fa-clock me-1"></i>
+                                                    <span>Chưa xác định</span>
+                                                </small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a asp-action="Index" class="btn btn-secondary btn-lg me-md-2">
+                            <i class="fas fa-times me-1"></i>
+                            Hủy Bỏ
+                        </a>
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i class="fas fa-save me-1"></i>
+                            Lưu Dịch Vụ
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    
+    <script>
+        $(document).ready(function() {
+            
+            // Format number with dots (Vietnamese style)
+            function formatCurrency(num) {
+                if (!num || num == 0) return '0 VNĐ';
+                return parseInt(num).toLocaleString('vi-VN') + ' VNĐ';
+            }
+            
+            // Update price display
+            function updatePriceDisplay() {
+                const price = $('#GiaDichVu').val();
+                
+                if (price && parseInt(price) > 0) {
+                    const formatted = formatCurrency(price);
+                    $('#formattedPrice').text(formatted);
+                    $('#priceDisplay').fadeIn(200);
+                } else {
+                    $('#priceDisplay').fadeOut(200);
+                }
+            }
+            
+            // Real-time preview
+            function updatePreview() {
+                const name = $('#TenDichVu').val() || 'Tên dịch vụ sẽ hiển thị ở đây';
+                const desc = $('#MoTa').val() || 'Mô tả dịch vụ sẽ hiển thị ở đây';
+                const price = $('#GiaDichVu').val() || 0;
+                const time = $('#ThoiGianSua').val();
+                
+                $('#previewName span').text(name);
+                $('#previewDesc').text(desc);
+                $('#previewPrice').text(parseInt(price).toLocaleString('vi-VN') + ' VNĐ');
+                
+                if (time) {
+                    $('#previewTime span').text(time + ' phút');
+                } else {
+                    $('#previewTime span').text('Chưa xác định');
+                }
+                
+                // Update price display
+                updatePriceDisplay();
+            }
+            
+            // Update preview on input change
+            $('#TenDichVu, #MoTa, #GiaDichVu, #ThoiGianSua').on('input', updatePreview);
+            
+            // Real-time price formatting
+            $('#GiaDichVu').on('input keyup', function() {
+                updatePriceDisplay();
+            });
+            
+            // Switch label change
+            $('#trangThaiSwitch').on('change', function() {
+                const label = $(this).is(':checked') ? 'Dịch vụ đang hoạt động' : 'Dịch vụ ngừng hoạt động';
+                $('.switch-label').text(label);
+            });
+            
+            // Price formatting on blur
+            $('#GiaDichVu').on('blur', function() {
+                const value = parseInt($(this).val()) || 0;
+                $(this).val(value);
+                updatePreview();
+            });
+            
+            // Auto-focus first field
+            $('#TenDichVu').focus();
+            
+            // Initial preview update
+            updatePreview();
+        });
+    </script>
+}

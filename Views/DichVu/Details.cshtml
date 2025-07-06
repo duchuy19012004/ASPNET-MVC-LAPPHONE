@@ -1,0 +1,344 @@
+@model phonev2.Models.DichVu
+@{
+    Layout = "_AdminLayout";
+}
+
+@section PageActions {
+    <div class="btn-group">
+        <a asp-action="Edit" asp-route-id="@Model.MaDichVu" class="btn btn-warning">
+            <i class="fas fa-edit me-1"></i> Chỉnh Sửa
+        </a>
+        <a asp-action="Delete" asp-route-id="@Model.MaDichVu" class="btn btn-danger">
+            <i class="fas fa-trash me-1"></i> Xóa
+        </a>
+        <a asp-action="Index" class="btn btn-secondary">
+            <i class="fas fa-arrow-left me-1"></i> Quay Lại
+        </a>
+    </div>
+}
+
+<div class="row">
+    <!-- Main Info Card -->
+    <div class="col-lg-8">
+        <div class="card shadow mb-4">
+            <div class="card-header bg-info text-white">
+                <h4 class="mb-0">
+                    <i class="fas fa-tools me-2"></i>
+                    @Model.TenDichVu
+                </h4>
+                <small class="opacity-75">Mã dịch vụ: #@Model.MaDichVu</small>
+            </div>
+            <div class="card-body">
+                <!-- Service Info Grid -->
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <h6 class="text-muted mb-2">
+                            <i class="fas fa-money-bill-wave me-2"></i>Giá Dịch Vụ
+                        </h6>
+                        <h3 class="text-success mb-0">@Model.GiaDichVuText</h3>
+                    </div>
+                    <div class="col-md-6">
+                        <h6 class="text-muted mb-2">
+                            <i class="fas fa-clock me-2"></i>Thời Gian Thực Hiện
+                        </h6>
+                        @if (Model.ThoiGianSua.HasValue)
+                        {
+                            <h4 class="text-warning mb-0">
+                                @Model.ThoiGianSua phút
+                                <small class="text-muted">(@(TimeSpan.FromMinutes(Model.ThoiGianSua.Value).ToString(@"h\h\ m\m")))</small>
+                            </h4>
+                        }
+                        else
+                        {
+                            <h4 class="text-muted mb-0">
+                                <em>Chưa xác định</em>
+                            </h4>
+                        }
+                    </div>
+                </div>
+
+                <!-- Description -->
+                @if (!string.IsNullOrEmpty(Model.MoTa))
+                {
+                    <div class="mb-4">
+                        <h6 class="text-muted mb-3">
+                            <i class="fas fa-align-left me-2"></i>Mô Tả Chi Tiết
+                        </h6>
+                        <div class="bg-light p-3 rounded">
+                            <p class="mb-0 lh-lg">@Model.MoTa</p>
+                        </div>
+                    </div>
+                }
+
+                <!-- Status -->
+                <div class="mb-4">
+                    <h6 class="text-muted mb-2">
+                        <i class="fas fa-toggle-on me-2"></i>Trạng Thái Dịch Vụ
+                    </h6>
+                    <span class="badge @(Model.TrangThai ? "bg-success" : "bg-secondary") fs-6 px-3 py-2">
+                        <i class="fas @(Model.TrangThai ? "fa-check-circle" : "fa-pause-circle") me-2"></i>
+                        @Model.TrangThaiText
+                    </span>
+                </div>
+
+                <!-- Service Preview Card -->
+                <div class="mb-4">
+                    <h6 class="text-muted mb-3">
+                        <i class="fas fa-eye me-2"></i>Hiển Thị Cho Khách Hàng
+                    </h6>
+                    <div class="card border-2 @(Model.TrangThai ? "border-success" : "border-secondary")">
+                        <div class="card-body">
+                            <div class="row align-items-center">
+                                <div class="col-md-8">
+                                    <h5 class="card-title mb-2">
+                                        <i class="fas fa-tools me-2 text-primary"></i>
+                                        @Model.TenDichVu
+                                    </h5>
+                                    @if (!string.IsNullOrEmpty(Model.MoTa))
+                                    {
+                                        <p class="card-text text-muted mb-0">
+                                            @(Model.MoTa.Length > 100 ? Model.MoTa.Substring(0, 100) + "..." : Model.MoTa)
+                                        </p>
+                                    }
+                                </div>
+                                <div class="col-md-4 text-end">
+                                    <div class="price-display">
+                                        <h4 class="text-success mb-1">@Model.GiaDichVuText</h4>
+                                        @if (Model.ThoiGianSua.HasValue)
+                                        {
+                                            <small class="text-muted">
+                                                <i class="fas fa-clock me-1"></i>@Model.ThoiGianSua phút
+                                            </small>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Usage Statistics (Placeholder) -->
+        <div class="card shadow">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-chart-bar me-2"></i>
+                    Thống Kê Sử Dụng
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row text-center">
+                    <div class="col-md-4">
+                        <div class="border-end">
+                            <h3 class="text-primary mb-1">0</h3>
+                            <small class="text-muted">Lần sử dụng</small>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="border-end">
+                            <h3 class="text-success mb-1">0 VNĐ</h3>
+                            <small class="text-muted">Doanh thu</small>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <h3 class="text-warning mb-1">0%</h3>
+                        <small class="text-muted">Tỷ lệ chọn</small>
+                    </div>
+                </div>
+                <hr class="my-3">
+                <p class="text-muted text-center mb-0">
+                    <i class="fas fa-info-circle me-1"></i>
+                    Thống kê sẽ hiển thị khi có dữ liệu phiếu sửa chữa
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sidebar Info -->
+    <div class="col-lg-4">
+        <!-- Quick Info -->
+        <div class="card shadow mb-4">
+            <div class="card-header">
+                <h6 class="mb-0">
+                    <i class="fas fa-info-circle me-2"></i>
+                    Thông Tin Nhanh
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <span class="text-muted">Mã dịch vụ:</span>
+                    <strong>#@Model.MaDichVu</strong>
+                </div>
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <span class="text-muted">Ngày tạo:</span>
+                    <strong>@Model.NgayTao.ToString("dd/MM/yyyy")</strong>
+                </div>
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <span class="text-muted">Thời gian tạo:</span>
+                    <strong>@Model.NgayTao.ToString("HH:mm")</strong>
+                </div>
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <span class="text-muted">Độ dài tên:</span>
+                    <strong>@Model.TenDichVu.Length ký tự</strong>
+                </div>
+                @if (!string.IsNullOrEmpty(Model.MoTa))
+                {
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <span class="text-muted">Độ dài mô tả:</span>
+                        <strong>@Model.MoTa.Length ký tự</strong>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="card shadow mb-4">
+            <div class="card-header">
+                <h6 class="mb-0">
+                    <i class="fas fa-bolt me-2"></i>
+                    Thao Tác Nhanh
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <button type="button" class="btn btn-outline-primary toggle-status" 
+                            data-id="@Model.MaDichVu" 
+                            data-status="@Model.TrangThai.ToString().ToLower()">
+                        <i class="fas @(Model.TrangThai ? "fa-pause" : "fa-play") me-2"></i>
+                        @(Model.TrangThai ? "Tạm ngừng" : "Kích hoạt")
+                    </button>
+                    
+                    <a asp-action="Create" class="btn btn-outline-success">
+                        <i class="fas fa-copy me-2"></i>
+                        Tạo Dịch Vụ Tương Tự
+                    </a>
+                    
+                    <button type="button" class="btn btn-outline-info" onclick="printServiceInfo()">
+                        <i class="fas fa-print me-2"></i>
+                        In Thông Tin
+                    </button>
+                    
+                    <button type="button" class="btn btn-outline-secondary" onclick="shareService()">
+                        <i class="fas fa-share me-2"></i>
+                        Chia Sẻ
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Related Services (Placeholder) -->
+        <div class="card shadow">
+            <div class="card-header">
+                <h6 class="mb-0">
+                    <i class="fas fa-link me-2"></i>
+                    Dịch Vụ Liên Quan
+                </h6>
+            </div>
+            <div class="card-body">
+                <p class="text-muted text-center mb-0">
+                    <i class="fas fa-search me-1"></i>
+                    Chưa có dịch vụ liên quan
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Toggle Status AJAX
+        $('.toggle-status').on('click', function() {
+            const btn = $(this);
+            const id = btn.data('id');
+            const currentStatus = btn.data('status') === 'true';
+            
+            btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin me-2"></i>Đang xử lý...');
+            
+            $.post('@Url.Action("ToggleStatus")', { id: id })
+                .done(function(response) {
+                    if (response.success) {
+                        location.reload(); // Reload to update all status displays
+                    } else {
+                        alert('Có lỗi xảy ra: ' + response.message);
+                        btn.prop('disabled', false);
+                    }
+                })
+                .fail(function() {
+                    alert('Không thể kết nối đến server!');
+                    btn.prop('disabled', false);
+                });
+        });
+        
+        // Print function
+        function printServiceInfo() {
+            const printContent = `
+                <h2>Thông Tin Dịch Vụ</h2>
+                <p><strong>Mã:</strong> #@Model.MaDichVu</p>
+                <p><strong>Tên:</strong> @Model.TenDichVu</p>
+                <p><strong>Giá:</strong> @Model.GiaDichVuText</p>
+                @if (Model.ThoiGianSua.HasValue)
+                {
+                    <text><p><strong>Thời gian:</strong> @Model.ThoiGianSua phút</p></text>
+                }
+                <p><strong>Trạng thái:</strong> @Model.TrangThaiText</p>
+                @if (!string.IsNullOrEmpty(Model.MoTa))
+                {
+                    <text><p><strong>Mô tả:</strong> @Html.Raw(Model.MoTa.Replace("\n", "<br>"))</p></text>
+                }
+                <p><strong>Ngày tạo:</strong> @Model.NgayTao.ToString("dd/MM/yyyy HH:mm")</p>
+            `;
+            
+            const printWindow = window.open('', '_blank');
+            printWindow.document.write(`
+                <html>
+                    <head>
+                        <title>Thông Tin Dịch Vụ - @Model.TenDichVu</title>
+                        <style>
+                            body { font-family: Arial, sans-serif; margin: 20px; }
+                            h2 { color: #333; border-bottom: 2px solid #007bff; padding-bottom: 10px; }
+                            p { margin: 10px 0; }
+                            strong { color: #333; }
+                        </style>
+                    </head>
+                    <body>
+                        ${printContent}
+                    </body>
+                </html>
+            `);
+            printWindow.document.close();
+            printWindow.print();
+        }
+        
+        // Share function
+        function shareService() {
+            const serviceInfo = `Dịch vụ: @Model.TenDichVu
+Giá: @Model.GiaDichVuText
+@if (Model.ThoiGianSua.HasValue)
+{
+<text>Thời gian: @Model.ThoiGianSua phút</text>
+}`;
+            
+            if (navigator.share) {
+                navigator.share({
+                    title: 'Dịch vụ - @Model.TenDichVu',
+                    text: serviceInfo
+                });
+            } else {
+                // Fallback: copy to clipboard
+                navigator.clipboard.writeText(serviceInfo).then(function() {
+                    alert('Đã sao chép thông tin dịch vụ vào clipboard!');
+                }).catch(function() {
+                    // Fallback for older browsers
+                    const textArea = document.createElement('textarea');
+                    textArea.value = serviceInfo;
+                    document.body.appendChild(textArea);
+                    textArea.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(textArea);
+                    alert('Đã sao chép thông tin dịch vụ vào clipboard!');
+                });
+            }
+        }
+    </script>
+}

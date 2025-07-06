@@ -9,24 +9,44 @@ namespace phonev2.Repository
         {
         }
 
-        // Định nghĩa các DbSet cho các bảng của bạn
-        // Ví dụ:
-        // public DbSet<Customer> Customers { get; set; }
-        // public DbSet<Phone> Phones { get; set; }
-        // public DbSet<Laptop> Laptops { get; set; }
-        // public DbSet<RepairOrder> RepairOrders { get; set; }
-        // public DbSet<Service> Services { get; set; }
+        // DbSet cho Dịch Vụ
+        public DbSet<DichVu> DichVu { get; set; }
+
+        // Các DbSet khác sẽ được thêm sau
+        // public DbSet<KhachHang> KhachHangs { get; set; }
+        // public DbSet<NhanVien> NhanViens { get; set; }
+        // public DbSet<LinhKien> LinhKiens { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
 
-            // Cấu hình các mối quan hệ và ràng buộc của database tại đây
-            // Ví dụ:
-            // modelBuilder.Entity<RepairOrder>()
-            //     .HasOne(r => r.Customer)
-            //     .WithMany(c => c.RepairOrders)
-            //     .HasForeignKey(r => r.CustomerId);
+            // Cấu hình bảng DichVu
+            modelBuilder.Entity<DichVu>(entity =>
+            {
+                entity.HasKey(e => e.MaDichVu);
+                
+                entity.Property(e => e.TenDichVu)
+                    .IsRequired()
+                    .HasMaxLength(100);
+                
+                entity.Property(e => e.MoTa)
+                    .HasMaxLength(500);
+                
+                entity.Property(e => e.GiaDichVu)
+                    .HasColumnType("decimal(18,2)")
+                    .IsRequired();
+                
+                entity.Property(e => e.NgayTao)
+                    .HasDefaultValueSql("GETDATE()");
+                
+                entity.Property(e => e.TrangThai)
+                    .HasDefaultValue(true);
+
+                // Index cho tìm kiếm nhanh
+                entity.HasIndex(e => e.TenDichVu);
+                entity.HasIndex(e => e.TrangThai);
+            });
         }
     }
 }
