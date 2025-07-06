@@ -260,3 +260,4 @@ C:\Users\juven\Desktop\phonev2\obj\Debug\net8.0\refint\phonev2.dll
 C:\Users\juven\Desktop\phonev2\obj\Debug\net8.0\phonev2.pdb
 C:\Users\juven\Desktop\phonev2\obj\Debug\net8.0\phonev2.genruntimeconfig.cache
 C:\Users\juven\Desktop\phonev2\obj\Debug\net8.0\ref\phonev2.dll
+C:\Users\juven\Desktop\phonev2\obj\Debug\net8.0\phonev2.sourcelink.json
