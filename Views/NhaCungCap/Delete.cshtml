@@ -1,0 +1,301 @@
+@model phonev2.Models.NhaCungCap
+
+@{
+    Layout = "_AdminLayout";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1 class="h3 mb-0 text-danger">@ViewData["Title"]</h1>
+        <p class="text-muted mb-0">Xác nhận xóa nhà cung cấp khỏi hệ thống</p>
+    </div>
+    <div>
+        <a asp-action="Index" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left me-1"></i> Quay lại
+        </a>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card border-danger">
+            <div class="card-header bg-danger text-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    Xác Nhận Xóa Nhà Cung Cấp
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-warning" role="alert">
+                    <i class="fas fa-warning me-2"></i>
+                    <strong>Cảnh báo:</strong> Bạn đang thực hiện xóa vĩnh viễn nhà cung cấp này khỏi hệ thống. 
+                    Hành động này không thể hoàn tác!
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label class="form-label text-muted">Tên Nhà Cung Cấp</label>
+                            <div class="form-control-plaintext fw-bold">@Model.TenNhaCungCap</div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label class="form-label text-muted">Mã Nhà Cung Cấp</label>
+                            <div class="form-control-plaintext">#@Model.MaNhaCungCap</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label class="form-label text-muted">Email</label>
+                            <div class="form-control-plaintext">
+                                <i class="fas fa-envelope me-2 text-primary"></i>
+                                <a href="mailto:@Model.Email" class="text-decoration-none">@Model.Email</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label class="form-label text-muted">Số Điện Thoại</label>
+                            <div class="form-control-plaintext">
+                                <i class="fas fa-phone me-2 text-success"></i>
+                                <a href="tel:@Model.SoDienThoai" class="text-decoration-none">@Model.SoDienThoai</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label text-muted">Địa Chỉ</label>
+                    <div class="form-control-plaintext">
+                        <i class="fas fa-map-marker-alt me-2 text-info"></i>
+                        @Model.DiaChi
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label class="form-label text-muted">Trạng Thái</label>
+                            <div class="form-control-plaintext">
+                                <span class="badge @(Model.TrangThai ? "bg-success" : "bg-secondary") fs-6">
+                                    <i class="fas @(Model.TrangThai ? "fa-handshake" : "fa-pause") me-1"></i>
+                                    @Model.TrangThaiText
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label class="form-label text-muted">Ngày Tạo</label>
+                            <div class="form-control-plaintext">
+                                <i class="fas fa-calendar me-2 text-muted"></i>
+                                @Model.NgayTao.ToString("dd/MM/yyyy HH:mm")
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <hr class="my-4">
+
+                <form asp-action="Delete" method="post">
+                    <input type="hidden" asp-for="MaNhaCungCap" />
+                    
+                    <div class="d-flex justify-content-end gap-2">
+                        <a asp-action="Index" class="btn btn-outline-secondary">
+                            <i class="fas fa-times me-1"></i> Hủy bỏ
+                        </a>
+                        <button type="submit" class="btn btn-danger" id="deleteBtn">
+                            <i class="fas fa-trash me-1"></i> Xác nhận xóa
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <div class="card border-warning">
+            <div class="card-header bg-warning text-dark">
+                <h6 class="mb-0">
+                    <i class="fas fa-info-circle me-2"></i>
+                    Lưu Ý Quan Trọng
+                </h6>
+            </div>
+            <div class="card-body">
+                <ul class="list-unstyled mb-0">
+                    <li class="mb-3">
+                        <i class="fas fa-exclamation-circle text-danger me-2"></i>
+                        <small>Việc xóa nhà cung cấp sẽ ảnh hưởng đến các phiếu nhập đã có</small>
+                    </li>
+                    <li class="mb-3">
+                        <i class="fas fa-database text-warning me-2"></i>
+                        <small>Dữ liệu liên quan có thể bị mất hoặc không nhất quán</small>
+                    </li>
+                    <li class="mb-3">
+                        <i class="fas fa-undo text-info me-2"></i>
+                        <small>Hành động này không thể hoàn tác sau khi thực hiện</small>
+                    </li>
+                    <li class="mb-0">
+                        <i class="fas fa-lightbulb text-success me-2"></i>
+                        <small>Khuyến nghị: Thay đổi trạng thái thành "Ngừng hợp tác" thay vì xóa</small>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="card mt-3 border-success">
+            <div class="card-header bg-success text-white">
+                <h6 class="mb-0">
+                    <i class="fas fa-hand-point-right me-2"></i>
+                    Thay Thế Khuyến Nghị
+                </h6>
+            </div>
+            <div class="card-body">
+                <p class="mb-3 small">Thay vì xóa, bạn có thể:</p>
+                <div class="d-grid gap-2">
+                    <a asp-action="Edit" asp-route-id="@Model.MaNhaCungCap" class="btn btn-sm btn-outline-warning">
+                        <i class="fas fa-edit me-1"></i> Chỉnh sửa thông tin
+                    </a>
+                    <button type="button" class="btn btn-sm btn-outline-secondary toggle-status" 
+                            data-id="@Model.MaNhaCungCap">
+                        <i class="fas fa-toggle-off me-1"></i> Ngừng hợp tác
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mt-3">
+            <div class="card-header">
+                <h6 class="mb-0">
+                    <i class="fas fa-chart-bar me-2"></i>
+                    Thống Kê Liên Quan
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="text-center">
+                    <div class="row text-center">
+                        <div class="col-6">
+                            <div class="border-end">
+                                <h4 class="text-muted mb-0">0</h4>
+                                <small class="text-muted">Phiếu nhập</small>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <h4 class="text-muted mb-0">0</h4>
+                            <small class="text-muted">Linh kiện</small>
+                        </div>
+                    </div>
+                </div>
+                <hr>
+                <small class="text-muted">
+                    <i class="fas fa-info-circle me-1"></i>
+                    Dữ liệu sẽ được cập nhật sau khi có module phiếu nhập
+                </small>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // Xác nhận xóa với delay
+            $('#deleteBtn').on('click', function(e) {
+                e.preventDefault();
+                
+                if (confirm('⚠️ CẢNH BÁO: Bạn có chắc chắn muốn XÓA VĨNH VIỄN nhà cung cấp "@Model.TenNhaCungCap"?\n\nHành động này KHÔNG THỂ HOÀN TÁC!')) {
+                    // Disable button và show loading
+                    $(this).prop('disabled', true)
+                           .html('<i class="fas fa-spinner fa-spin me-1"></i> Đang xóa...');
+                    
+                    // Delay 2 giây để user có thời gian hủy bỏ
+                    setTimeout(() => {
+                        if (confirm('🚨 LẦN CUỐI: Bạn có THỰC SỰ muốn xóa nhà cung cấp này không?\n\nClick OK để XÓA VĨNH VIỄN hoặc Cancel để HỦY BỎ.')) {
+                            $('form').submit();
+                        } else {
+                            // Restore button
+                            $('#deleteBtn').prop('disabled', false)
+                                          .html('<i class="fas fa-trash me-1"></i> Xác nhận xóa');
+                        }
+                    }, 2000);
+                }
+            });
+
+            // Toggle status functionality
+            $('.toggle-status').on('click', function() {
+                const id = $(this).data('id');
+                const currentStatus = @Model.TrangThai.ToString().ToLower();
+                
+                if (confirm('Bạn có muốn thay đổi trạng thái hợp tác của nhà cung cấp này?')) {
+                    $.post('/Admin/NhaCungCap/ToggleStatus', { id: id })
+                        .done(function(result) {
+                            if (result.success) {
+                                toastr.success('Đã cập nhật trạng thái thành công!');
+                                // Redirect về trang edit để user có thể tiếp tục chỉnh sửa
+                                window.location.href = '@Url.Action("Edit", new { id = Model.MaNhaCungCap })';
+                            } else {
+                                toastr.error(result.message || 'Có lỗi xảy ra!');
+                            }
+                        })
+                        .fail(function() {
+                            toastr.error('Không thể kết nối đến server!');
+                        });
+                }
+            });
+
+            // Auto redirect after 5 minutes to prevent accidental deletion
+            setTimeout(function() {
+                if (confirm('Bạn đã ở trang này quá lâu. Có muốn quay về trang danh sách để đảm bảo an toàn?')) {
+                    window.location.href = '@Url.Action("Index")';
+                }
+            }, 300000); // 5 minutes
+        });
+    </script>
+}
+
+<style>
+    .card.border-danger {
+        border-color: #dc3545 !important;
+    }
+    
+    .card.border-warning {
+        border-color: #ffc107 !important;
+    }
+    
+    .card.border-success {
+        border-color: #198754 !important;
+    }
+    
+    .form-control-plaintext {
+        padding: 0.375rem 0;
+        margin-bottom: 0;
+        background-color: transparent;
+        border: none;
+        font-weight: 500;
+    }
+    
+    .btn-danger:hover {
+        background-color: #c82333;
+        border-color: #bd2130;
+        transform: translateY(-1px);
+        transition: all 0.3s ease;
+    }
+    
+    .alert-warning {
+        border-left: 4px solid #ffc107;
+    }
+    
+    @@keyframes shake {
+        0%, 100% { transform: translateX(0); }
+        25% { transform: translateX(-5px); }
+        75% { transform: translateX(5px); }
+    }
+    
+    .btn-danger:active {
+        animation: shake 0.5s ease-in-out;
+    }
+</style>
