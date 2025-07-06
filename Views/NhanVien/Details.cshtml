@@ -1,0 +1,542 @@
+@model phonev2.Models.NhanVien
+
+@{
+    Layout = "_AdminLayout";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1 class="h3 mb-0">@ViewData["Title"]</h1>
+        <p class="text-muted mb-0">Thông tin chi tiết nhân viên #@Model.MaNhanVien</p>
+    </div>
+    <div>
+        <a asp-action="Index" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left me-1"></i> Quay lại
+        </a>
+        <a asp-action="Edit" asp-route-id="@Model.MaNhanVien" class="btn btn-warning">
+            <i class="fas fa-edit me-1"></i> Chỉnh Sửa
+        </a>
+        @if (Model.IsActiveEmployee())
+        {
+            <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deactivateModal">
+                <i class="fas fa-user-times me-1"></i> Tạm Ngừng
+            </button>
+        }
+        else
+        {
+            <button type="button" class="btn btn-success" onclick="reactivateEmployee(@Model.MaNhanVien)">
+                <i class="fas fa-user-check me-1"></i> Kích Hoạt Lại
+            </button>
+        }
+    </div>
+</div>
+
+<div class="row">
+    <!-- Main Info Card -->
+    <div class="col-lg-8">
+        <div class="card mb-4">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-user me-2"></i>
+                    Thông Tin Cá Nhân
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <table class="table table-borderless">
+                            <tr>
+                                <td class="fw-bold text-muted" style="width: 40%;">Họ và tên:</td>
+                                <td class="fw-bold">@Model.HoTen</td>
+                            </tr>
+                            <tr>
+                                <td class="fw-bold text-muted">Ngày sinh:</td>
+                                <td>@Model.NgaySinh.ToString("dd/MM/yyyy")</td>
+                            </tr>
+                            <tr>
+                                <td class="fw-bold text-muted">Tuổi:</td>
+                                <td>
+                                    <span class="badge bg-light text-dark border">
+                                        <i class="fas fa-birthday-cake me-1 text-warning"></i>
+                                        @Model.Tuoi tuổi (@Model.GetAgeGroup())
+                                    </span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="fw-bold text-muted">Số điện thoại:</td>
+                                <td>
+                                    <a href="tel:@Model.SoDienThoai" class="text-decoration-none">
+                                        <i class="fas fa-phone me-1 text-success"></i>
+                                        @Model.SoDienThoai
+                                    </a>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="fw-bold text-muted">Email:</td>
+                                <td>
+                                    <a href="mailto:@Model.Email" class="text-decoration-none">
+                                        <i class="fas fa-envelope me-1 text-info"></i>
+                                        @Model.Email
+                                    </a>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label class="fw-bold text-muted">Địa chỉ:</label>
+                            <div class="border rounded p-3 bg-light">
+                                <i class="fas fa-map-marker-alt me-2 text-danger"></i>
+                                @Model.DiaChi
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Work Info Card -->
+        <div class="card mb-4">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-briefcase me-2"></i>
+                    Thông Tin Công Việc
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <table class="table table-borderless">
+                            <tr>
+                                <td class="fw-bold text-muted" style="width: 40%;">Chức vụ:</td>
+                                <td>
+                                    <span class="badge bg-info fs-6 px-3 py-2">@Model.ChucVu</span>
+                                    @if (Model.IsSeniorEmployee())
+                                    {
+                                        <span class="badge bg-primary ms-2">Senior</span>
+                                    }
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="fw-bold text-muted">Ngày vào làm:</td>
+                                <td>
+                                    <i class="fas fa-calendar-plus me-1 text-primary"></i>
+                                    @Model.NgayVaoLam.ToString("dd/MM/yyyy")
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="fw-bold text-muted">Kinh nghiệm:</td>
+                                <td>
+                                    <span class="badge bg-light text-dark border">
+                                        <i class="fas fa-clock me-1 text-info"></i>
+                                        @Model.GetWorkExperience()
+                                    </span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="fw-bold text-muted">Lương:</td>
+                                <td>
+                                    <span class="text-success fw-bold fs-5">@Model.LuongText</span>
+                                    <br>
+                                    <small class="text-muted">
+                                        @(Model.Luong >= 25000000 ? "Rất cao" : 
+                                          Model.Luong >= 20000000 ? "Cao" : 
+                                          Model.Luong >= 15000000 ? "Khá" : 
+                                          Model.Luong >= 10000000 ? "Trung bình khá" : 
+                                          Model.Luong >= 7000000 ? "Trung bình" : 
+                                          Model.Luong >= 5000000 ? "Cơ bản" : "Thấp")
+                                    </small>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label class="fw-bold text-muted">Trạng thái hiện tại:</label>
+                            <div class="border rounded p-3 text-center">
+                                <span class="badge @(Model.IsActiveEmployee() ? "bg-success" : "bg-danger") fs-6 px-3 py-2">
+                                    <i class="fas @(Model.IsActiveEmployee() ? "fa-user-check" : "fa-user-times") me-1"></i>
+                                    @Model.TrangThaiText
+                                </span>
+                                @if (!Model.TrangThai && Model.NgayNghiViec.HasValue)
+                                {
+                                    <div class="mt-2">
+                                        <small class="text-danger">
+                                            <i class="fas fa-sign-out-alt me-1"></i>
+                                            Nghỉ việc từ: @Model.NgayNghiViec.Value.ToString("dd/MM/yyyy")
+                                        </small>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Timeline Card -->
+        <div class="card">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-history me-2"></i>
+                    Lịch Sử Công Việc
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="timeline">
+                    <div class="timeline-item">
+                        <div class="timeline-marker bg-primary"></div>
+                        <div class="timeline-content">
+                            <div class="timeline-header">
+                                <h6 class="timeline-title">Ngày vào làm</h6>
+                                <span class="timeline-date">@Model.NgayVaoLam.ToString("dd/MM/yyyy")</span>
+                            </div>
+                            <p class="timeline-description text-muted">
+                                Bắt đầu làm việc tại vị trí @Model.ChucVu
+                            </p>
+                        </div>
+                    </div>
+                    
+                    @if (!Model.TrangThai && Model.NgayNghiViec.HasValue)
+                    {
+                        <div class="timeline-item">
+                            <div class="timeline-marker bg-danger"></div>
+                            <div class="timeline-content">
+                                <div class="timeline-header">
+                                    <h6 class="timeline-title">Ngày nghỉ việc</h6>
+                                    <span class="timeline-date">@Model.NgayNghiViec.Value.ToString("dd/MM/yyyy")</span>
+                                </div>
+                                <p class="timeline-description text-muted">
+                                    Kết thúc thời gian làm việc
+                                </p>
+                            </div>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="timeline-item">
+                            <div class="timeline-marker bg-success"></div>
+                            <div class="timeline-content">
+                                <div class="timeline-header">
+                                    <h6 class="timeline-title">Hiện tại</h6>
+                                    <span class="timeline-date">@DateTime.Now.ToString("dd/MM/yyyy")</span>
+                                </div>
+                                <p class="timeline-description text-muted">
+                                    Đang làm việc tại vị trí @Model.ChucVu
+                                </p>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sidebar -->
+    <div class="col-lg-4">
+        <!-- Profile Card -->
+        <div class="card mb-4">
+            <div class="card-body text-center">
+                <div class="avatar-circle-xl mx-auto mb-3">
+                    @Model.HoTen.Substring(0, 1).ToUpper()
+                </div>
+                <h4 class="mb-2">@Model.HoTen</h4>
+                <p class="text-muted mb-3">@Model.ChucVu</p>
+                
+                <div class="d-grid gap-2">
+                    <a href="tel:@Model.SoDienThoai" class="btn btn-outline-success">
+                        <i class="fas fa-phone me-1"></i> Gọi điện
+                    </a>
+                    <a href="mailto:@Model.Email" class="btn btn-outline-info">
+                        <i class="fas fa-envelope me-1"></i> Gửi Email
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Stats Card -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h6 class="mb-0">
+                    <i class="fas fa-chart-pie me-2"></i>
+                    Thống Kê Nhanh
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="row text-center">
+                    <div class="col-6 mb-3">
+                        <div class="border rounded p-3">
+                            <h3 class="text-primary mb-1">@Model.Tuoi</h3>
+                            <small class="text-muted">Tuổi</small>
+                        </div>
+                    </div>
+                    <div class="col-6 mb-3">
+                        <div class="border rounded p-3">
+                            <h3 class="text-success mb-1">@((DateTime.Now - Model.NgayVaoLam).Days / 365)</h3>
+                            <small class="text-muted">Năm kinh nghiệm</small>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="progress mb-3" style="height: 8px;">
+                    <div class="progress-bar bg-success" role="progressbar" 
+                         style="width: @(Math.Min(100, (DateTime.Now - Model.NgayVaoLam).Days / 365 * 10))%" 
+                         aria-valuenow="@((DateTime.Now - Model.NgayVaoLam).Days / 365)" 
+                         aria-valuemin="0" aria-valuemax="10">
+                    </div>
+                </div>
+                <small class="text-muted">Tiến độ kinh nghiệm (tối đa 10 năm)</small>
+            </div>
+        </div>
+
+        <!-- Actions Card -->
+        <div class="card">
+            <div class="card-header">
+                <h6 class="mb-0">
+                    <i class="fas fa-cogs me-2"></i>
+                    Hành Động
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <a asp-action="Edit" asp-route-id="@Model.MaNhanVien" class="btn btn-warning">
+                        <i class="fas fa-edit me-1"></i> Chỉnh Sửa Thông Tin
+                    </a>
+                    
+                    @if (Model.IsActiveEmployee())
+                    {
+                        <button type="button" class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deactivateModal">
+                            <i class="fas fa-user-times me-1"></i> Tạm Ngừng Nhân Viên
+                        </button>
+                    }
+                    else
+                    {
+                        <button type="button" class="btn btn-outline-success" onclick="reactivateEmployee(@Model.MaNhanVien)">
+                            <i class="fas fa-user-check me-1"></i> Kích Hoạt Lại
+                        </button>
+                    }
+                    
+                    <a href="#" class="btn btn-outline-secondary">
+                        <i class="fas fa-print me-1"></i> In Thông Tin
+                    </a>
+                    
+                    <a href="#" class="btn btn-outline-info">
+                        <i class="fas fa-file-pdf me-1"></i> Xuất PDF
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Deactivate Modal -->
+<div class="modal fade" id="deactivateModal" tabindex="-1" aria-labelledby="deactivateModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title" id="deactivateModalLabel">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    Xác Nhận Tạm Ngừng Nhân Viên
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="text-center mb-3">
+                    <i class="fas fa-user-times fa-3x text-danger"></i>
+                </div>
+                <h6 class="text-center mb-3">Bạn có chắc chắn muốn tạm ngừng nhân viên <strong>@Model.HoTen</strong>?</h6>
+                
+                <form id="deactivateForm" action="#" method="post">
+                    <div class="mb-3">
+                        <label for="ngayNghiViec" class="form-label">Ngày nghỉ việc:</label>
+                        <input type="date" class="form-control" id="ngayNghiViec" name="ngayNghiViec" 
+                               value="@DateTime.Now.ToString("yyyy-MM-dd")" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="lyDo" class="form-label">Lý do (tùy chọn):</label>
+                        <textarea class="form-control" id="lyDo" name="lyDo" rows="3" 
+                                  placeholder="Nhập lý do tạm ngừng nhân viên..."></textarea>
+                    </div>
+                    
+                    <div class="alert alert-warning">
+                        <i class="fas fa-info-circle me-2"></i>
+                        <strong>Lưu ý:</strong> Nhân viên sẽ được chuyển sang trạng thái "Tạm nghỉ" và không thể thực hiện các hoạt động trong hệ thống.
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times me-1"></i> Hủy Bỏ
+                </button>
+                <button type="button" class="btn btn-danger" onclick="submitDeactivate()">
+                    <i class="fas fa-user-times me-1"></i> Xác Nhận Tạm Ngừng
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function reactivateEmployee(id) {
+            if (confirm('Bạn có chắc chắn muốn kích hoạt lại nhân viên này?')) {
+                $.post('@Url.Action("ToggleStatus")', { id: id })
+                    .done(function(result) {
+                        if (result.success) {
+                            toastr.success('Đã kích hoạt lại nhân viên thành công!');
+                            location.reload();
+                        } else {
+                            toastr.error(result.message || 'Có lỗi xảy ra!');
+                        }
+                    })
+                    .fail(function() {
+                        toastr.error('Không thể kết nối đến server!');
+                    });
+            }
+        }
+        
+        function submitDeactivate() {
+            const ngayNghiViec = $('#ngayNghiViec').val();
+            const lyDo = $('#lyDo').val();
+            
+            if (!ngayNghiViec) {
+                alert('Vui lòng chọn ngày nghỉ việc!');
+                return;
+            }
+            
+            $.post('@Url.Action("DeactivateEmployee")', { 
+                id: @Model.MaNhanVien, 
+                ngayNghiViec: ngayNghiViec,
+                lyDo: lyDo 
+            })
+            .done(function(result) {
+                if (result.success) {
+                    toastr.success('Đã tạm ngừng nhân viên thành công!');
+                    $('#deactivateModal').modal('hide');
+                    location.reload();
+                } else {
+                    toastr.error(result.message || 'Có lỗi xảy ra!');
+                }
+            })
+            .fail(function() {
+                toastr.error('Không thể kết nối đến server!');
+            });
+        }
+        
+        // Print function
+        function printDetails() {
+            window.print();
+        }
+        
+        // Auto-hide alerts
+        setTimeout(function() {
+            $('.alert').fadeOut();
+        }, 5000);
+    </script>
+}
+
+<style>
+    .avatar-circle-xl {
+        width: 120px;
+        height: 120px;
+        border-radius: 50%;
+        background: linear-gradient(45deg, #007bff, #0056b3);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: bold;
+        font-size: 48px;
+        box-shadow: 0 4px 12px rgba(0, 123, 255, 0.3);
+    }
+    
+    .timeline {
+        position: relative;
+        padding-left: 30px;
+    }
+
+    .timeline-item {
+        position: relative;
+        margin-bottom: 25px;
+    }
+
+    .timeline-marker {
+        position: absolute;
+        left: -35px;
+        top: 5px;
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        border: 3px solid #fff;
+        box-shadow: 0 0 0 2px #dee2e6;
+    }
+
+    .timeline-item:before {
+        content: '';
+        position: absolute;
+        left: -29px;
+        top: 17px;
+        width: 2px;
+        height: calc(100% + 10px);
+        background-color: #dee2e6;
+    }
+
+    .timeline-item:last-child:before {
+        display: none;
+    }
+
+    .timeline-header {
+        display: flex;
+        justify-content: between;
+        align-items: center;
+        margin-bottom: 8px;
+    }
+
+    .timeline-title {
+        font-size: 1rem;
+        margin-bottom: 0;
+        flex-grow: 1;
+    }
+
+    .timeline-date {
+        font-size: 0.85rem;
+        color: #6c757d;
+        font-weight: 500;
+    }
+
+    .timeline-description {
+        font-size: 0.9rem;
+        margin-bottom: 0;
+        line-height: 1.4;
+    }
+
+    .card {
+        border: none;
+        box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+        border-radius: 0.5rem;
+    }
+
+    .card-header {
+        border-radius: 0.5rem 0.5rem 0 0 !important;
+    }
+
+    .btn {
+        border-radius: 0.375rem;
+    }
+
+    .badge {
+        border-radius: 0.375rem;
+    }
+
+    @@media print {
+        .btn, .modal, .card-header .btn, nav, footer {
+            display: none !important;
+        }
+        
+        .card {
+            border: 1px solid #dee2e6 !important;
+            box-shadow: none !important;
+        }
+    }
+</style>

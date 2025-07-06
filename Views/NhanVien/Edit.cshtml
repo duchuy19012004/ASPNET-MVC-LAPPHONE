@@ -7,11 +7,14 @@
 <div class="d-flex justify-content-between align-items-center mb-4">
     <div>
         <h1 class="h3 mb-0">@ViewData["Title"]</h1>
-        <p class="text-muted mb-0">Cập nhật thông tin nhân viên @Model.HoTen</p>
+        <p class="text-muted mb-0">Cập nhật thông tin nhân viên #@Model.MaNhanVien</p>
     </div>
     <div>
         <a asp-action="Index" class="btn btn-outline-secondary">
             <i class="fas fa-arrow-left me-1"></i> Quay lại
+        </a>
+        <a asp-action="Details" asp-route-id="@Model.MaNhanVien" class="btn btn-info">
+            <i class="fas fa-eye me-1"></i> Xem Chi Tiết
         </a>
     </div>
 </div>
@@ -22,14 +25,13 @@
             <div class="card-header">
                 <h5 class="mb-0">
                     <i class="fas fa-user-edit me-2"></i>
-                    Chỉnh Sửa Thông Tin
+                    Chỉnh Sửa Thông Tin Nhân Viên
                 </h5>
             </div>
             <div class="card-body">
                 <form asp-action="Edit" method="post" id="employeeEditForm">
-                    <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
-                    
                     <input type="hidden" asp-for="MaNhanVien" />
+                    <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
 
                     <!-- Thông tin cá nhân -->
                     <div class="row mb-4">
@@ -54,7 +56,7 @@
                                 <label asp-for="NgaySinh" class="form-label required"></label>
                                 <input asp-for="NgaySinh" class="form-control" type="date" />
                                 <span asp-validation-for="NgaySinh" class="text-danger"></span>
-                                <div class="form-text" id="ageDisplay">Tuổi hiện tại: @Model.Tuoi</div>
+                                <div class="form-text" id="ageDisplay">Tuổi: @Model.Tuoi tuổi</div>
                             </div>
                         </div>
                     </div>
@@ -78,14 +80,18 @@
                         </div>
                     </div>
 
-                    <div class="mb-3">
-                        <label asp-for="DiaChi" class="form-label required"></label>
-                        <textarea asp-for="DiaChi" class="form-control" rows="3" placeholder="Nhập địa chỉ đầy đủ"></textarea>
-                        <span asp-validation-for="DiaChi" class="text-danger"></span>
+                    <div class="row mb-4">
+                        <div class="col-md-12">
+                            <div class="mb-3">
+                                <label asp-for="DiaChi" class="form-label required"></label>
+                                <textarea asp-for="DiaChi" class="form-control" rows="3" placeholder="Nhập địa chỉ chi tiết"></textarea>
+                                <span asp-validation-for="DiaChi" class="text-danger"></span>
+                            </div>
+                        </div>
                     </div>
 
                     <!-- Thông tin công việc -->
-                    <div class="row mb-4 mt-4">
+                    <div class="row mb-4">
                         <div class="col-12">
                             <h6 class="text-primary mb-3">
                                 <i class="fas fa-briefcase me-2"></i>
@@ -100,16 +106,19 @@
                                 <label asp-for="ChucVu" class="form-label required"></label>
                                 <select asp-for="ChucVu" class="form-select" id="chucVuSelect">
                                     <option value="">-- Chọn chức vụ --</option>
-                                    <option value="Quản lý">Quản lý</option>
-                                    <option value="Kỹ thuật viên">Kỹ thuật viên</option>
-                                    <option value="Nhân viên bán hàng">Nhân viên bán hàng</option>
-                                    <option value="Nhân viên kho">Nhân viên kho</option>
-                                    <option value="Kế toán">Kế toán</option>
-                                    <option value="Bảo vệ">Bảo vệ</option>
-                                    <option value="Tạp vụ">Tạp vụ</option>
-                                    <option value="Khác">Khác (nhập thủ công)</option>
+                                    <option value="Quản lý" selected="@(Model.ChucVu == "Quản lý" ? "selected" : null)">Quản lý</option>
+                                    <option value="Kỹ thuật viên" selected="@(Model.ChucVu == "Kỹ thuật viên" ? "selected" : null)">Kỹ thuật viên</option>
+                                    <option value="Nhân viên bán hàng" selected="@(Model.ChucVu == "Nhân viên bán hàng" ? "selected" : null)">Nhân viên bán hàng</option>
+                                    <option value="Nhân viên kho" selected="@(Model.ChucVu == "Nhân viên kho" ? "selected" : null)">Nhân viên kho</option>
+                                    <option value="Kế toán" selected="@(Model.ChucVu == "Kế toán" ? "selected" : null)">Kế toán</option>
+                                    <option value="Bảo vệ" selected="@(Model.ChucVu == "Bảo vệ" ? "selected" : null)">Bảo vệ</option>
+                                    <option value="Tạp vụ" selected="@(Model.ChucVu == "Tạp vụ" ? "selected" : null)">Tạp vụ</option>
+                                    <option value="Khác" selected="@((!new string[]{"Quản lý", "Kỹ thuật viên", "Nhân viên bán hàng", "Nhân viên kho", "Kế toán", "Bảo vệ", "Tạp vụ"}.Contains(Model.ChucVu)) ? "selected" : null)">Khác (nhập thủ công)</option>
                                 </select>
-                                <input type="text" id="chucVuCustom" class="form-control mt-2" style="display: none;" placeholder="Nhập chức vụ khác..." />
+                                <input type="text" id="chucVuCustom" name="ChucVuCustom" class="form-control mt-2" 
+                                       style="display: @((!new string[]{"Quản lý", "Kỹ thuật viên", "Nhân viên bán hàng", "Nhân viên kho", "Kế toán", "Bảo vệ", "Tạp vụ"}.Contains(Model.ChucVu)) ? "block" : "none");" 
+                                       placeholder="Nhập chức vụ khác..." 
+                                       value="@((!new string[]{"Quản lý", "Kỹ thuật viên", "Nhân viên bán hàng", "Nhân viên kho", "Kế toán", "Bảo vệ", "Tạp vụ"}.Contains(Model.ChucVu)) ? Model.ChucVu : "")" />
                                 <span asp-validation-for="ChucVu" class="text-danger"></span>
                             </div>
                         </div>
@@ -118,7 +127,7 @@
                                 <label asp-for="NgayVaoLam" class="form-label required"></label>
                                 <input asp-for="NgayVaoLam" class="form-control" type="date" />
                                 <span asp-validation-for="NgayVaoLam" class="text-danger"></span>
-                                <div class="form-text" id="workExpDisplay">Kinh nghiệm: @Model.GetWorkExperience()</div>
+                                <div class="form-text" id="workExpDisplay">Kinh nghiệm làm việc: @Model.GetWorkExperience()</div>
                             </div>
                         </div>
                     </div>
@@ -128,75 +137,49 @@
                             <div class="mb-3">
                                 <label asp-for="Luong" class="form-label required"></label>
                                 <div class="input-group">
-                                    <input asp-for="Luong" class="form-control" type="number" min="0" step="100000" />
-                                    <span class="input-group-text">VNĐ</span>
+                                <input name="Luong" value="@Model.Luong" class="form-control" type="text" placeholder="Nhập lương" />                                    <span class="input-group-text">VNĐ</span>
                                 </div>
                                 <span asp-validation-for="Luong" class="text-danger"></span>
-                                <div class="form-text" id="salaryDisplay">@Model.LuongText/tháng</div>
+                                <div class="form-text" id="salaryDisplay">Lương cơ bản hàng tháng</div>
                             </div>
                         </div>
                         <div class="col-md-6">
                             <div class="mb-3">
-                                <label asp-for="TrangThai" class="form-label"></label>
-                                <select asp-for="TrangThai" class="form-select">
-                                    <option value="true">Đang làm việc</option>
-                                    <option value="false">Tạm nghỉ</option>
-                                </select>
-                                <span asp-validation-for="TrangThai" class="text-danger"></span>
+                                <label class="form-label">Trạng Thái Làm Việc</label>
+                                <div class="form-check form-switch">
+                                    <input asp-for="TrangThai" class="form-check-input" type="checkbox" id="trangThaiSwitch" />
+                                    <label class="form-check-label" for="trangThaiSwitch" id="trangThaiLabel">
+                                        @(Model.TrangThai ? "Đang làm việc" : "Tạm nghỉ")
+                                    </label>
+                                </div>
+                                <div class="form-text">Bật/Tắt để thay đổi trạng thái làm việc</div>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Ngày nghỉ việc (nếu có) -->
-                    @if (Model.NgayNghiViec.HasValue)
+                    @if (!Model.TrangThai && Model.NgayNghiViec.HasValue)
                     {
-                        <div class="row mb-3">
+                        <div class="row mb-3" id="ngayNghiViecRow">
                             <div class="col-md-6">
                                 <div class="mb-3">
-                                    <label asp-for="NgayNghiViec" class="form-label"></label>
+                                    <label asp-for="NgayNghiViec" class="form-label">Ngày Nghỉ Việc</label>
                                     <input asp-for="NgayNghiViec" class="form-control" type="date" />
                                     <span asp-validation-for="NgayNghiViec" class="text-danger"></span>
-                                    <div class="form-text text-warning">
-                                        <i class="fas fa-exclamation-triangle me-1"></i>
-                                        Nhân viên đã nghỉ việc từ @Model.NgayNghiViec.Value.ToString("dd/MM/yyyy")
-                                    </div>
+                                    <div class="form-text">Chỉ hiển thị khi nhân viên không còn làm việc</div>
                                 </div>
                             </div>
-                            <div class="col-md-6 d-flex align-items-end">
-                                <button type="button" class="btn btn-success" id="reactivateBtn">
-                                    <i class="fas fa-user-plus me-1"></i>
-                                    Cho Quay Lại Làm Việc
-                                </button>
-                            </div>
                         </div>
-                    }
-                    else
-                    {
-                        <input type="hidden" asp-for="NgayNghiViec" />
                     }
 
-                    <div class="row">
-                        <div class="col-12">
-                            <div class="d-flex justify-content-between">
-                                <div>
-                                    @if (!Model.NgayNghiViec.HasValue && Model.TrangThai)
-                                    {
-                                        <button type="button" class="btn btn-warning" id="retireBtn">
-                                            <i class="fas fa-user-minus me-1"></i>
-                                            Cho Nghỉ Việc
-                                        </button>
-                                    }
-                                </div>
-                                <div class="d-flex gap-2">
-                                    <a asp-action="Index" class="btn btn-outline-secondary">
-                                        <i class="fas fa-times me-1"></i> Hủy
-                                    </a>
-                                    <button type="submit" class="btn btn-warning" id="submitBtn">
-                                        <i class="fas fa-save me-1"></i> Cập Nhật
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
+                    <!-- Submit Buttons -->
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a asp-action="Index" class="btn btn-secondary btn-lg me-md-2">
+                            <i class="fas fa-times me-1"></i>
+                            Hủy Bỏ
+                        </a>
+                        <button type="submit" class="btn btn-primary btn-lg" id="submitBtn">
+                            <i class="fas fa-save me-1"></i> Cập Nhật
+                        </button>
                     </div>
                 </form>
             </div>
@@ -217,8 +200,8 @@
                     <div class="avatar-circle-large mx-auto mb-3">
                         @Model.HoTen.Substring(0, 1).ToUpper()
                     </div>
-                    <h6>@Model.HoTen</h6>
-                    <span class="badge bg-info">@Model.ChucVu</span>
+                    <h6 id="previewName">@Model.HoTen</h6>
+                    <span class="badge bg-info" id="previewChucVu">@Model.ChucVu</span>
                     @if (Model.IsSeniorEmployee())
                     {
                         <span class="badge bg-primary ms-1">Senior</span>
@@ -232,7 +215,15 @@
                     </tr>
                     <tr>
                         <td><strong>Tuổi:</strong></td>
-                        <td>@Model.Tuoi tuổi (@Model.GetAgeGroup())</td>
+                        <td id="previewAge">@Model.Tuoi tuổi (@Model.GetAgeGroup())</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Điện thoại:</strong></td>
+                        <td id="previewPhone">@Model.SoDienThoai</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Email:</strong></td>
+                        <td id="previewEmail">@Model.Email</td>
                     </tr>
                     <tr>
                         <td><strong>Kinh nghiệm:</strong></td>
@@ -240,20 +231,20 @@
                     </tr>
                     <tr>
                         <td><strong>Lương hiện tại:</strong></td>
-                        <td class="text-success fw-bold">@Model.LuongText</td>
+                        <td class="text-success fw-bold" id="previewSalary">@Model.LuongText</td>
                     </tr>
                     <tr>
                         <td><strong>Trạng thái:</strong></td>
                         <td>
-                            <span class="badge @(Model.IsActiveEmployee() ? "bg-success" : "bg-secondary")">
+                            <span class="badge @(Model.IsActiveEmployee() ? "bg-success" : "bg-danger")" id="previewStatus">
                                 @Model.TrangThaiText
                             </span>
                         </td>
                     </tr>
-                    @if (Model.NgayNghiViec.HasValue)
+                    @if (!Model.TrangThai && Model.NgayNghiViec.HasValue)
                     {
                         <tr>
-                            <td><strong>Nghỉ việc:</strong></td>
+                            <td><strong>Ngày nghỉ việc:</strong></td>
                             <td class="text-danger">@Model.NgayNghiViec.Value.ToString("dd/MM/yyyy")</td>
                         </tr>
                     }
@@ -261,59 +252,7 @@
             </div>
         </div>
 
-        <!-- Quick Actions -->
-        <div class="card mt-3">
-            <div class="card-header">
-                <h6 class="mb-0">
-                    <i class="fas fa-bolt me-2"></i>
-                    Thao Tác Nhanh
-                </h6>
-            </div>
-            <div class="card-body">
-                <div class="d-grid gap-2">
-                    <a asp-action="Details" asp-route-id="@Model.MaNhanVien" class="btn btn-outline-info">
-                        <i class="fas fa-eye me-1"></i> Xem Chi Tiết
-                    </a>
-                    
-                    @if (Model.IsActiveEmployee())
-                    {
-                        <button type="button" class="btn btn-outline-secondary toggle-status" data-id="@Model.MaNhanVien">
-                            <i class="fas fa-pause me-1"></i> Tạm Ngừng
-                        </button>
-                    }
-                    else if (!Model.NgayNghiViec.HasValue)
-                    {
-                        <button type="button" class="btn btn-outline-success toggle-status" data-id="@Model.MaNhanVien">
-                            <i class="fas fa-play me-1"></i> Kích Hoạt
-                        </button>
-                    }
-                    
-                    <a asp-action="Delete" asp-route-id="@Model.MaNhanVien" class="btn btn-outline-danger">
-                        <i class="fas fa-trash me-1"></i> Xóa Nhân Viên
-                    </a>
-                </div>
-            </div>
-        </div>
-
-        <!-- Validation Summary -->
-        <div class="card mt-3">
-            <div class="card-header">
-                <h6 class="mb-0">
-                    <i class="fas fa-check-circle me-2"></i>
-                    Kiểm Tra Thay Đổi
-                </h6>
-            </div>
-            <div class="card-body">
-                <ul class="list-unstyled mb-0 small" id="changesList">
-                    <li class="text-muted">
-                        <i class="fas fa-info-circle me-2"></i>
-                        Thay đổi sẽ được hiển thị ở đây
-                    </li>
-                </ul>
-            </div>
-        </div>
-
-        <!-- History Log -->
+        <!-- Change History Card -->
         <div class="card mt-3">
             <div class="card-header">
                 <h6 class="mb-0">
@@ -326,17 +265,21 @@
                     <div class="timeline-item">
                         <div class="timeline-marker bg-primary"></div>
                         <div class="timeline-content">
-                            <h6 class="timeline-title">Vào làm</h6>
-                            <p class="timeline-text">@Model.NgayVaoLam.ToString("dd/MM/yyyy")</p>
+                            <h6 class="timeline-title">Ngày vào làm</h6>
+                            <p class="timeline-description text-muted">
+                                @Model.NgayVaoLam.ToString("dd/MM/yyyy")
+                            </p>
                         </div>
                     </div>
-                    @if (Model.NgayNghiViec.HasValue)
+                    @if (!Model.TrangThai && Model.NgayNghiViec.HasValue)
                     {
                         <div class="timeline-item">
-                            <div class="timeline-marker bg-warning"></div>
+                            <div class="timeline-marker bg-danger"></div>
                             <div class="timeline-content">
-                                <h6 class="timeline-title">Nghỉ việc</h6>
-                                <p class="timeline-text">@Model.NgayNghiViec.Value.ToString("dd/MM/yyyy")</p>
+                                <h6 class="timeline-title">Ngày nghỉ việc</h6>
+                                <p class="timeline-description text-muted">
+                                    @Model.NgayNghiViec.Value.ToString("dd/MM/yyyy")
+                                </p>
                             </div>
                         </div>
                     }
@@ -348,248 +291,8 @@
 
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
-    
-    <script>
-        $(document).ready(function() {
-            // Store original values for change detection
-            const originalValues = {
-                HoTen: $('#HoTen').val(),
-                NgaySinh: $('#NgaySinh').val(),
-                SoDienThoai: $('#SoDienThoai').val(),
-                Email: $('#Email').val(),
-                DiaChi: $('#DiaChi').val(),
-                ChucVu: $('#ChucVu').val(),
-                NgayVaoLam: $('#NgayVaoLam').val(),
-                Luong: $('#Luong').val(),
-                TrangThai: $('#TrangThai').val(),
-                NgayNghiViec: $('#NgayNghiViec').val()
-            };
-            
-            // Set current job title in select
-            const currentChucVu = '@Model.ChucVu';
-            const predefinedRoles = ['Quản lý', 'Kỹ thuật viên', 'Nhân viên bán hàng', 'Nhân viên kho', 'Kế toán', 'Bảo vệ', 'Tạp vụ'];
-            
-            if (predefinedRoles.includes(currentChucVu)) {
-                $('#chucVuSelect').val(currentChucVu);
-            } else {
-                $('#chucVuSelect').val('Khác');
-                $('#chucVuCustom').show().val(currentChucVu);
-            }
-            
-            // Custom job title handling
-            $('#chucVuSelect').on('change', function() {
-                const selectedValue = $(this).val();
-                if (selectedValue === 'Khác') {
-                    $('#chucVuCustom').show().focus();
-                    if (predefinedRoles.includes($('#ChucVu').val())) {
-                        $('#ChucVu').val('');
-                    }
-                } else {
-                    $('#chucVuCustom').hide();
-                    $('#ChucVu').val(selectedValue);
-                }
-                detectChanges();
-            });
-            
-            $('#chucVuCustom').on('input', function() {
-                $('#ChucVu').val($(this).val());
-                detectChanges();
-            });
-            
-            // Age calculation on birth date change
-            $('#NgaySinh').on('change', function() {
-                const birthDate = new Date($(this).val());
-                const today = new Date();
-                let age = today.getFullYear() - birthDate.getFullYear();
-                const monthDiff = today.getMonth() - birthDate.getMonth();
-                
-                if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
-                    age--;
-                }
-                
-                if ($(this).val()) {
-                    $('#ageDisplay').text(`Tuổi hiện tại: ${age}`);
-                    
-                    if (age < 18) {
-                        $('#ageDisplay').addClass('text-danger').text(`Tuổi hiện tại: ${age} (Phải từ 18 tuổi trở lên)`);
-                    } else {
-                        $('#ageDisplay').removeClass('text-danger');
-                    }
-                }
-                detectChanges();
-            });
-            
-            // Work experience calculation
-            $('#NgayVaoLam').on('change', function() {
-                if ($(this).val()) {
-                    const startDate = new Date($(this).val());
-                    const today = new Date();
-                    const years = today.getFullYear() - startDate.getFullYear();
-                    
-                    $('#workExpDisplay').text(`Kinh nghiệm: ${years} năm`);
-                }
-                detectChanges();
-            });
-            
-            // Salary formatting
-            $('#Luong').on('input', function() {
-                const value = parseInt($(this).val()) || 0;
-                $('#salaryDisplay').text(`${value.toLocaleString('vi-VN')} VNĐ/tháng`);
-                detectChanges();
-            });
-            
-            // Auto format phone number
-            $('#SoDienThoai').on('input', function() {
-                let value = $(this).val().replace(/\D/g, '');
-                if (value.length > 11) {
-                    value = value.substring(0, 11);
-                }
-                $(this).val(value);
-                detectChanges();
-            });
-            
-            // Detect changes in all form fields
-            $('#HoTen, #NgaySinh, #SoDienThoai, #Email, #DiaChi, #NgayVaoLam, #Luong, #TrangThai, #NgayNghiViec').on('input change', detectChanges);
-            
-            function detectChanges() {
-                const changes = [];
-                const currentValues = {
-                    HoTen: $('#HoTen').val(),
-                    NgaySinh: $('#NgaySinh').val(),
-                    SoDienThoai: $('#SoDienThoai').val(),
-                    Email: $('#Email').val(),
-                    DiaChi: $('#DiaChi').val(),
-                    ChucVu: $('#ChucVu').val(),
-                    NgayVaoLam: $('#NgayVaoLam').val(),
-                    Luong: $('#Luong').val(),
-                    TrangThai: $('#TrangThai').val(),
-                    NgayNghiViec: $('#NgayNghiViec').val()
-                };
-                
-                const fieldNames = {
-                    HoTen: 'Họ và tên',
-                    NgaySinh: 'Ngày sinh',
-                    SoDienThoai: 'Số điện thoại',
-                    Email: 'Email',
-                    DiaChi: 'Địa chỉ',
-                    ChucVu: 'Chức vụ',
-                    NgayVaoLam: 'Ngày vào làm',
-                    Luong: 'Lương',
-                    TrangThai: 'Trạng thái',
-                    NgayNghiViec: 'Ngày nghỉ việc'
-                };
-                
-                Object.keys(originalValues).forEach(key => {
-                    if (originalValues[key] !== currentValues[key]) {
-                        const oldVal = originalValues[key] || 'Trống';
-                        const newVal = currentValues[key] || 'Trống';
-                        
-                        if (key === 'Luong') {
-                            changes.push(`${fieldNames[key]}: ${parseInt(oldVal).toLocaleString()} → ${parseInt(newVal).toLocaleString()} VNĐ`);
-                        } else if (key === 'TrangThai') {
-                            const oldStatus = oldVal === 'true' ? 'Đang làm việc' : 'Tạm nghỉ';
-                            const newStatus = newVal === 'true' ? 'Đang làm việc' : 'Tạm nghỉ';
-                            changes.push(`${fieldNames[key]}: ${oldStatus} → ${newStatus}`);
-                        } else {
-                            changes.push(`${fieldNames[key]}: ${oldVal} → ${newVal}`);
-                        }
-                    }
-                });
-                
-                const changesList = $('#changesList');
-                if (changes.length > 0) {
-                    let html = '';
-                    changes.forEach(change => {
-                        html += `<li class="mb-1"><i class="fas fa-edit text-warning me-2"></i><small>${change}</small></li>`;
-                    });
-                    changesList.html(html);
-                } else {
-                    changesList.html('<li class="text-muted"><i class="fas fa-info-circle me-2"></i>Chưa có thay đổi nào</li>');
-                }
-            }
-            
-            // Retire employee
-            $('#retireBtn').on('click', function() {
-                const ngayNghiViec = prompt('Nhập ngày nghỉ việc (dd/mm/yyyy) hoặc để trống để dùng ngày hiện tại:', '');
-                
-                if (ngayNghiViec !== null) {
-                    $.post('@Url.Action("Retire")', { 
-                        id: @Model.MaNhanVien, 
-                        ngayNghiViec: ngayNghiViec || null 
-                    })
-                    .done(function(result) {
-                        if (result.success) {
-                            toastr.success(result.message);
-                            location.reload();
-                        } else {
-                            toastr.error(result.message || 'Có lỗi xảy ra!');
-                        }
-                    })
-                    .fail(function() {
-                        toastr.error('Không thể kết nối đến server!');
-                    });
-                }
-            });
-            
-            // Reactivate employee
-            $('#reactivateBtn').on('click', function() {
-                if (confirm('Bạn có chắc chắn muốn cho nhân viên này quay lại làm việc?')) {
-                    $.post('@Url.Action("Reactivate")', { id: @Model.MaNhanVien })
-                        .done(function(result) {
-                            if (result.success) {
-                                toastr.success(result.message);
-                                location.reload();
-                            } else {
-                                toastr.error(result.message || 'Có lỗi xảy ra!');
-                            }
-                        })
-                        .fail(function() {
-                            toastr.error('Không thể kết nối đến server!');
-                        });
-                }
-            });
-            
-            // Toggle status
-            $('.toggle-status').on('click', function() {
-                const id = $(this).data('id');
-                const isActive = $(this).hasClass('btn-outline-secondary');
-                
-                if (confirm(isActive ? 'Bạn có muốn kích hoạt lại nhân viên này?' : 'Bạn có muốn tạm ngừng nhân viên này?')) {
-                    $.post('@Url.Action("ToggleStatus")', { id: id })
-                        .done(function(result) {
-                            if (result.success) {
-                                toastr.success('Đã cập nhật trạng thái thành công!');
-                                location.reload();
-                            } else {
-                                toastr.error(result.message || 'Có lỗi xảy ra!');
-                            }
-                        })
-                        .fail(function() {
-                            toastr.error('Không thể kết nối đến server!');
-                        });
-                }
-            });
-            
-            // Form submission
-            $('#employeeEditForm').on('submit', function(e) {
-                // Show loading
-                $('#submitBtn').prop('disabled', true)
-                              .html('<i class="fas fa-spinner fa-spin me-1"></i>Đang cập nhật...');
-                
-                // Confirm if there are significant changes
-                const changesList = $('#changesList').text();
-                if (changesList !== 'Chưa có thay đổi nào' && !confirm('Bạn có chắc chắn muốn lưu những thay đổi này?')) {
-                    e.preventDefault();
-                    $('#submitBtn').prop('disabled', false)
-                                  .html('<i class="fas fa-save me-1"></i>Cập Nhật');
-                    return false;
-                }
-            });
-            
-            // Initial change detection
-            detectChanges();
-        });
-    </script>
+        
+    <script src="~/js/nhanvien-edit.js" asp-append-version="true"></script>
 }
 
 <style>
@@ -602,7 +305,7 @@
         width: 80px;
         height: 80px;
         border-radius: 50%;
-        background: linear-gradient(45deg, #ffc107, #ff8c00);
+        background: linear-gradient(45deg, #007bff, #0056b3);
         display: flex;
         align-items: center;
         justify-content: center;
@@ -611,70 +314,19 @@
         font-size: 28px;
     }
     
-    .timeline {
-        position: relative;
-        padding-left: 30px;
-    }
-    
-    .timeline-item {
-        position: relative;
-        margin-bottom: 20px;
-    }
-    
-    .timeline-marker {
-        position: absolute;
-        left: -35px;
-        top: 5px;
-        width: 12px;
-        height: 12px;
-        border-radius: 50%;
-        border: 2px solid white;
-        box-shadow: 0 0 0 2px #dee2e6;
-    }
-    
-    .timeline-content {
-        background: #f8f9fa;
-        padding: 10px 15px;
-        border-radius: 8px;
-        border-left: 3px solid #007bff;
-    }
-    
-    .timeline-title {
-        font-size: 0.9rem;
-        font-weight: 600;
-        margin-bottom: 5px;
-        color: #495057;
-    }
-    
-    .timeline-text {
-        font-size: 0.8rem;
-        margin-bottom: 0;
-        color: #6c757d;
-    }
-    
-    .timeline::before {
-        content: '';
-        position: absolute;
-        left: -30px;
-        top: 0;
-        bottom: 0;
-        width: 2px;
-        background: #dee2e6;
-    }
-    
     .form-control:focus {
-        border-color: #ffc107;
-        box-shadow: 0 0 0 0.2rem rgba(255, 193, 7, 0.25);
-    }
-    
-    .btn-warning:hover {
-        background-color: #e0a800;
-        border-color: #d39e00;
+        border-color: #007bff;
+        box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
     }
     
     .card {
         border: none;
         box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    }
+    
+    .btn-primary:hover {
+        background-color: #0056b3;
+        border-color: #004085;
     }
     
     .table td {
@@ -685,5 +337,55 @@
     .badge {
         font-size: 0.8em;
         padding: 0.375rem 0.75rem;
+    }
+    
+    .timeline {
+        position: relative;
+        padding-left: 30px;
+    }
+
+    .timeline-item {
+        position: relative;
+        margin-bottom: 20px;
+    }
+
+    .timeline-marker {
+        position: absolute;
+        left: -35px;
+        top: 5px;
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        border: 2px solid #fff;
+        box-shadow: 0 0 0 2px #dee2e6;
+    }
+
+    .timeline-item:before {
+        content: '';
+        position: absolute;
+        left: -29px;
+        top: 17px;
+        width: 2px;
+        height: calc(100% + 5px);
+        background-color: #dee2e6;
+    }
+
+    .timeline-item:last-child:before {
+        display: none;
+    }
+
+    .timeline-title {
+        font-size: 0.9rem;
+        margin-bottom: 5px;
+    }
+
+    .timeline-description {
+        font-size: 0.8rem;
+        margin-bottom: 0;
+    }
+
+    .form-check-input:checked {
+        background-color: #198754;
+        border-color: #198754;
     }
 </style>
