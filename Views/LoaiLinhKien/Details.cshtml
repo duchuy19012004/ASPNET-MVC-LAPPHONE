@@ -1,0 +1,416 @@
+@model phonev2.Models.LoaiLinhKien
+@{
+    Layout = "_AdminLayout";
+}
+
+@section PageActions {
+    <div class="btn-group">
+        <a asp-action="Edit" asp-route-id="@Model.MaLoaiLinhKien" class="btn btn-warning">
+            <i class="fas fa-edit me-1"></i> Chỉnh Sửa
+        </a>
+        <a asp-action="Delete" asp-route-id="@Model.MaLoaiLinhKien" class="btn btn-danger">
+            <i class="fas fa-trash me-1"></i> Xóa
+        </a>
+        <a asp-action="Index" class="btn btn-secondary">
+            <i class="fas fa-arrow-left me-1"></i> Quay Lại
+        </a>
+    </div>
+}
+
+<div class="row">
+    <!-- Main Info Card -->
+    <div class="col-lg-8">
+        <div class="card shadow mb-4">
+            <div class="card-header bg-info text-white">
+                <h4 class="mb-0">
+                    <i class="fas fa-tags me-2"></i>
+                    @Model.TenLoaiLinhKien
+                </h4>
+                <small class="opacity-75">Mã loại: #@Model.MaLoaiLinhKien</small>
+            </div>
+            <div class="card-body">
+                <!-- Type Info Grid -->
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <h6 class="text-muted mb-2">
+                            <i class="fas fa-shield-alt me-2"></i>Thời Gian Bảo Hành
+                        </h6>
+                        @if (Model.ThoiGianBaoHanh.HasValue && Model.ThoiGianBaoHanh > 0)
+                        {
+                            <h3 class="text-success mb-0">
+                                @Model.ThoiGianBaoHanh tháng
+                                <small class="text-muted">(@(TimeSpan.FromDays(Model.ThoiGianBaoHanh.Value * 30).Days) ngày)</small>
+                            </h3>
+                        }
+                        else
+                        {
+                            <h3 class="text-muted mb-0">
+                                <em>Không bảo hành</em>
+                            </h3>
+                        }
+                    </div>
+                    <div class="col-md-6">
+                        <h6 class="text-muted mb-2">
+                            <i class="fas fa-calendar-plus me-2"></i>Ngày Tạo
+                        </h6>
+                        <h4 class="text-primary mb-0">
+                            @Model.NgayTao.ToString("dd/MM/yyyy")
+                            <small class="text-muted">(@Model.NgayTao.ToString("HH:mm"))</small>
+                        </h4>
+                    </div>
+                </div>
+
+                <!-- Description -->
+                @if (!string.IsNullOrEmpty(Model.MoTa))
+                {
+                    <div class="mb-4">
+                        <h6 class="text-muted mb-3">
+                            <i class="fas fa-align-left me-2"></i>Mô Tả Chi Tiết
+                        </h6>
+                        <div class="bg-light p-3 rounded">
+                            <p class="mb-0 lh-lg">@Model.MoTa</p>
+                        </div>
+                    </div>
+                }
+
+                <!-- Status -->
+                <div class="mb-4">
+                    <h6 class="text-muted mb-2">
+                        <i class="fas fa-toggle-on me-2"></i>Trạng Thái Loại Linh Kiện
+                    </h6>
+                    <span class="badge @(Model.TrangThai ? "bg-success" : "bg-secondary") fs-6 px-3 py-2">
+                        <i class="fas @(Model.TrangThai ? "fa-check-circle" : "fa-pause-circle") me-2"></i>
+                        @Model.TrangThaiText
+                    </span>
+                </div>
+
+                <!-- Type Preview Card -->
+                <div class="mb-4">
+                    <h6 class="text-muted mb-3">
+                        <i class="fas fa-eye me-2"></i>Hiển Thị Trong Hệ Thống
+                    </h6>
+                    <div class="card border-2 @(Model.TrangThai ? "border-success" : "border-secondary")">
+                        <div class="card-body">
+                            <div class="row align-items-center">
+                                <div class="col-md-8">
+                                    <h5 class="card-title mb-2">
+                                        <i class="fas fa-tags me-2 text-primary"></i>
+                                        @Model.TenLoaiLinhKien
+                                    </h5>
+                                    @if (!string.IsNullOrEmpty(Model.MoTa))
+                                    {
+                                        <p class="card-text text-muted mb-0">
+                                            @(Model.MoTa.Length > 100 ? Model.MoTa.Substring(0, 100) + "..." : Model.MoTa)
+                                        </p>
+                                    }
+                                </div>
+                                <div class="col-md-4 text-end">
+                                    <div class="warranty-display">
+                                        @if (Model.ThoiGianBaoHanh.HasValue && Model.ThoiGianBaoHanh > 0)
+                                        {
+                                            <span class="badge bg-info fs-6 px-3 py-2">
+                                                <i class="fas fa-shield-alt me-1"></i>
+                                                @Model.ThoiGianBaoHanhText
+                                            </span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-secondary fs-6 px-3 py-2">
+                                                <i class="fas fa-times me-1"></i>
+                                                Không bảo hành
+                                            </span>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Related Items Statistics (Placeholder) -->
+        <div class="card shadow">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-chart-bar me-2"></i>
+                    Thống Kê Linh Kiện Thuộc Loại Này
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row text-center">
+                    <div class="col-md-3">
+                        <div class="border-end">
+                            <h3 class="text-primary mb-1">0</h3>
+                            <small class="text-muted">Tổng linh kiện</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="border-end">
+                            <h3 class="text-success mb-1">0</h3>
+                            <small class="text-muted">Còn hàng</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="border-end">
+                            <h3 class="text-warning mb-1">0</h3>
+                            <small class="text-muted">Hết hàng</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <h3 class="text-info mb-1">0</h3>
+                        <small class="text-muted">Đã sử dụng</small>
+                    </div>
+                </div>
+                <hr class="my-3">
+                <p class="text-muted text-center mb-0">
+                    <i class="fas fa-info-circle me-1"></i>
+                    Thống kê sẽ hiển thị khi có dữ liệu linh kiện
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sidebar Info -->
+    <div class="col-lg-4">
+        <!-- Quick Info -->
+        <div class="card shadow mb-4">
+            <div class="card-header">
+                <h6 class="mb-0">
+                    <i class="fas fa-info-circle me-2"></i>
+                    Thông Tin Nhanh
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <span class="text-muted">Mã loại:</span>
+                    <strong>#@Model.MaLoaiLinhKien</strong>
+                </div>
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <span class="text-muted">Ngày tạo:</span>
+                    <strong>@Model.NgayTao.ToString("dd/MM/yyyy")</strong>
+                </div>
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <span class="text-muted">Thời gian tạo:</span>
+                    <strong>@Model.NgayTao.ToString("HH:mm")</strong>
+                </div>
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <span class="text-muted">Độ dài tên:</span>
+                    <strong>@Model.TenLoaiLinhKien.Length ký tự</strong>
+                </div>
+                @if (!string.IsNullOrEmpty(Model.MoTa))
+                {
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <span class="text-muted">Độ dài mô tả:</span>
+                        <strong>@Model.MoTa.Length ký tự</strong>
+                    </div>
+                }
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <span class="text-muted">Thời gian bảo hành:</span>
+                    <strong class="text-info">@Model.ThoiGianBaoHanhText</strong>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="card shadow mb-4">
+            <div class="card-header">
+                <h6 class="mb-0">
+                    <i class="fas fa-bolt me-2"></i>
+                    Thao Tác Nhanh
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <button type="button" class="btn btn-outline-primary toggle-status" 
+                            data-id="@Model.MaLoaiLinhKien" 
+                            data-status="@Model.TrangThai.ToString().ToLower()">
+                        <i class="fas @(Model.TrangThai ? "fa-pause" : "fa-play") me-2"></i>
+                        @(Model.TrangThai ? "Tạm ngừng" : "Kích hoạt")
+                    </button>
+                    
+                    <a asp-action="Create" class="btn btn-outline-success">
+                        <i class="fas fa-copy me-2"></i>
+                        Tạo Loại Tương Tự
+                    </a>
+                    
+                    <button type="button" class="btn btn-outline-info" onclick="printTypeInfo()">
+                        <i class="fas fa-print me-2"></i>
+                        In Thông Tin
+                    </button>
+                    
+                    <button type="button" class="btn btn-outline-secondary" onclick="shareType()">
+                        <i class="fas fa-share me-2"></i>
+                        Chia Sẻ
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Warranty Info -->
+        <div class="card shadow mb-4">
+            <div class="card-header">
+                <h6 class="mb-0">
+                    <i class="fas fa-shield-alt me-2"></i>
+                    Thông Tin Bảo Hành
+                </h6>
+            </div>
+            <div class="card-body">
+                @if (Model.ThoiGianBaoHanh.HasValue && Model.ThoiGianBaoHanh > 0)
+                {
+                    <div class="text-center mb-3">
+                        <h2 class="text-success mb-0">@Model.ThoiGianBaoHanh</h2>
+                        <h5 class="text-muted">tháng bảo hành</h5>
+                    </div>
+                    <hr>
+                    <div class="small">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Tương đương:</span>
+                            <strong>@(Model.ThoiGianBaoHanh * 30) ngày</strong>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Hoặc khoảng:</span>
+                            <strong>@(Math.Round((decimal)Model.ThoiGianBaoHanh / 12, 1)) năm</strong>
+                        </div>
+                        @if (Model.ThoiGianBaoHanh >= 12)
+                        {
+                            <div class="alert alert-success alert-sm mt-2">
+                                <i class="fas fa-check-circle me-1"></i>
+                                Bảo hành dài hạn
+                            </div>
+                        }
+                        else if (Model.ThoiGianBaoHanh >= 6)
+                        {
+                            <div class="alert alert-warning alert-sm mt-2">
+                                <i class="fas fa-clock me-1"></i>
+                                Bảo hành trung bình
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="alert alert-info alert-sm mt-2">
+                                <i class="fas fa-info-circle me-1"></i>
+                                Bảo hành ngắn hạn
+                            </div>
+                        }
+                    </div>
+                }
+                else
+                {
+                    <div class="text-center text-muted py-3">
+                        <i class="fas fa-times-circle fa-2x mb-2 opacity-25"></i>
+                        <p class="mb-0">Loại linh kiện này không có bảo hành</p>
+                        <small>Thường áp dụng cho phụ kiện hoặc linh kiện cũ</small>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <!-- Related Types (Placeholder) -->
+        <div class="card shadow">
+            <div class="card-header">
+                <h6 class="mb-0">
+                    <i class="fas fa-link me-2"></i>
+                    Loại Linh Kiện Liên Quan
+                </h6>
+            </div>
+            <div class="card-body">
+                <p class="text-muted text-center mb-0">
+                    <i class="fas fa-search me-1"></i>
+                    Chưa có loại linh kiện liên quan
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Toggle Status AJAX
+        $('.toggle-status').on('click', function() {
+            const btn = $(this);
+            const id = btn.data('id');
+            const currentStatus = btn.data('status') === 'true';
+            
+            btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin me-2"></i>Đang xử lý...');
+            
+            $.post('@Url.Action("ToggleStatus")', { id: id })
+                .done(function(response) {
+                    if (response.success) {
+                        location.reload(); // Reload to update all status displays
+                    } else {
+                        alert('Có lỗi xảy ra: ' + response.message);
+                        btn.prop('disabled', false);
+                    }
+                })
+                .fail(function() {
+                    alert('Không thể kết nối đến server!');
+                    btn.prop('disabled', false);
+                });
+        });
+        
+        // Print function
+        function printTypeInfo() {
+            const printContent = `
+                <h2>Thông Tin Loại Linh Kiện</h2>
+                <p><strong>Mã:</strong> #@Model.MaLoaiLinhKien</p>
+                <p><strong>Tên:</strong> @Model.TenLoaiLinhKien</p>
+                <p><strong>Bảo hành:</strong> @Model.ThoiGianBaoHanhText</p>
+                <p><strong>Trạng thái:</strong> @Model.TrangThaiText</p>
+                @if (!string.IsNullOrEmpty(Model.MoTa))
+                {
+                    <text><p><strong>Mô tả:</strong> @Html.Raw(Model.MoTa.Replace("\n", "<br>"))</p></text>
+                }
+                <p><strong>Ngày tạo:</strong> @Model.NgayTao.ToString("dd/MM/yyyy HH:mm")</p>
+            `;
+            
+            const printWindow = window.open('', '_blank');
+            printWindow.document.write(`
+                <html>
+                    <head>
+                        <title>Thông Tin Loại Linh Kiện - @Model.TenLoaiLinhKien</title>
+                        <style>
+                            body { font-family: Arial, sans-serif; margin: 20px; }
+                            h2 { color: #333; border-bottom: 2px solid #007bff; padding-bottom: 10px; }
+                            p { margin: 10px 0; }
+                            strong { color: #333; }
+                        </style>
+                    </head>
+                    <body>
+                        ${printContent}
+                    </body>
+                </html>
+            `);
+            printWindow.document.close();
+            printWindow.print();
+        }
+        
+        // Share function
+        function shareType() {
+            const typeInfo = `Loại linh kiện: @Model.TenLoaiLinhKien
+Bảo hành: @Model.ThoiGianBaoHanhText
+Trạng thái: @Model.TrangThaiText`;
+            
+            if (navigator.share) {
+                navigator.share({
+                    title: 'Loại Linh Kiện - @Model.TenLoaiLinhKien',
+                    text: typeInfo
+                });
+            } else {
+                // Fallback: copy to clipboard
+                navigator.clipboard.writeText(typeInfo).then(function() {
+                    alert('Đã sao chép thông tin loại linh kiện vào clipboard!');
+                }).catch(function() {
+                    // Fallback for older browsers
+                    const textArea = document.createElement('textarea');
+                    textArea.value = typeInfo;
+                    document.body.appendChild(textArea);
+                    textArea.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(textArea);
+                    alert('Đã sao chép thông tin loại linh kiện vào clipboard!');
+                });
+            }
+        }
+    </script>
+}

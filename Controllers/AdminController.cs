@@ -31,8 +31,7 @@ namespace phonev2.Controllers
         // Các action methods cho từng module sẽ được thêm sau
         public IActionResult LoaiLinhKien()
         {
-            ViewData["Title"] = "Quản Lý Loại Linh Kiện";
-            return View();
+            return RedirectToAction("Index", "LoaiLinhKien");
         }
 
         public IActionResult NhaCungCap()

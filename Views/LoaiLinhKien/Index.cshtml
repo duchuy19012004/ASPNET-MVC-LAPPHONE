@@ -1,0 +1,388 @@
+@model IEnumerable<phonev2.Models.LoaiLinhKien>
+@{
+    Layout = "_AdminLayout";
+}
+
+@section PageActions {
+    <a asp-action="Create" class="btn btn-primary">
+        <i class="fas fa-plus me-1"></i> Thêm Loại Linh Kiện Mới
+    </a>
+}
+
+<!-- Search & Filter Section -->
+<div class="card mb-4">
+    <div class="card-body">
+        <form asp-action="Index" method="get" class="row g-3">
+            <div class="col-md-4">
+                <label class="form-label">Tìm kiếm</label>
+                <div class="input-group">
+                    <input type="text" name="searchString" value="@ViewData["CurrentFilter"]" 
+                           class="form-control" placeholder="Tên loại linh kiện, mô tả...">
+                    <button class="btn btn-outline-secondary" type="submit">
+                        <i class="fas fa-search"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Sắp xếp theo</label>
+                <select name="sortOrder" class="form-select" onchange="this.form.submit()">
+                    <option value="">Tên A-Z</option>
+                    <option value="name_desc" selected="@(ViewData["CurrentSort"]?.ToString() == "name_desc")">Tên Z-A</option>
+                    <option value="warranty" selected="@(ViewData["CurrentSort"]?.ToString() == "warranty")">Bảo hành ít → nhiều</option>
+                    <option value="warranty_desc" selected="@(ViewData["CurrentSort"]?.ToString() == "warranty_desc")">Bảo hành nhiều → ít</option>
+                    <option value="date" selected="@(ViewData["CurrentSort"]?.ToString() == "date")">Cũ nhất</option>
+                    <option value="date_desc" selected="@(ViewData["CurrentSort"]?.ToString() == "date_desc")">Mới nhất</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">Số lượng/trang</label>
+                <select name="pageSize" class="form-select" onchange="this.form.submit()">
+                    <option value="10" selected="@(ViewBag.PageSize == 10)">10</option>
+                    <option value="25" selected="@(ViewBag.PageSize == 25)">25</option>
+                    <option value="50" selected="@(ViewBag.PageSize == 50)">50</option>
+                </select>
+            </div>
+            <div class="col-md-3 d-flex align-items-end">
+                @if (!string.IsNullOrEmpty(ViewData["CurrentFilter"]?.ToString()))
+                {
+                    <a asp-action="Index" class="btn btn-outline-secondary">
+                        <i class="fas fa-times me-1"></i> Xóa lọc
+                    </a>
+                }
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Stats Cards -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card bg-primary text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4 class="mb-0">@ViewBag.TotalCount</h4>
+                        <p class="mb-0">Tổng Loại LK</p>
+                    </div>
+                    <i class="fas fa-tags fa-2x opacity-75"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-success text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4 class="mb-0">@Model.Count(l => l.TrangThai)</h4>
+                        <p class="mb-0">Đang Hoạt Động</p>
+                    </div>
+                    <i class="fas fa-check-circle fa-2x opacity-75"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-warning text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4 class="mb-0">@Model.Count(l => !l.TrangThai)</h4>
+                        <p class="mb-0">Ngừng Hoạt Động</p>
+                    </div>
+                    <i class="fas fa-pause-circle fa-2x opacity-75"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-info text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4 class="mb-0">@(Model.Where(l => l.ThoiGianBaoHanh.HasValue && l.ThoiGianBaoHanh > 0).Any() ? Model.Where(l => l.ThoiGianBaoHanh.HasValue && l.ThoiGianBaoHanh > 0).Average(l => l.ThoiGianBaoHanh).Value.ToString("0") + " tháng" : "N/A")</h4>
+                        <p class="mb-0">BH Trung Bình</p>
+                    </div>
+                    <i class="fas fa-shield-alt fa-2x opacity-75"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Data Table -->
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">
+            <i class="fas fa-list me-2"></i>
+            Danh Sách Loại Linh Kiện
+        </h5>
+        <small class="text-muted">
+            Hiển thị @((ViewBag.CurrentPage - 1) * ViewBag.PageSize + 1) - 
+            @(Math.Min(ViewBag.CurrentPage * ViewBag.PageSize, ViewBag.TotalCount)) 
+            trong tổng số @ViewBag.TotalCount loại linh kiện
+        </small>
+    </div>
+    <div class="card-body p-0">
+        @if (Model.Any())
+        {
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>
+                                <a asp-action="Index" 
+                                   asp-route-sortOrder="@ViewData["NameSortParm"]" 
+                                   asp-route-searchString="@ViewData["CurrentFilter"]"
+                                   class="text-decoration-none">
+                                    Tên Loại Linh Kiện
+                                    @if (ViewData["CurrentSort"]?.ToString() == "")
+                                    {
+                                        <i class="fas fa-sort-up"></i>
+                                    }
+                                    else if (ViewData["CurrentSort"]?.ToString() == "name_desc")
+                                    {
+                                        <i class="fas fa-sort-down"></i>
+                                    }
+                                    else
+                                    {
+                                        <i class="fas fa-sort text-muted"></i>
+                                    }
+                                </a>
+                            </th>
+                            <th>Mô Tả</th>
+                            <th>
+                                <a asp-action="Index" 
+                                   asp-route-sortOrder="@ViewData["WarrantySortParm"]" 
+                                   asp-route-searchString="@ViewData["CurrentFilter"]"
+                                   class="text-decoration-none">
+                                    Bảo Hành
+                                    @if (ViewData["CurrentSort"]?.ToString() == "warranty")
+                                    {
+                                        <i class="fas fa-sort-up"></i>
+                                    }
+                                    else if (ViewData["CurrentSort"]?.ToString() == "warranty_desc")
+                                    {
+                                        <i class="fas fa-sort-down"></i>
+                                    }
+                                    else
+                                    {
+                                        <i class="fas fa-sort text-muted"></i>
+                                    }
+                                </a>
+                            </th>
+                            <th>Trạng Thái</th>
+                            <th>
+                                <a asp-action="Index" 
+                                   asp-route-sortOrder="@ViewData["DateSortParm"]" 
+                                   asp-route-searchString="@ViewData["CurrentFilter"]"
+                                   class="text-decoration-none">
+                                    Ngày Tạo
+                                    @if (ViewData["CurrentSort"]?.ToString() == "date")
+                                    {
+                                        <i class="fas fa-sort-up"></i>
+                                    }
+                                    else if (ViewData["CurrentSort"]?.ToString() == "date_desc")
+                                    {
+                                        <i class="fas fa-sort-down"></i>
+                                    }
+                                    else
+                                    {
+                                        <i class="fas fa-sort text-muted"></i>
+                                    }
+                                </a>
+                            </th>
+                            <th width="200">Thao Tác</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model)
+                        {
+                            <tr>
+                                <td>
+                                    <strong>@item.TenLoaiLinhKien</strong>
+                                </td>
+                                <td>
+                                    @if (!string.IsNullOrEmpty(item.MoTa))
+                                    {
+                                        <span title="@item.MoTa">
+                                            @(item.MoTa.Length > 50 ? item.MoTa.Substring(0, 50) + "..." : item.MoTa)
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <em class="text-muted">Chưa có mô tả</em>
+                                    }
+                                </td>
+                                <td>
+                                    @if (item.ThoiGianBaoHanh.HasValue && item.ThoiGianBaoHanh > 0)
+                                    {
+                                        <span class="badge bg-info">
+                                            <i class="fas fa-shield-alt me-1"></i>
+                                            @item.ThoiGianBaoHanhText
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-secondary">
+                                            <i class="fas fa-times me-1"></i>
+                                            Không bảo hành
+                                        </span>
+                                    }
+                                </td>
+                                <td>
+                                    <button type="button" 
+                                            class="btn btn-sm @(item.TrangThai ? "btn-success" : "btn-secondary") toggle-status" 
+                                            data-id="@item.MaLoaiLinhKien"
+                                            data-status="@item.TrangThai.ToString().ToLower()">
+                                        <i class="fas @(item.TrangThai ? "fa-check" : "fa-times") me-1"></i>
+                                        @item.TrangThaiText
+                                    </button>
+                                </td>
+                                <td>
+                                    <small class="text-muted">@item.NgayTao.ToString("dd/MM/yyyy")</small>
+                                </td>
+                                <td>
+                                    <div class="btn-group" role="group">
+                                        <a asp-action="Details" asp-route-id="@item.MaLoaiLinhKien" 
+                                           class="btn btn-sm btn-outline-info" title="Xem chi tiết">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        <a asp-action="Edit" asp-route-id="@item.MaLoaiLinhKien" 
+                                           class="btn btn-sm btn-outline-warning" title="Chỉnh sửa">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        <a asp-action="Delete" asp-route-id="@item.MaLoaiLinhKien" 
+                                           class="btn btn-sm btn-outline-danger" title="Xóa">
+                                            <i class="fas fa-trash"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination -->
+            @if (ViewBag.TotalPages > 1)
+            {
+                <div class="card-footer">
+                    <nav aria-label="Phân trang">
+                        <ul class="pagination justify-content-center mb-0">
+                            @if (ViewBag.CurrentPage > 1)
+                            {
+                                <li class="page-item">
+                                    <a class="page-link" asp-action="Index" 
+                                       asp-route-page="@(ViewBag.CurrentPage - 1)"
+                                       asp-route-searchString="@ViewData["CurrentFilter"]"
+                                       asp-route-sortOrder="@ViewData["CurrentSort"]">
+                                        <i class="fas fa-chevron-left"></i> Trước
+                                    </a>
+                                </li>
+                            }
+
+                            @for (int i = Math.Max(1, ViewBag.CurrentPage - 2); i <= Math.Min(ViewBag.TotalPages, ViewBag.CurrentPage + 2); i++)
+                            {
+                                <li class="page-item @(i == ViewBag.CurrentPage ? "active" : "")">
+                                    <a class="page-link" asp-action="Index" 
+                                       asp-route-page="@i"
+                                       asp-route-searchString="@ViewData["CurrentFilter"]"
+                                       asp-route-sortOrder="@ViewData["CurrentSort"]">
+                                        @i
+                                    </a>
+                                </li>
+                            }
+
+                            @if (ViewBag.CurrentPage < ViewBag.TotalPages)
+                            {
+                                <li class="page-item">
+                                    <a class="page-link" asp-action="Index" 
+                                       asp-route-page="@(ViewBag.CurrentPage + 1)"
+                                       asp-route-searchString="@ViewData["CurrentFilter"]"
+                                       asp-route-sortOrder="@ViewData["CurrentSort"]">
+                                        Sau <i class="fas fa-chevron-right"></i>
+                                    </a>
+                                </li>
+                            }
+                        </ul>
+                    </nav>
+                </div>
+            }
+        }
+        else
+        {
+            <div class="text-center py-5">
+                <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+                <h5 class="text-muted">Không tìm thấy loại linh kiện nào</h5>
+                @if (!string.IsNullOrEmpty(ViewData["CurrentFilter"]?.ToString()))
+                {
+                    <p class="text-muted">Thử thay đổi từ khóa tìm kiếm hoặc <a asp-action="Index">xóa bộ lọc</a></p>
+                }
+                else
+                {
+                    <p class="text-muted">Hãy <a asp-action="Create">thêm loại linh kiện đầu tiên</a> của bạn</p>
+                }
+            </div>
+        }
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Toggle Status AJAX
+        $('.toggle-status').on('click', function() {
+            const btn = $(this);
+            const id = btn.data('id');
+            const currentStatus = btn.data('status') === 'true';
+            
+            btn.prop('disabled', true);
+            
+            $.post('@Url.Action("ToggleStatus")', { id: id })
+                .done(function(response) {
+                    if (response.success) {
+                        const newStatus = response.status;
+                        btn.data('status', newStatus.toString());
+                        
+                        if (newStatus) {
+                            btn.removeClass('btn-secondary').addClass('btn-success');
+                            btn.html('<i class="fas fa-check me-1"></i>Hoạt động');
+                        } else {
+                            btn.removeClass('btn-success').addClass('btn-secondary');
+                            btn.html('<i class="fas fa-times me-1"></i>Ngừng hoạt động');
+                        }
+                        
+                        // Show toast notification
+                        showToast('Đã cập nhật trạng thái thành công!', 'success');
+                    } else {
+                        showToast('Có lỗi xảy ra: ' + response.message, 'error');
+                    }
+                })
+                .fail(function() {
+                    showToast('Không thể kết nối đến server!', 'error');
+                })
+                .always(function() {
+                    btn.prop('disabled', false);
+                });
+        });
+        
+        // Toast notification function
+        function showToast(message, type) {
+            const toastId = 'toast-' + Date.now();
+            const toastClass = type === 'success' ? 'bg-success' : 'bg-danger';
+            
+            const toast = `
+                <div id="${toastId}" class="toast ${toastClass} text-white" role="alert" style="position: fixed; top: 20px; right: 20px; z-index: 9999;">
+                    <div class="toast-body">
+                        ${message}
+                    </div>
+                </div>
+            `;
+            
+            $('body').append(toast);
+            $('#' + toastId).toast({ delay: 3000 }).toast('show');
+            
+            setTimeout(() => $('#' + toastId).remove(), 4000);
+        }
+    </script>
+}
