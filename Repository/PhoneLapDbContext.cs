@@ -20,10 +20,6 @@ namespace phonev2.Repository
         public DbSet<PhieuNhap> PhieuNhap { get; set; }
         public DbSet<ChiTietPhieuNhap> ChiTietPhieuNhap { get; set; }
         
-        // THÊM MỚI - DbSet cho PhieuSua modules
-        public DbSet<PhieuSua> PhieuSua { get; set; }
-        public DbSet<ChiTiet_SuaChua> ChiTiet_SuaChua { get; set; }
-        public DbSet<ChiTietLK> ChiTietLK { get; set; }
         
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -248,107 +244,7 @@ namespace phonev2.Repository
                 entity.HasCheckConstraint("CK_ChiTietPhieuNhap_ThanhTien", "ThanhTien >= 0");
             });
 
-            // ===== THÊM MỚI - Cấu hình bảng PhieuSua =====
-            modelBuilder.Entity<PhieuSua>(entity =>
-            {
-                entity.Property(e => e.NgayNhan).IsRequired();
-                entity.Property(e => e.TinhTrangNhan).HasMaxLength(100).IsRequired();
-                entity.Property(e => e.MoTaLoi).HasMaxLength(500);
-                entity.Property(e => e.TrangThai).HasMaxLength(50).IsRequired();
-                entity.Property(e => e.TongTien).HasColumnType("decimal(18,2)").IsRequired();
-                entity.Property(e => e.GhiChu).HasMaxLength(500);
-
-                // Foreign Key relationships
-                entity.HasOne(e => e.KhachHang)
-                      .WithMany()
-                      .HasForeignKey(e => e.MaKhachHang)
-                      .OnDelete(DeleteBehavior.Restrict);
-
-                entity.HasOne(e => e.NhanVien)
-                      .WithMany()
-                      .HasForeignKey(e => e.MaNhanVien)
-                      .OnDelete(DeleteBehavior.Restrict);
-
-                entity.HasOne(e => e.ThietBi)
-                      .WithMany()
-                      .HasForeignKey(e => e.MaThietBi)
-                      .OnDelete(DeleteBehavior.Restrict);
-
-                // Index cho tìm kiếm nhanh
-                entity.HasIndex(e => e.NgayNhan);
-                entity.HasIndex(e => e.NgayHenTra);
-                entity.HasIndex(e => e.NgayTraThucTe);
-                entity.HasIndex(e => e.TrangThai);
-                entity.HasIndex(e => e.MaKhachHang);
-                entity.HasIndex(e => e.MaNhanVien);
-                entity.HasIndex(e => e.MaThietBi);
-                entity.HasIndex(e => e.TongTien);
-
-                // Check constraints
-                entity.HasCheckConstraint("CK_PhieuSua_TongTien", "TongTien >= 0");
-                entity.HasCheckConstraint("CK_PhieuSua_TrangThai", 
-                    "TrangThai IN ('Tiếp nhận', 'Đang sửa', 'Chờ linh kiện', 'Hoàn thành', 'Đã giao', 'Hủy')");
-            });
-
-            // ===== THÊM MỚI - Cấu hình bảng ChiTiet_SuaChua =====
-            modelBuilder.Entity<ChiTiet_SuaChua>(entity =>
-            {
-                // Composite Primary Key
-                entity.HasKey(e => new { e.MaPhieuSua, e.MaDichVu });
-
-                entity.Property(e => e.GhiChu).HasMaxLength(500).IsRequired();
-                entity.Property(e => e.GiaDichVu).HasColumnType("decimal(18,2)").IsRequired();
-
-                // Foreign Key relationships
-                entity.HasOne(e => e.PhieuSua)
-                      .WithMany(p => p.ChiTiet_SuaChuas)
-                      .HasForeignKey(e => e.MaPhieuSua)
-                      .OnDelete(DeleteBehavior.Cascade);
-
-                entity.HasOne(e => e.DichVu)
-                      .WithMany()
-                      .HasForeignKey(e => e.MaDichVu)
-                      .OnDelete(DeleteBehavior.Restrict);
-
-                // Index cho tìm kiếm nhanh
-                entity.HasIndex(e => e.MaPhieuSua);
-                entity.HasIndex(e => e.MaDichVu);
-
-                // Check constraints
-                entity.HasCheckConstraint("CK_ChiTiet_SuaChua_GiaDichVu", "GiaDichVu >= 0");
-            });
-
-            // ===== THÊM MỚI - Cấu hình bảng ChiTietLK =====
-            modelBuilder.Entity<ChiTietLK>(entity =>
-            {
-                // Composite Primary Key
-                entity.HasKey(e => new { e.MaPhieuSua, e.MaLinhKien });
-
-                entity.Property(e => e.SoLuong).IsRequired();
-                entity.Property(e => e.GiaBan).HasColumnType("decimal(18,2)").IsRequired();
-                entity.Property(e => e.ThanhTien).HasColumnType("decimal(18,2)").IsRequired();
-                entity.Property(e => e.GhiChu).HasMaxLength(200);
-
-                // Foreign Key relationships
-                entity.HasOne(e => e.PhieuSua)
-                      .WithMany(p => p.ChiTietLKs)
-                      .HasForeignKey(e => e.MaPhieuSua)
-                      .OnDelete(DeleteBehavior.Cascade);
-
-                entity.HasOne(e => e.LinhKien)
-                      .WithMany()
-                      .HasForeignKey(e => e.MaLinhKien)
-                      .OnDelete(DeleteBehavior.Restrict);
-
-                // Index cho tìm kiếm nhanh
-                entity.HasIndex(e => e.MaPhieuSua);
-                entity.HasIndex(e => e.MaLinhKien);
-
-                // Check constraints
-                entity.HasCheckConstraint("CK_ChiTietLK_SoLuong", "SoLuong > 0");
-                entity.HasCheckConstraint("CK_ChiTietLK_GiaBan", "GiaBan >= 0");
-                entity.HasCheckConstraint("CK_ChiTietLK_ThanhTien", "ThanhTien >= 0");
-            });
+            
         }
     }
 }
