@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using phonev2.Repository;
 
@@ -11,9 +12,11 @@ using phonev2.Repository;
 namespace phonev2.Migrations
 {
     [DbContext(typeof(PhoneLapDbContext))]
-    partial class PhoneLapDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250707060005_phieusuav2")]
+    partial class phieusuav2
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -22,47 +25,29 @@ namespace phonev2.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
-            modelBuilder.Entity("phonev2.Models.ChiTietPhieuNhap", b =>
+            modelBuilder.Entity("phonev2.Models.ChiTiet_SuaChua", b =>
                 {
-                    b.Property<int>("MaPhieuNhap")
+                    b.Property<int>("MaPhieuSua")
                         .HasColumnType("int")
-                        .HasColumnName("maphieunhap");
+                        .HasColumnName("maphieusua");
 
-                    b.Property<int>("MaLinhKien")
+                    b.Property<int>("MaDichVu")
                         .HasColumnType("int")
-                        .HasColumnName("malinhkien");
+                        .HasColumnName("madichvu");
 
                     b.Property<string>("GhiChu")
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)")
                         .HasColumnName("ghichu");
 
-                    b.Property<decimal>("GiaNhap")
-                        .HasColumnType("decimal(18,2)")
-                        .HasColumnName("gianhap");
+                    b.HasKey("MaPhieuSua", "MaDichVu");
 
-                    b.Property<int>("SoLuong")
-                        .HasColumnType("int")
-                        .HasColumnName("soluong");
+                    b.HasIndex("MaDichVu");
 
-                    b.Property<decimal>("ThanhTien")
-                        .HasColumnType("decimal(18,2)")
-                        .HasColumnName("thanhtien");
+                    b.HasIndex("MaPhieuSua");
 
-                    b.HasKey("MaPhieuNhap", "MaLinhKien");
-
-                    b.HasIndex("MaLinhKien");
-
-                    b.HasIndex("MaPhieuNhap");
-
-                    b.ToTable("ChiTietPhieuNhap", t =>
-                        {
-                            t.HasCheckConstraint("CK_ChiTietPhieuNhap_GiaNhap", "GiaNhap >= 0");
-
-                            t.HasCheckConstraint("CK_ChiTietPhieuNhap_SoLuong", "SoLuong > 0");
-
-                            t.HasCheckConstraint("CK_ChiTietPhieuNhap_ThanhTien", "ThanhTien >= 0");
-                        });
+                    b.ToTable("ChiTiet_SuaChua");
                 });
 
             modelBuilder.Entity("phonev2.Models.DichVu", b =>
@@ -448,41 +433,49 @@ namespace phonev2.Migrations
                         });
                 });
 
-            modelBuilder.Entity("phonev2.Models.PhieuNhap", b =>
+            modelBuilder.Entity("phonev2.Models.PhieuSua", b =>
                 {
-                    b.Property<int>("MaPhieuNhap")
+                    b.Property<int>("MaPhieuSua")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int")
-                        .HasColumnName("maphieunhap");
+                        .HasColumnName("maphieusua");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("MaPhieuNhap"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("MaPhieuSua"));
 
-                    b.Property<string>("GhiChu")
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)")
-                        .HasColumnName("ghichu");
-
-                    b.Property<int>("MaNhaCungCap")
+                    b.Property<int>("MaKhachHang")
                         .HasColumnType("int")
-                        .HasColumnName("manhacungcap");
+                        .HasColumnName("makhachhang");
 
                     b.Property<int>("MaNhanVien")
                         .HasColumnType("int")
                         .HasColumnName("manhanvien");
 
-                    b.Property<DateTime?>("NgayCapNhat")
-                        .HasColumnType("datetime2")
-                        .HasColumnName("ngaycapnhat");
+                    b.Property<int>("MaThietBi")
+                        .HasColumnType("int")
+                        .HasColumnName("mathietbi");
 
-                    b.Property<DateTime>("NgayNhap")
-                        .HasColumnType("datetime2")
-                        .HasColumnName("ngaynhap");
+                    b.Property<string>("MoTaLoi")
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)")
+                        .HasColumnName("motaloi");
 
-                    b.Property<DateTime>("NgayTao")
-                        .ValueGeneratedOnAdd()
+                    b.Property<DateTime?>("NgayHenTra")
                         .HasColumnType("datetime2")
-                        .HasColumnName("ngaytao")
-                        .HasDefaultValueSql("GETDATE()");
+                        .HasColumnName("ngayhentra");
+
+                    b.Property<DateTime>("NgayNhan")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("ngaynhan");
+
+                    b.Property<DateTime?>("NgayTraThucTe")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("ngaytrathucte");
+
+                    b.Property<string>("TinhTrangNhan")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)")
+                        .HasColumnName("tinhtrangnhan");
 
                     b.Property<decimal>("TongTien")
                         .ValueGeneratedOnAdd()
@@ -493,30 +486,36 @@ namespace phonev2.Migrations
                     b.Property<string>("TrangThai")
                         .IsRequired()
                         .ValueGeneratedOnAdd()
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)")
-                        .HasDefaultValue("Nháp")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)")
+                        .HasDefaultValue("Chờ xử lý")
                         .HasColumnName("trangthai");
 
-                    b.HasKey("MaPhieuNhap");
+                    b.HasKey("MaPhieuSua");
 
-                    b.HasIndex("MaNhaCungCap");
+                    b.HasIndex("MaKhachHang");
 
                     b.HasIndex("MaNhanVien");
 
-                    b.HasIndex("NgayNhap");
+                    b.HasIndex("MaThietBi");
 
-                    b.HasIndex("NgayTao");
+                    b.HasIndex("NgayHenTra");
+
+                    b.HasIndex("NgayNhan");
+
+                    b.HasIndex("NgayTraThucTe");
+
+                    b.HasIndex("TongTien");
 
                     b.HasIndex("TrangThai");
 
-                    b.ToTable("PhieuNhap", t =>
+                    b.ToTable("PhieuSua", t =>
                         {
-                            t.HasCheckConstraint("CK_PhieuNhap_NgayNhap", "NgayNhap <= GETDATE()");
+                            t.HasCheckConstraint("CK_PhieuSua_NgayHenTra", "NgayHenTra IS NULL OR NgayHenTra >= NgayNhan");
 
-                            t.HasCheckConstraint("CK_PhieuNhap_TongTien", "TongTien >= 0");
+                            t.HasCheckConstraint("CK_PhieuSua_NgayTraThucTe", "NgayTraThucTe IS NULL OR NgayTraThucTe >= NgayNhan");
 
-                            t.HasCheckConstraint("CK_PhieuNhap_TrangThai", "TrangThai IN ('Nháp', 'Đã xác nhận')");
+                            t.HasCheckConstraint("CK_PhieuSua_TongTien", "TongTien >= 0");
                         });
                 });
 
@@ -575,23 +574,23 @@ namespace phonev2.Migrations
                     b.ToTable("ThietBi");
                 });
 
-            modelBuilder.Entity("phonev2.Models.ChiTietPhieuNhap", b =>
+            modelBuilder.Entity("phonev2.Models.ChiTiet_SuaChua", b =>
                 {
-                    b.HasOne("phonev2.Models.LinhKien", "LinhKien")
+                    b.HasOne("phonev2.Models.DichVu", "DichVu")
                         .WithMany()
-                        .HasForeignKey("MaLinhKien")
+                        .HasForeignKey("MaDichVu")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("phonev2.Models.PhieuNhap", "PhieuNhap")
-                        .WithMany("ChiTietPhieuNhaps")
-                        .HasForeignKey("MaPhieuNhap")
+                    b.HasOne("phonev2.Models.PhieuSua", "PhieuSua")
+                        .WithMany("ChiTiet_SuaChuas")
+                        .HasForeignKey("MaPhieuSua")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("LinhKien");
+                    b.Navigation("DichVu");
 
-                    b.Navigation("PhieuNhap");
+                    b.Navigation("PhieuSua");
                 });
 
             modelBuilder.Entity("phonev2.Models.LinhKien", b =>
@@ -605,11 +604,11 @@ namespace phonev2.Migrations
                     b.Navigation("LoaiLinhKien");
                 });
 
-            modelBuilder.Entity("phonev2.Models.PhieuNhap", b =>
+            modelBuilder.Entity("phonev2.Models.PhieuSua", b =>
                 {
-                    b.HasOne("phonev2.Models.NhaCungCap", "NhaCungCap")
+                    b.HasOne("phonev2.Models.KhachHang", "KhachHang")
                         .WithMany()
-                        .HasForeignKey("MaNhaCungCap")
+                        .HasForeignKey("MaKhachHang")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
@@ -619,9 +618,17 @@ namespace phonev2.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.Navigation("NhaCungCap");
+                    b.HasOne("phonev2.Models.ThietBi", "ThietBi")
+                        .WithMany()
+                        .HasForeignKey("MaThietBi")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("KhachHang");
 
                     b.Navigation("NhanVien");
+
+                    b.Navigation("ThietBi");
                 });
 
             modelBuilder.Entity("phonev2.Models.ThietBi", b =>
@@ -635,9 +642,9 @@ namespace phonev2.Migrations
                     b.Navigation("KhachHang");
                 });
 
-            modelBuilder.Entity("phonev2.Models.PhieuNhap", b =>
+            modelBuilder.Entity("phonev2.Models.PhieuSua", b =>
                 {
-                    b.Navigation("ChiTietPhieuNhaps");
+                    b.Navigation("ChiTiet_SuaChuas");
                 });
 #pragma warning restore 612, 618
         }

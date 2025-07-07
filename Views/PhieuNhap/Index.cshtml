@@ -1,0 +1,172 @@
+@model IEnumerable<phonev2.Models.PhieuNhap>
+
+@{
+    ViewData["Title"] = "Quản Lý Phiếu Nhập";
+    Layout = "_AdminLayout";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h3 class="card-title">@ViewData["Title"]</h3>
+                    <a asp-action="Create" class="btn btn-primary">
+                        <i class="fas fa-plus"></i> Tạo Phiếu Nhập
+                    </a>
+                </div>
+
+                <div class="card-body">
+                    <!-- Filter Form -->
+                    <form method="get" class="row mb-3">
+                        <div class="col-md-3">
+                            <input type="text" name="searchString" value="@ViewData["CurrentFilter"]" 
+                                   class="form-control" placeholder="Tìm kiếm...">
+                        </div>
+                        <div class="col-md-2">
+                            <select name="statusFilter" class="form-control">
+                                <option value="">Tất cả trạng thái</option>
+                                <option value="Nháp" selected="@(ViewData["CurrentStatus"]?.ToString() == "Nháp")">Nháp</option>
+                                <option value="Đã xác nhận" selected="@(ViewData["CurrentStatus"]?.ToString() == "Đã xác nhận")">Đã xác nhận</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <select name="supplierFilter" class="form-control">
+                                <option value="">Tất cả nhà cung cấp</option>
+                                @foreach (var supplier in (List<SelectListItem>)ViewData["Suppliers"])
+                                {
+                                    <option value="@supplier.Value" selected="@(ViewData["CurrentSupplier"]?.ToString() == supplier.Value)">
+                                        @supplier.Text
+                                    </option>
+                                }
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <button type="submit" class="btn btn-info">Lọc</button>
+                        </div>
+                    </form>
+
+                    <!-- Table -->
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-striped">
+                            <thead>
+                                <tr>
+                                    <th>
+                                        <a asp-action="Index" asp-route-sortOrder="@ViewData["DateSortParm"]">
+                                            Mã PN
+                                        </a>
+                                    </th>
+                                    <th>
+                                        <a asp-action="Index" asp-route-sortOrder="@ViewData["SupplierSortParm"]">
+                                            Nhà Cung Cấp
+                                        </a>
+                                    </th>
+                                    <th>Nhân Viên</th>
+                                    <th>Ngày Nhập</th>
+                                    <th>
+                                        <a asp-action="Index" asp-route-sortOrder="@ViewData["TotalSortParm"]">
+                                            Tổng Tiền
+                                        </a>
+                                    </th>
+                                    <th>
+                                        <a asp-action="Index" asp-route-sortOrder="@ViewData["StatusSortParm"]">
+                                            Trạng Thái
+                                        </a>
+                                    </th>
+                                    <th>Thao Tác</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var item in Model)
+                                {
+                                    <tr>
+                                        <td>PN-@item.MaPhieuNhap</td>
+                                        <td>@item.NhaCungCap?.TenNhaCungCap</td>
+                                        <td>@item.NhanVien?.HoTen</td>
+                                        <td>@item.NgayNhap.ToString("dd/MM/yyyy")</td>
+                                        <td>@item.TongTien.ToString("C0")</td>
+                                        <td>
+                                            @if (item.TrangThai == "Nháp")
+                                            {
+                                                <span class="badge badge-warning">Nháp</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge badge-success">Đã xác nhận</span>
+                                            }
+                                        </td>
+                                        <td>
+                                            <a asp-action="Details" asp-route-id="@item.MaPhieuNhap" 
+                                               class="btn btn-info btn-sm">Chi tiết</a>
+                                            
+                                            @if (item.TrangThai == "Nháp")
+                                            {
+                                                <a asp-action="Edit" asp-route-id="@item.MaPhieuNhap" 
+                                                   class="btn btn-warning btn-sm">Sửa</a>
+                                                
+                                                <button class="btn btn-success btn-sm" 
+                                                        onclick="confirmPhieuNhap(@item.MaPhieuNhap)">
+                                                    Xác nhận
+                                                </button>
+                                                
+                                                <button class="btn btn-danger btn-sm" 
+                                                        onclick="deletePhieuNhap(@item.MaPhieuNhap)">
+                                                    Xóa
+                                                </button>
+                                            }
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Pagination -->
+                    @if ((int)ViewData["TotalPages"] > 1)
+                    {
+                        <nav>
+                            <ul class="pagination justify-content-center">
+                                @for (int i = 1; i <= (int)ViewData["TotalPages"]; i++)
+                                {
+                                    <li class="page-item @(i == (int)ViewData["CurrentPage"] ? "active" : "")">
+                                        <a class="page-link" asp-action="Index" asp-route-page="@i">@i</a>
+                                    </li>
+                                }
+                            </ul>
+                        </nav>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function confirmPhieuNhap(id) {
+    if (confirm('Bạn có chắc chắn muốn xác nhận phiếu nhập này? Sau khi xác nhận sẽ không thể sửa đổi.')) {
+        $.post('@Url.Action("Confirm")', { id: id })
+            .done(function(response) {
+                if (response.success) {
+                    alert(response.message);
+                    location.reload();
+                } else {
+                    alert(response.message);
+                }
+            });
+    }
+}
+
+function deletePhieuNhap(id) {
+    if (confirm('Bạn có chắc chắn muốn xóa phiếu nhập này?')) {
+        $.post('@Url.Action("Delete")', { id: id })
+            .done(function(response) {
+                if (response.success) {
+                    alert(response.message);
+                    location.reload();
+                } else {
+                    alert(response.message);
+                }
+            });
+    }
+}
+</script>

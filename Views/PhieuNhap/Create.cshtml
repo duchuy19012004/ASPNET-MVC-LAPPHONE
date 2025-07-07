@@ -1,0 +1,237 @@
+@model phonev2.Models.PhieuNhap
+
+@{
+    ViewData["Title"] = "Tạo Phiếu Nhập Mới";
+    Layout = "_AdminLayout";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">@ViewData["Title"]</h3>
+                </div>
+
+                <div class="card-body">
+                    <form asp-action="Create" method="post" id="phieuNhapForm">
+                        <div class="row">
+                            <!-- Thông tin phiếu nhập -->
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label asp-for="MaNhaCungCap">Nhà Cung Cấp</label>
+                                    <select asp-for="MaNhaCungCap" class="form-control" required>
+                                        <option value="">-- Chọn nhà cung cấp --</option>
+                                        @foreach (var item in (List<SelectListItem>)ViewData["NhaCungCaps"])
+                                        {
+                                            <option value="@item.Value">@item.Text</option>
+                                        }
+                                    </select>
+                                    <span asp-validation-for="MaNhaCungCap" class="text-danger"></span>
+                                </div>
+
+                                <div class="form-group">
+                                    <label asp-for="MaNhanVien">Nhân Viên</label>
+                                    <select asp-for="MaNhanVien" class="form-control" required>
+                                        <option value="">-- Chọn nhân viên --</option>
+                                        @foreach (var item in (List<SelectListItem>)ViewData["NhanViens"])
+                                        {
+                                            <option value="@item.Value">@item.Text</option>
+                                        }
+                                    </select>
+                                    <span asp-validation-for="MaNhanVien" class="text-danger"></span>
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label asp-for="NgayNhap">Ngày Nhập</label>
+                                    <input asp-for="NgayNhap" type="date" class="form-control" required />
+                                    <span asp-validation-for="NgayNhap" class="text-danger"></span>
+                                </div>
+
+                                <div class="form-group">
+                                    <label asp-for="GhiChu">Ghi Chú</label>
+                                    <textarea asp-for="GhiChu" class="form-control" rows="3"></textarea>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Chi tiết phiếu nhập -->
+                        <hr>
+                        <h4>Chi Tiết Linh Kiện</h4>
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-4">
+                                <select id="linhKienSelect" class="form-control">
+                                    <option value="">-- Chọn linh kiện --</option>
+                                    @foreach (var lk in (dynamic)ViewData["LinhKiens"])
+                                    {
+                                        <option value="@lk.MaLinhKien" 
+                                                data-ten="@lk.TenLinhKien" 
+                                                data-loai="@lk.LoaiLinhKien"
+                                                data-gianhap="@lk.GiaNhap"
+                                                data-ton="@lk.SoLuongTon">
+                                            @lk.TenLinhKien (@lk.LoaiLinhKien)
+                                        </option>
+                                    }
+                                </select>
+                            </div>
+                            <div class="col-md-2">
+                                <input type="number" id="soLuongInput" class="form-control" placeholder="Số lượng" min="1">
+                            </div>
+                            <div class="col-md-2">
+                                <input type="number" id="giaNhapInput" class="form-control" placeholder="Giá nhập" step="0.01" min="0">
+                            </div>
+                            <div class="col-md-2">
+                                <input type="text" id="ghiChuInput" class="form-control" placeholder="Ghi chú">
+                            </div>
+                            <div class="col-md-2">
+                                <button type="button" id="addItemBtn" class="btn btn-primary">Thêm</button>
+                            </div>
+                        </div>
+
+                        <!-- Bảng chi tiết -->
+                        <div class="table-responsive">
+                            <table class="table table-bordered" id="chiTietTable">
+                                <thead>
+                                    <tr>
+                                        <th>Tên Linh Kiện</th>
+                                        <th>Loại</th>
+                                        <th>Số Lượng</th>
+                                        <th>Giá Nhập</th>
+                                        <th>Thành Tiền</th>
+                                        <th>Ghi Chú</th>
+                                        <th>Thao Tác</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <!-- Dynamic content -->
+                                </tbody>
+                                <tfoot>
+                                    <tr class="table-info">
+                                        <td colspan="4" class="text-right"><strong>Tổng Cộng:</strong></td>
+                                        <td id="tongTien" class="text-right"><strong>0 ₫</strong></td>
+                                        <td colspan="2"></td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+
+                        <input type="hidden" name="chiTietJson" id="chiTietJson">
+
+                        <div class="form-group mt-3">
+                            <button type="submit" class="btn btn-success">Tạo Phiếu Nhập</button>
+                            <a asp-action="Index" class="btn btn-secondary">Hủy</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+let chiTietList = [];
+
+// Thêm item vào chi tiết
+$('#addItemBtn').click(function() {
+    const linhKienSelect = $('#linhKienSelect');
+    const selectedOption = linhKienSelect.find('option:selected');
+    
+    if (!selectedOption.val()) {
+        alert('Vui lòng chọn linh kiện!');
+        return;
+    }
+    
+    const soLuong = parseInt($('#soLuongInput').val());
+    const giaNhap = parseFloat($('#giaNhapInput').val());
+    
+    if (!soLuong || soLuong <= 0) {
+        alert('Vui lòng nhập số lượng hợp lệ!');
+        return;
+    }
+    
+    if (!giaNhap || giaNhap < 0) {
+        alert('Vui lòng nhập giá nhập hợp lệ!');
+        return;
+    }
+    
+    const item = {
+        MaLinhKien: parseInt(selectedOption.val()),
+        TenLinhKien: selectedOption.data('ten'),
+        LoaiLinhKien: selectedOption.data('loai'),
+        SoLuong: soLuong,
+        GiaNhap: giaNhap,
+        ThanhTien: soLuong * giaNhap,
+        GhiChu: $('#ghiChuInput').val()
+    };
+    
+    // Kiểm tra trùng lặp
+    const existIndex = chiTietList.findIndex(x => x.MaLinhKien === item.MaLinhKien);
+    if (existIndex >= 0) {
+        chiTietList[existIndex] = item;
+    } else {
+        chiTietList.push(item);
+    }
+    
+    updateTable();
+    clearInputs();
+});
+
+// Cập nhật bảng
+function updateTable() {
+    const tbody = $('#chiTietTable tbody');
+    tbody.empty();
+    
+    let tongTien = 0;
+    
+    chiTietList.forEach((item, index) => {
+        tbody.append(`
+            <tr>
+                <td>${item.TenLinhKien}</td>
+                <td>${item.LoaiLinhKien}</td>
+                <td class="text-center">${item.SoLuong}</td>
+                <td class="text-right">${item.GiaNhap.toLocaleString()} ₫</td>
+                <td class="text-right">${item.ThanhTien.toLocaleString()} ₫</td>
+                <td>${item.GhiChu || ''}</td>
+                <td>
+                    <button type="button" class="btn btn-danger btn-sm" onclick="removeItem(${index})">
+                        Xóa
+                    </button>
+                </td>
+            </tr>
+        `);
+        tongTien += item.ThanhTien;
+    });
+    
+    $('#tongTien').html(`<strong>${tongTien.toLocaleString()} ₫</strong>`);
+}
+
+// Xóa item
+function removeItem(index) {
+    chiTietList.splice(index, 1);
+    updateTable();
+}
+
+// Clear inputs
+function clearInputs() {
+    $('#linhKienSelect').val('');
+    $('#soLuongInput').val('');
+    $('#giaNhapInput').val('');
+    $('#ghiChuInput').val('');
+}
+
+// Auto fill giá nhập khi chọn linh kiện
+$('#linhKienSelect').change(function() {
+    const selectedOption = $(this).find('option:selected');
+    if (selectedOption.val()) {
+        $('#giaNhapInput').val(selectedOption.data('gianhap'));
+    }
+});
+
+// Submit form
+$('#phieuNhapForm').submit(function() {
+    $('#chiTietJson').val(JSON.stringify(chiTietList));
+});
+</script>
