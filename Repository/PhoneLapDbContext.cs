@@ -16,6 +16,7 @@ namespace phonev2.Repository
         public DbSet<NhaCungCap> NhaCungCap { get; set; }
         public DbSet<NhanVien> NhanVien { get; set; }
         public DbSet<KhachHang> KhachHang { get; set; }
+        public DbSet<ThietBi> ThietBi { get; set; }
 
         // Các DbSet khác sẽ được thêm sau
         // public DbSet<KhachHang> KhachHang { get; set; }
@@ -141,39 +142,63 @@ namespace phonev2.Repository
                 entity.Property(e => e.TongChiTieu).HasColumnType("decimal(18,2)").HasDefaultValue(0);
                 entity.Property(e => e.NgayTao).HasDefaultValueSql("GETDATE()");
                 entity.Property(e => e.TrangThai).HasDefaultValue(true);
-                
+
                 // Index cho tìm kiếm nhanh
                 entity.HasIndex(e => e.HoTen);
                 entity.HasIndex(e => e.SoDienThoai).IsUnique();
                 entity.HasIndex(e => e.TrangThai);
                 entity.HasIndex(e => e.NgayTao);
                 entity.HasIndex(e => e.TongChiTieu);
-                
+
                 // Check constraints
                 entity.HasCheckConstraint("CK_KhachHang_TongChiTieu", "TongChiTieu >= 0");
                 entity.HasCheckConstraint("CK_KhachHang_NgayTao", "NgayTao <= GETDATE()");
-                });// Cấu hình bảng KhachHang
-                modelBuilder.Entity<KhachHang>(entity =>
-                {
-                    entity.HasKey(e => e.MaKhachHang);
-                    entity.Property(e => e.HoTen).IsRequired().HasMaxLength(100);
-                    entity.Property(e => e.SoDienThoai).IsRequired().HasMaxLength(15);
-                    entity.Property(e => e.DiaChi).IsRequired().HasMaxLength(255);
-                    entity.Property(e => e.TongChiTieu).HasColumnType("decimal(18,2)").HasDefaultValue(0);
-                    entity.Property(e => e.NgayTao).HasDefaultValueSql("GETDATE()");
-                    entity.Property(e => e.TrangThai).HasDefaultValue(true);
-                    
-                    // Index cho tìm kiếm nhanh
-                    entity.HasIndex(e => e.HoTen);
-                    entity.HasIndex(e => e.SoDienThoai).IsUnique();
-                    entity.HasIndex(e => e.TrangThai);
-                    entity.HasIndex(e => e.NgayTao);
-                    entity.HasIndex(e => e.TongChiTieu);
-                    
-                    // Check constraints
-                    entity.HasCheckConstraint("CK_KhachHang_TongChiTieu", "TongChiTieu >= 0");
-                    entity.HasCheckConstraint("CK_KhachHang_NgayTao", "NgayTao <= GETDATE()");
-                });
+            });
+            // Cấu hình bảng KhachHang
+            modelBuilder.Entity<KhachHang>(entity =>
+            {
+                entity.HasKey(e => e.MaKhachHang);
+                entity.Property(e => e.HoTen).IsRequired().HasMaxLength(100);
+                entity.Property(e => e.SoDienThoai).IsRequired().HasMaxLength(15);
+                entity.Property(e => e.DiaChi).IsRequired().HasMaxLength(255);
+                entity.Property(e => e.TongChiTieu).HasColumnType("decimal(18,2)").HasDefaultValue(0);
+                entity.Property(e => e.NgayTao).HasDefaultValueSql("GETDATE()");
+                entity.Property(e => e.TrangThai).HasDefaultValue(true);
+
+                // Index cho tìm kiếm nhanh
+                entity.HasIndex(e => e.HoTen);
+                entity.HasIndex(e => e.SoDienThoai).IsUnique();
+                entity.HasIndex(e => e.TrangThai);
+                entity.HasIndex(e => e.NgayTao);
+                entity.HasIndex(e => e.TongChiTieu);
+
+                // Check constraints
+                entity.HasCheckConstraint("CK_KhachHang_TongChiTieu", "TongChiTieu >= 0");
+                entity.HasCheckConstraint("CK_KhachHang_NgayTao", "NgayTao <= GETDATE()");
+            });
+            // Cấu hình bảng ThietBi
+            modelBuilder.Entity<ThietBi>(entity =>
+        {
+            entity.HasKey(e => e.MaThietBi);
+            entity.Property(e => e.TenThietBi).IsRequired().HasMaxLength(100);
+            entity.Property(e => e.LoaiThietBi).IsRequired().HasMaxLength(50);
+            entity.Property(e => e.HangSanXuat).HasMaxLength(50);
+            entity.Property(e => e.Model).HasMaxLength(50);
+            entity.Property(e => e.SoSerial).HasMaxLength(100);
+            
+            // Index cho tìm kiếm nhanh
+            entity.HasIndex(e => e.TenThietBi);
+            entity.HasIndex(e => e.LoaiThietBi);
+            entity.HasIndex(e => e.HangSanXuat);
+            entity.HasIndex(e => e.SoSerial);
+            entity.HasIndex(e => e.MaKhachHang);
+            
+            // Foreign Key
+            entity.HasOne(e => e.KhachHang)
+                .WithMany()
+                .HasForeignKey(e => e.MaKhachHang)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
         }
     }
 }

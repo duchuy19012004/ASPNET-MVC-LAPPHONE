@@ -1,0 +1,152 @@
+@model phonev2.Models.ThietBi
+
+@{
+    Layout = "_AdminLayout";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1 class="h3 mb-0 text-danger">@ViewData["Title"]</h1>
+        <p class="text-muted mb-0">Xác nhận xóa thiết bị #@Model.MaThietBi</p>
+    </div>
+    <div>
+        <a asp-action="Index" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left me-1"></i> Quay lại
+        </a>
+    </div>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card border-danger">
+            <div class="card-header bg-danger text-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    Xác Nhận Xóa Thiết Bị
+                </h5>
+            </div>
+            <div class="card-body">
+                <!-- Device Info -->
+                <div class="row mb-4">
+                    <div class="col-md-3 text-center">
+                        <i class="@Model.GetDeviceIcon() text-danger mb-3" style="font-size: 4rem;"></i>
+                    </div>
+                    <div class="col-md-9">
+                        <h4 class="text-danger mb-3">@Model.TenThietBi</h4>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <p><strong>Mã thiết bị:</strong> #@Model.MaThietBi</p>
+                                <p><strong>Loại thiết bị:</strong> @Model.LoaiThietBi</p>
+                                @if (!string.IsNullOrEmpty(Model.HangSanXuat))
+                                {
+                                    <p><strong>Hãng:</strong> @Model.HangSanXuat</p>
+                                }
+                                @if (!string.IsNullOrEmpty(Model.Model))
+                                {
+                                    <p><strong>Model:</strong> @Model.Model</p>
+                                }
+                            </div>
+                            <div class="col-md-6">
+                                <p><strong>Khách hàng:</strong> @Model.KhachHang.HoTen</p>
+                                <p><strong>Số điện thoại:</strong> @Model.KhachHang.SoDienThoai</p>
+                                @if (!string.IsNullOrEmpty(Model.SoSerial))
+                                {
+                                    <p><strong>Số Serial:</strong> <code>@Model.SoSerial</code></p>
+                                }
+                                <p><strong>Hoàn thiện:</strong> 
+                                   <span class="badge @(Model.HasCompleteInfo() ? "bg-success" : "bg-warning")">
+                                       @Model.GetCompletionStatus()
+                                   </span>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Warning -->
+                <div class="alert alert-danger">
+                    <h6 class="alert-heading">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        Cảnh Báo Quan Trọng
+                    </h6>
+                    <ul class="mb-0">
+                        <li>Việc xóa thiết bị sẽ ảnh hưởng đến các phiếu sửa chữa liên quan</li>
+                        <li>Lịch sử sửa chữa của thiết bị có thể bị mất</li>
+                        <li>Hành động này không thể hoàn tác</li>
+                    </ul>
+                </div>
+
+                <!-- Customer Info Alert -->
+                <div class="alert alert-info">
+                    <h6 class="alert-heading">
+                        <i class="fas fa-user me-2"></i>
+                        Thông Tin Khách Hàng
+                    </h6>
+                    <p class="mb-0">
+                        Thiết bị này thuộc về khách hàng <strong>@Model.KhachHang.HoTen</strong> 
+                        (<span class="badge @Model.KhachHang.GetCustomerLevelColor() border">@Model.KhachHang.GetCustomerLevel()</span>).
+                        Hãy cân nhắc kỹ trước khi xóa.
+                    </p>
+                </div>
+
+                <!-- Confirmation Form -->
+                <form asp-action="Delete" method="post" class="mt-4">
+                    <input type="hidden" asp-for="MaThietBi" />
+                    
+                    <div class="mb-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="confirmDelete" required>
+                            <label class="form-check-label fw-bold" for="confirmDelete">
+                                Tôi hiểu rằng hành động này không thể hoàn tác và đồng ý xóa thiết bị này
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-between">
+                        <div>
+                            <a asp-action="Edit" asp-route-id="@Model.MaThietBi" class="btn btn-warning me-2">
+                                <i class="fas fa-edit me-1"></i>
+                                Sửa Thay Vì Xóa
+                            </a>
+                            <a asp-action="Details" asp-route-id="@Model.MaThietBi" class="btn btn-info">
+                                <i class="fas fa-eye me-1"></i>
+                                Xem Chi Tiết
+                            </a>
+                        </div>
+                        
+                        <div>
+                            <a asp-action="Index" class="btn btn-secondary btn-lg me-2">
+                                <i class="fas fa-times me-1"></i>
+                                Hủy Bỏ
+                            </a>
+                            <button type="submit" class="btn btn-danger btn-lg" id="deleteBtn" disabled>
+                                <i class="fas fa-trash me-1"></i>
+                                Xác Nhận Xóa
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // Enable/disable delete button based on checkbox
+            $('#confirmDelete').on('change', function() {
+                $('#deleteBtn').prop('disabled', !$(this).is(':checked'));
+            });
+        });
+    </script>
+}
+
+<style>
+    code {
+        background-color: #f8f9fa;
+        padding: 0.25rem 0.5rem;
+        border-radius: 0.25rem;
+        font-size: 0.875em;
+    }
+</style>
