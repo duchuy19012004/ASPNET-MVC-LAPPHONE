@@ -1,0 +1,222 @@
+@model IEnumerable<phonev2.Models.KhachHang>
+@{
+    Layout = "_AdminLayout";
+}
+
+@section PageActions {
+    <div class="btn-group">
+        <a asp-action="Create" class="btn btn-primary">
+            <i class="fas fa-user-plus me-1"></i> Thêm Khách Hàng
+        </a>
+    </div>
+}
+
+<!-- Search & Filter -->
+<div class="card mb-4">
+    <div class="card-body">
+        <form asp-action="Index" method="get" class="row g-3">
+            <div class="col-md-4">
+                <label class="form-label">Tìm kiếm</label>
+                <div class="input-group">
+                    <input type="text" name="searchString" value="@ViewData["CurrentFilter"]" 
+                           class="form-control" placeholder="Tên, SĐT, địa chỉ...">
+                    <button class="btn btn-outline-secondary" type="submit">
+                        <i class="fas fa-search"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Hạng khách hàng</label>
+                <select name="customerLevelFilter" class="form-select">
+                    <option value="">Tất cả</option>
+                    <option value="vip" selected="@(ViewData["CurrentLevel"]?.ToString() == "vip")">VIP (>= 50M)</option>
+                    <option value="loyal" selected="@(ViewData["CurrentLevel"]?.ToString() == "loyal")">Thân thiết (20M-50M)</option>
+                    <option value="silver" selected="@(ViewData["CurrentLevel"]?.ToString() == "silver")">Bạc (10M-20M)</option>
+                    <option value="bronze" selected="@(ViewData["CurrentLevel"]?.ToString() == "bronze")">Đồng (5M-10M)</option>
+                    <option value="normal" selected="@(ViewData["CurrentLevel"]?.ToString() == "normal")">Thường (<5M)</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Trạng thái</label>
+                <select name="statusFilter" class="form-select">
+                    <option value="">Tất cả</option>
+                    <option value="active" selected="@(ViewData["CurrentStatus"]?.ToString() == "active")">Hoạt động</option>
+                    <option value="blocked" selected="@(ViewData["CurrentStatus"]?.ToString() == "blocked")">Tạm khóa</option>
+                    <option value="new" selected="@(ViewData["CurrentStatus"]?.ToString() == "new")">Mới (30 ngày)</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">Sắp xếp</label>
+                <select name="sortOrder" class="form-select">
+                    <option value="">Tên A-Z</option>
+                    <option value="name_desc" selected="@(ViewData["CurrentSort"]?.ToString() == "name_desc")">Tên Z-A</option>
+                    <option value="spending_desc" selected="@(ViewData["CurrentSort"]?.ToString() == "spending_desc")">Chi tiêu cao → thấp</option>
+                    <option value="spending" selected="@(ViewData["CurrentSort"]?.ToString() == "spending")">Chi tiêu thấp → cao</option>
+                    <option value="date_desc" selected="@(ViewData["CurrentSort"]?.ToString() == "date_desc")">Mới nhất</option>
+                    <option value="date" selected="@(ViewData["CurrentSort"]?.ToString() == "date")">Cũ nhất</option>
+                </select>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Main Content -->
+<div class="card">
+    <div class="card-body">
+        @if (Model.Any())
+        {
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Khách hàng</th>
+                            <th>Liên hệ</th>
+                            <th>Hạng</th>
+                            <th>Chi tiêu</th>
+                            <th>Trạng thái</th>
+                            <th>Ngày tạo</th>
+                            <th>Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model)
+                        {
+                            <tr>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <div class="avatar-circle me-3">@item.GetAvatarLetter()</div>
+                                        <div>
+                                            <div class="fw-bold">@item.HoTen</div>
+                                            <small class="text-muted">#@item.MaKhachHang</small>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div>@item.SoDienThoai</div>
+                                    <small class="text-muted">@item.DiaChi</small>
+                                </td>
+                                <td>
+                                    <span class="badge @(item.GetCustomerLevelColor()) border">
+                                        @item.GetCustomerLevel()
+                                    </span>
+                                </td>
+                                <td>
+                                    <div class="fw-bold text-success">@item.TongChiTieuText</div>
+                                </td>
+                                <td>
+                                    <button type="button" 
+                                            class="btn btn-sm @(item.TrangThai ? "btn-success" : "btn-secondary") toggle-status" 
+                                            data-id="@item.MaKhachHang">
+                                        <i class="fas @(item.TrangThai ? "fa-check" : "fa-times") me-1"></i>
+                                        @item.TrangThaiText
+                                    </button>
+                                </td>
+                                <td>
+                                    <small>@item.NgayTao.ToString("dd/MM/yyyy")</small>
+                                    @if (item.IsNewCustomer())
+                                    {
+                                        <br><span class="badge bg-info">Mới</span>
+                                    }
+                                </td>
+                                <td>
+                                    <div class="btn-group">
+                                        <a asp-action="Details" asp-route-id="@item.MaKhachHang" 
+                                           class="btn btn-sm btn-outline-info">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        <a asp-action="Edit" asp-route-id="@item.MaKhachHang" 
+                                           class="btn btn-sm btn-outline-warning">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        <a asp-action="Delete" asp-route-id="@item.MaKhachHang" 
+                                           class="btn btn-sm btn-outline-danger">
+                                            <i class="fas fa-trash"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination -->
+            @if (ViewBag.TotalPages > 1)
+            {
+                <nav class="mt-3">
+                    <ul class="pagination justify-content-center">
+                        @for (int i = 1; i <= ViewBag.TotalPages; i++)
+                        {
+                            <li class="page-item @(i == ViewBag.CurrentPage ? "active" : "")">
+                                <a class="page-link" href="?page=@i&searchString=@ViewData["CurrentFilter"]&customerLevelFilter=@ViewData["CurrentLevel"]&statusFilter=@ViewData["CurrentStatus"]&sortOrder=@ViewData["CurrentSort"]">@i</a>
+                            </li>
+                        }
+                    </ul>
+                </nav>
+            }
+        }
+        else
+        {
+            <div class="text-center py-5">
+                <i class="fas fa-users fa-3x text-muted mb-3"></i>
+                <h5 class="text-muted">Chưa có khách hàng nào</h5>
+                @if (!string.IsNullOrEmpty(ViewData["CurrentFilter"]?.ToString()))
+                {
+                    <p class="text-muted">Thử thay đổi từ khóa tìm kiếm</p>
+                    <a asp-action="Index" class="btn btn-outline-secondary">Reset tìm kiếm</a>
+                }
+                else
+                {
+                    <p class="text-muted">Hãy thêm khách hàng đầu tiên</p>
+                    <a asp-action="Create" class="btn btn-primary">
+                        <i class="fas fa-user-plus me-1"></i> Thêm Khách Hàng
+                    </a>
+                }
+            </div>
+        }
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // Toggle Status
+            $('.toggle-status').on('click', function() {
+                const btn = $(this);
+                const id = btn.data('id');
+                
+                $.post('@Url.Action("ToggleStatus")', { id: id })
+                    .done(function(result) {
+                        if (result.success) {
+                            location.reload();
+                        } else {
+                            alert('Có lỗi: ' + result.message);
+                        }
+                    })
+                    .fail(function() {
+                        alert('Không thể kết nối đến server!');
+                    });
+            });
+
+            // Auto submit filters
+            $('select[name="customerLevelFilter"], select[name="statusFilter"], select[name="sortOrder"]').on('change', function() {
+                $(this).closest('form').submit();
+            });
+        });
+    </script>
+}
+
+<style>
+    .avatar-circle {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: linear-gradient(45deg, #007bff, #0056b3);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: bold;
+        font-size: 16px;
+    }
+</style>

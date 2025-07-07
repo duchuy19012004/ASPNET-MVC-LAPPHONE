@@ -1,0 +1,155 @@
+@model phonev2.Models.KhachHang
+
+@{
+    Layout = "_AdminLayout";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1 class="h3 mb-0 text-danger">@ViewData["Title"]</h1>
+        <p class="text-muted mb-0">Xác nhận xóa khách hàng #@Model.MaKhachHang</p>
+    </div>
+    <div>
+        <a asp-action="Index" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left me-1"></i> Quay lại
+        </a>
+    </div>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card border-danger">
+            <div class="card-header bg-danger text-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    Xác Nhận Xóa Khách Hàng
+                </h5>
+            </div>
+            <div class="card-body">
+                <!-- Customer Info -->
+                <div class="row mb-4">
+                    <div class="col-md-3 text-center">
+                        <div class="avatar-circle-large mx-auto mb-3">
+                            @Model.GetAvatarLetter()
+                        </div>
+                    </div>
+                    <div class="col-md-9">
+                        <h4 class="text-danger mb-3">@Model.HoTen</h4>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <p><strong>Mã khách hàng:</strong> #@Model.MaKhachHang</p>
+                                <p><strong>Số điện thoại:</strong> @Model.SoDienThoai</p>
+                                <p><strong>Hạng khách hàng:</strong> 
+                                   <span class="badge @Model.GetCustomerLevelColor()">@Model.GetCustomerLevel()</span>
+                                </p>
+                            </div>
+                            <div class="col-md-6">
+                                <p><strong>Tổng chi tiêu:</strong> 
+                                   <span class="text-success fw-bold">@Model.TongChiTieuText</span>
+                                </p>
+                                <p><strong>Ngày tạo:</strong> @Model.NgayTao.ToString("dd/MM/yyyy")</p>
+                                <p><strong>Trạng thái:</strong> 
+                                   <span class="badge @(Model.TrangThai ? "bg-success" : "bg-secondary")">@Model.TrangThaiText</span>
+                                </p>
+                            </div>
+                        </div>
+                        <div class="mt-2">
+                            <p><strong>Địa chỉ:</strong> @Model.DiaChi</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Warning -->
+                <div class="alert alert-danger">
+                    <h6 class="alert-heading">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        Cảnh Báo Quan Trọng
+                    </h6>
+                    <ul class="mb-0">
+                        <li>Việc xóa khách hàng sẽ ảnh hưởng đến các dữ liệu liên quan</li>
+                        <li>Tất cả lịch sử giao dịch của khách hàng có thể bị mất</li>
+                        <li>Hành động này không thể hoàn tác</li>
+                    </ul>
+                </div>
+
+                @if (Model.TongChiTieu > 0)
+                {
+                    <div class="alert alert-warning">
+                        <h6 class="alert-heading">
+                            <i class="fas fa-money-bill-wave me-2"></i>
+                            Khách Hàng Có Giá Trị
+                        </h6>
+                        <p class="mb-0">
+                            Khách hàng này đã chi tiêu <strong>@Model.TongChiTieuText</strong>. 
+                            Bạn có chắc chắn muốn xóa?
+                        </p>
+                    </div>
+                }
+
+                <!-- Confirmation Form -->
+                <form asp-action="Delete" method="post" class="mt-4">
+                    <input type="hidden" asp-for="MaKhachHang" />
+                    
+                    <div class="mb-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="confirmDelete" required>
+                            <label class="form-check-label fw-bold" for="confirmDelete">
+                                Tôi hiểu rằng hành động này không thể hoàn tác và đồng ý xóa khách hàng này
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-between">
+                        <div>
+                            <a asp-action="Edit" asp-route-id="@Model.MaKhachHang" class="btn btn-warning me-2">
+                                <i class="fas fa-edit me-1"></i>
+                                Sửa Thay Vì Xóa
+                            </a>
+                            <a asp-action="Details" asp-route-id="@Model.MaKhachHang" class="btn btn-info">
+                                <i class="fas fa-eye me-1"></i>
+                                Xem Chi Tiết
+                            </a>
+                        </div>
+                        
+                        <div>
+                            <a asp-action="Index" class="btn btn-secondary btn-lg me-2">
+                                <i class="fas fa-times me-1"></i>
+                                Hủy Bỏ
+                            </a>
+                            <button type="submit" class="btn btn-danger btn-lg" id="deleteBtn" disabled>
+                                <i class="fas fa-trash me-1"></i>
+                                Xác Nhận Xóa
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // Enable/disable delete button based on checkbox
+            $('#confirmDelete').on('change', function() {
+                $('#deleteBtn').prop('disabled', !$(this).is(':checked'));
+            });
+        });
+    </script>
+}
+
+<style>
+    .avatar-circle-large {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        background: linear-gradient(45deg, #dc3545, #b02a37);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: bold;
+        font-size: 28px;
+    }
+</style>

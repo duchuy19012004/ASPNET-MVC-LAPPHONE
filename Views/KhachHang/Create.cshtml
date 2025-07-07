@@ -1,0 +1,119 @@
+@model phonev2.Models.KhachHang
+
+@{
+    Layout = "_AdminLayout";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1 class="h3 mb-0">@ViewData["Title"]</h1>
+        <p class="text-muted mb-0">Thêm thông tin khách hàng mới</p>
+    </div>
+    <div>
+        <a asp-action="Index" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left me-1"></i> Quay lại
+        </a>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-user-plus me-2"></i>
+                    Thông Tin Khách Hàng
+                </h5>
+            </div>
+            <div class="card-body">
+                <form asp-action="Create" method="post">
+                    <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label asp-for="HoTen" class="form-label required"></label>
+                            <input asp-for="HoTen" class="form-control" placeholder="Nhập họ và tên đầy đủ" />
+                            <span asp-validation-for="HoTen" class="text-danger"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="SoDienThoai" class="form-label required"></label>
+                            <input asp-for="SoDienThoai" class="form-control" placeholder="0xxxxxxxxx" />
+                            <span asp-validation-for="SoDienThoai" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-12">
+                            <label asp-for="DiaChi" class="form-label required"></label>
+                            <textarea asp-for="DiaChi" class="form-control" rows="3" placeholder="Nhập địa chỉ chi tiết"></textarea>
+                            <span asp-validation-for="DiaChi" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Trạng thái</label>
+                            <div class="form-check form-switch">
+                                <input asp-for="TrangThai" class="form-check-input" type="checkbox" checked />
+                                <label class="form-check-label" for="TrangThai">
+                                    Kích hoạt khách hàng
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a asp-action="Index" class="btn btn-secondary btn-lg me-md-2">
+                            <i class="fas fa-times me-1"></i> Hủy Bỏ
+                        </a>
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i class="fas fa-save me-1"></i> Lưu Khách Hàng
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="mb-0">
+                    <i class="fas fa-info-circle me-2"></i>
+                    Lưu Ý
+                </h6>
+            </div>
+            <div class="card-body">
+                <ul class="list-unstyled mb-0">
+                    <li class="mb-2">
+                        <i class="fas fa-check text-success me-2"></i>
+                        Họ tên phải đầy đủ
+                    </li>
+                    <li class="mb-2">
+                        <i class="fas fa-check text-success me-2"></i>
+                        Số điện thoại phải duy nhất
+                    </li>
+                    <li class="mb-2">
+                        <i class="fas fa-check text-success me-2"></i>
+                        Địa chỉ càng chi tiết càng tốt
+                    </li>
+                    <li class="mb-0">
+                        <i class="fas fa-info text-info me-2"></i>
+                        Tổng chi tiêu sẽ được tự động tính khi có giao dịch
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}
+
+<style>
+    .required::after {
+        content: " *";
+        color: red;
+    }
+</style>

@@ -1,0 +1,158 @@
+@model phonev2.Models.KhachHang
+
+@{
+    Layout = "_AdminLayout";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1 class="h3 mb-0">@ViewData["Title"]</h1>
+        <p class="text-muted mb-0">Cập nhật thông tin khách hàng #@Model.MaKhachHang</p>
+    </div>
+    <div>
+        <a asp-action="Index" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left me-1"></i> Quay lại
+        </a>
+        <a asp-action="Details" asp-route-id="@Model.MaKhachHang" class="btn btn-info">
+            <i class="fas fa-eye me-1"></i> Xem Chi Tiết
+        </a>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-user-edit me-2"></i>
+                    Chỉnh Sửa Thông Tin
+                </h5>
+            </div>
+            <div class="card-body">
+                <form asp-action="Edit" method="post">
+                    <input type="hidden" asp-for="MaKhachHang" />
+                    <input type="hidden" asp-for="NgayTao" />
+                    <input type="hidden" asp-for="TongChiTieu" />
+                    <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label asp-for="HoTen" class="form-label required"></label>
+                            <input asp-for="HoTen" class="form-control" />
+                            <span asp-validation-for="HoTen" class="text-danger"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="SoDienThoai" class="form-label required"></label>
+                            <input asp-for="SoDienThoai" class="form-control" />
+                            <span asp-validation-for="SoDienThoai" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-12">
+                            <label asp-for="DiaChi" class="form-label required"></label>
+                            <textarea asp-for="DiaChi" class="form-control" rows="3"></textarea>
+                            <span asp-validation-for="DiaChi" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Trạng thái</label>
+                            <div class="form-check form-switch">
+                                <input asp-for="TrangThai" class="form-check-input" type="checkbox" />
+                                <label class="form-check-label" for="TrangThai">
+                                    @(Model.TrangThai ? "Đang hoạt động" : "Tạm khóa")
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a asp-action="Index" class="btn btn-secondary btn-lg me-md-2">
+                            <i class="fas fa-times me-1"></i> Hủy Bỏ
+                        </a>
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i class="fas fa-save me-1"></i> Cập Nhật
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="mb-0">
+                    <i class="fas fa-info-circle me-2"></i>
+                    Thông Tin Hiện Tại
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="text-center mb-3">
+                    <div class="avatar-circle-large mx-auto mb-3">
+                        @Model.GetAvatarLetter()
+                    </div>
+                    <h6>@Model.HoTen</h6>
+                    <span class="badge @Model.GetCustomerLevelColor()">@Model.GetCustomerLevel()</span>
+                </div>
+                
+                <table class="table table-sm">
+                    <tr>
+                        <td><strong>Mã KH:</strong></td>
+                        <td>#@Model.MaKhachHang</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Tổng chi tiêu:</strong></td>
+                        <td class="text-success fw-bold">@Model.TongChiTieuText</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Thành viên:</strong></td>
+                        <td>@Model.GetMembershipDuration()</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Ngày tạo:</strong></td>
+                        <td>@Model.NgayTao.ToString("dd/MM/yyyy")</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    
+    <script>
+        // Update switch label
+        $('#TrangThai').on('change', function() {
+            const label = $(this).next('label');
+            if ($(this).is(':checked')) {
+                label.text('Đang hoạt động');
+            } else {
+                label.text('Tạm khóa');
+            }
+        });
+    </script>
+}
+
+<style>
+    .required::after {
+        content: " *";
+        color: red;
+    }
+    
+    .avatar-circle-large {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        background: linear-gradient(45deg, #007bff, #0056b3);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: bold;
+        font-size: 28px;
+    }
+</style>

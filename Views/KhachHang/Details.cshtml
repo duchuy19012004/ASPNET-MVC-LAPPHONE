@@ -1,0 +1,230 @@
+@model phonev2.Models.KhachHang
+
+@{
+    Layout = "_AdminLayout";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1 class="h3 mb-0">@ViewData["Title"]</h1>
+        <p class="text-muted mb-0">Thông tin chi tiết khách hàng #@Model.MaKhachHang</p>
+    </div>
+    <div>
+        <a asp-action="Index" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left me-1"></i> Quay lại
+        </a>
+        <a asp-action="Edit" asp-route-id="@Model.MaKhachHang" class="btn btn-warning">
+            <i class="fas fa-edit me-1"></i> Chỉnh Sửa
+        </a>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-8">
+        <!-- Thông tin cơ bản -->
+        <div class="card mb-4">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-user me-2"></i>
+                    Thông Tin Cơ Bản
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <table class="table table-borderless">
+                            <tr>
+                                <td class="fw-bold text-muted" style="width: 40%;">Họ và tên:</td>
+                                <td class="fw-bold">@Model.HoTen</td>
+                            </tr>
+                            <tr>
+                                <td class="fw-bold text-muted">Số điện thoại:</td>
+                                <td>
+                                    <a href="tel:@Model.SoDienThoai" class="text-decoration-none">
+                                        <i class="fas fa-phone me-1 text-success"></i>
+                                        @Model.SoDienThoai
+                                    </a>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="fw-bold text-muted">Ngày tạo:</td>
+                                <td>@Model.NgayTao.ToString("dd/MM/yyyy HH:mm")</td>
+                            </tr>
+                            <tr>
+                                <td class="fw-bold text-muted">Thành viên:</td>
+                                <td>@Model.GetMembershipDuration()</td>
+                            </tr>
+                        </table>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label class="fw-bold text-muted">Địa chỉ:</label>
+                            <div class="border rounded p-3 bg-light">
+                                <i class="fas fa-map-marker-alt me-2 text-danger"></i>
+                                @Model.DiaChi
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Thông tin chi tiêu -->
+        <div class="card">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-chart-line me-2"></i>
+                    Thông Tin Chi Tiêu
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row text-center">
+                    <div class="col-md-4 mb-3">
+                        <div class="border rounded p-3">
+                            <h3 class="text-success mb-1">@Model.TongChiTieuText</h3>
+                            <small class="text-muted">Tổng chi tiêu</small>
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <div class="border rounded p-3">
+                            <h3 class="@Model.GetCustomerLevelColor() mb-1">@Model.GetCustomerLevel()</h3>
+                            <small class="text-muted">Hạng khách hàng</small>
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <div class="border rounded p-3">
+                            <h3 class="@(Model.TrangThai ? "text-success" : "text-danger") mb-1">
+                                @Model.TrangThaiText
+                            </h3>
+                            <small class="text-muted">Trạng thái</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <!-- Profile Card -->
+        <div class="card mb-4">
+            <div class="card-body text-center">
+                <div class="avatar-circle mx-auto mb-3">
+                    @(string.IsNullOrEmpty(Model.HoTen) ? "?" : Model.HoTen.Trim()[0].ToString().ToUpper())
+                </div>
+                <h4 class="mb-2">@Model.HoTen</h4>
+                <p class="text-muted mb-3">Khách hàng #@Model.MaKhachHang</p>
+                
+                <div class="mb-3">
+                    <span class="badge @Model.GetCustomerLevelColor() border fs-6 px-3 py-2">@Model.GetCustomerLevel()</span>
+                    @if (Model.IsNewCustomer())
+                    {
+                        <span class="badge bg-info ms-2">Mới</span>
+                    }
+                </div>
+                
+                <div class="d-grid gap-2">
+                    <a href="tel:@Model.SoDienThoai" class="btn btn-outline-success">
+                        <i class="fas fa-phone me-1"></i> Gọi điện
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Actions Card -->
+        <div class="card">
+            <div class="card-header">
+                <h6 class="mb-0">
+                    <i class="fas fa-cogs me-2"></i>
+                    Hành Động
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <a asp-action="Edit" asp-route-id="@Model.MaKhachHang" class="btn btn-warning">
+                        <i class="fas fa-edit me-1"></i> Chỉnh Sửa Thông Tin
+                    </a>
+                    
+                    @if (Model.TrangThai)
+                    {
+                        <button type="button" class="btn btn-outline-danger" onclick="toggleStatus(@Model.MaKhachHang)">
+                            <i class="fas fa-lock me-1"></i> Khóa Khách Hàng
+                        </button>
+                    }
+                    else
+                    {
+                        <button type="button" class="btn btn-outline-success" onclick="toggleStatus(@Model.MaKhachHang)">
+                            <i class="fas fa-unlock me-1"></i> Mở Khóa
+                        </button>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function toggleStatus(id) {
+            const isActive = @Model.TrangThai.ToString().ToLower();
+            const action = isActive ? 'khóa' : 'mở khóa';
+            
+            if (confirm(`Bạn có chắc chắn muốn ${action} khách hàng này?`)) {
+                $.post('@Url.Action("ToggleStatus")', { id: id })
+                    .done(function(result) {
+                        if (result.success) {
+                            alert('Đã cập nhật trạng thái thành công!');
+                            location.reload();
+                        } else {
+                            alert('Có lỗi: ' + result.message);
+                        }
+                    })
+                    .fail(function() {
+                        alert('Không thể kết nối đến server!');
+                    });
+            }
+        }
+    </script>
+}
+
+<style>
+    .avatar-circle {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        background: linear-gradient(45deg, #007bff, #0056b3);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: bold;
+        font-size: 32px;
+        box-shadow: 0 4px 12px rgba(0, 123, 255, 0.3);
+    }
+
+    /* Responsive avatar */
+    @@media (max-width: 768px) {
+        .avatar-circle {
+            width: 60px;
+            height: 60px;
+            font-size: 24px;
+        }
+    }
+
+    @@media (max-width: 576px) {
+        .avatar-circle {
+            width: 50px;
+            height: 50px;
+            font-size: 20px;
+        }
+    }
+
+    .card {
+        border: none;
+        box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+        border-radius: 0.5rem;
+    }
+
+    .card-header {
+        border-radius: 0.5rem 0.5rem 0 0 !important;
+    }
+</style>
