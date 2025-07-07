@@ -1,0 +1,277 @@
+@model phonev2.Models.ThietBi
+
+@{
+    ViewData["Title"] = "Xóa Thiết Bị";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<!-- Header -->
+<div class="row mb-3">
+    <div class="col-md-6">
+        <h2 class="text-danger">
+            <i class="fas fa-trash-alt me-2"></i>@ViewData["Title"]
+        </h2>
+        <p class="text-muted">Xác nhận xóa thiết bị khỏi hệ thống</p>
+    </div>
+    <div class="col-md-6 text-end">
+        <a asp-action="Index" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left me-1"></i>Quay lại danh sách
+        </a>
+    </div>
+</div>
+
+<!-- Warning Alert -->
+<div class="alert alert-warning alert-dismissible fade show" role="alert">
+    <div class="d-flex align-items-center">
+        <i class="fas fa-exclamation-triangle fa-2x me-3 text-warning"></i>
+        <div>
+            <h5 class="alert-heading mb-1">Cảnh báo!</h5>
+            <p class="mb-0">
+                Bạn có chắc chắn muốn xóa thiết bị này? 
+                <strong>Hành động này không thể hoàn tác!</strong>
+            </p>
+        </div>
+    </div>
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+</div>
+
+<!-- Thông tin thiết bị sẽ xóa -->
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card border-danger">
+            <div class="card-header bg-danger text-white">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-info-circle me-2"></i>Thông tin thiết bị sẽ xóa
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row mb-4">
+                    <div class="col-md-2 text-center">
+                        <div class="device-icon-large">
+                            <span style="font-size: 4rem;">@Model.LayIconThietBi()</span>
+                        </div>
+                    </div>
+                    <div class="col-md-10">
+                        <h4 class="text-primary mb-2">@Model.TenThietBi</h4>
+                        <div class="mb-2">
+                            <span class="@Model.LoaiThietBiBadge">@Model.LoaiThietBi</span>
+                        </div>
+                    </div>
+                </div>
+
+                <hr>
+
+                <!-- Chi tiết thiết bị -->
+                <div class="row">
+                    <div class="col-md-6">
+                        <dl class="row">
+                            <dt class="col-sm-5">
+                                <i class="fas fa-user me-1 text-primary"></i>Khách hàng:
+                            </dt>
+                            <dd class="col-sm-7">
+                                <div class="d-flex align-items-center">
+                                    <div class="bg-primary rounded-circle d-flex align-items-center justify-content-center me-2" 
+                                         style="width: 32px; height: 32px;">
+                                        <span class="text-white fw-bold">
+                                            @(Model.KhachHang?.HoTen?.Substring(0, 1).ToUpper() ?? "?")
+                                        </span>
+                                    </div>
+                                    <div>
+                                        <strong>@(Model.KhachHang?.HoTen ?? "Không xác định")</strong>
+                                        @if (Model.KhachHang != null)
+                                        {
+                                            <br><small class="text-muted">@Model.KhachHang.SoDienThoai</small>
+                                        }
+                                    </div>
+                                </div>
+                            </dd>
+
+                            <dt class="col-sm-5">
+                                <i class="fas fa-list me-1 text-info"></i>Loại thiết bị:
+                            </dt>
+                            <dd class="col-sm-7">
+                                <span class="@Model.LoaiThietBiBadge">@Model.LoaiThietBi</span>
+                            </dd>
+
+                            @if (!string.IsNullOrEmpty(Model.HangSanXuat))
+                            {
+                                <dt class="col-sm-5">
+                                    <i class="fas fa-building me-1 text-success"></i>Hãng sản xuất:
+                                </dt>
+                                <dd class="col-sm-7">
+                                    <strong>@Model.HangSanXuat</strong>
+                                </dd>
+                            }
+                        </dl>
+                    </div>
+                    <div class="col-md-6">
+                        <dl class="row">
+                            @if (!string.IsNullOrEmpty(Model.Model))
+                            {
+                                <dt class="col-sm-4">
+                                    <i class="fas fa-code me-1 text-warning"></i>Model:
+                                </dt>
+                                <dd class="col-sm-8">
+                                    <strong>@Model.Model</strong>
+                                </dd>
+                            }
+
+                            <dt class="col-sm-4">
+                                <i class="fas fa-info-circle me-1 text-secondary"></i>Mô tả:
+                            </dt>
+                            <dd class="col-sm-8">
+                                @Model.LayMoTaDay()
+                            </dd>
+                        </dl>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Form xác nhận xóa -->
+        <div class="card mt-4">
+            <div class="card-body">
+                <form asp-action="Delete" method="post">
+                    <input type="hidden" asp-for="MaThietBi" />
+                    
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h5 class="text-danger mb-1">
+                                <i class="fas fa-exclamation-triangle me-2"></i>Xác nhận xóa thiết bị
+                            </h5>
+                            <p class="text-muted mb-0">
+                                Nhấn "Xác nhận xóa" để xóa vĩnh viễn thiết bị này khỏi hệ thống.
+                            </p>
+                        </div>
+                        <div class="d-flex gap-2">
+                            <a asp-action="Index" class="btn btn-outline-secondary">
+                                <i class="fas fa-arrow-left me-1"></i>Hủy
+                            </a>
+                            <a asp-action="Details" asp-route-id="@Model.MaThietBi" class="btn btn-outline-info">
+                                <i class="fas fa-eye me-1"></i>Xem chi tiết
+                            </a>
+                            <button type="submit" class="btn btn-danger" id="deleteBtn">
+                                <i class="fas fa-trash-alt me-1"></i>Xác nhận xóa
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sidebar cảnh báo -->
+    <div class="col-lg-4">
+        <div class="card border-warning">
+            <div class="card-header bg-warning text-dark">
+                <h6 class="card-title mb-0">
+                    <i class="fas fa-exclamation-triangle me-2"></i>Lưu ý quan trọng
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <h6 class="text-danger">
+                        <i class="fas fa-times-circle me-1"></i>Hành động không thể hoàn tác
+                    </h6>
+                    <p class="small text-muted">
+                        Sau khi xóa, tất cả thông tin về thiết bị này sẽ bị mất vĩnh viễn.
+                    </p>
+                </div>
+
+                <div class="mb-3">
+                    <h6 class="text-warning">
+                        <i class="fas fa-link me-1"></i>Dữ liệu liên quan
+                    </h6>
+                    <p class="small text-muted">
+                        Kiểm tra xem thiết bị này có đang được sử dụng trong:
+                    </p>
+                    <ul class="small text-muted">
+                        <li>Phiếu sửa chữa</li>
+                        <li>Hóa đơn</li>
+                        <li>Lịch sử bảo hành</li>
+                    </ul>
+                </div>
+
+                <div class="mb-3">
+                    <h6 class="text-info">
+                        <i class="fas fa-lightbulb me-1"></i>Thay thế
+                    </h6>
+                    <p class="small text-muted">
+                        Thay vì xóa, bạn có thể cân nhắc:
+                    </p>
+                    <ul class="small text-muted">
+                        <li>Chỉnh sửa thông tin thiết bị</li>
+                        <li>Chuyển sang khách hàng khác</li>
+                        <li>Đánh dấu là "không hoạt động"</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Thống kê nhanh -->
+        <div class="card mt-3">
+            <div class="card-header">
+                <h6 class="card-title mb-0">
+                    <i class="fas fa-chart-bar me-2"></i>Thông tin bổ sung
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span class="small text-muted">Loại thiết bị:</span>
+                    <span class="@Model.LoaiThietBiBadge small">@Model.LoaiThietBi</span>
+                </div>
+                
+                @if (Model.KhachHang != null)
+                {
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="small text-muted">Khách hàng:</span>
+                        <span class="small fw-bold">@Model.KhachHang.HoTen</span>
+                    </div>
+                    
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span class="small text-muted">Liên hệ:</span>
+                        <span class="small">@Model.KhachHang.SoDienThoai</span>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        $(document).ready(function() {
+            // Xác nhận trước khi xóa
+            $('#deleteBtn').click(function(e) {
+                e.preventDefault();
+                
+                Swal.fire({
+                    title: 'Bạn có chắc chắn?',
+                    text: 'Thiết bị "@Model.TenThietBi" sẽ bị xóa vĩnh viễn!',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#dc3545',
+                    cancelButtonColor: '#6c757d',
+                    confirmButtonText: 'Xác nhận xóa',
+                    cancelButtonText: 'Hủy',
+                    reverseButtons: true
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        // Hiển thị loading
+                        $(this).prop('disabled', true).html('<i class="fas fa-spinner fa-spin me-1"></i>Đang xóa...');
+                        
+                        // Submit form
+                        $(this).closest('form')[0].submit();
+                    }
+                });
+            });
+
+            // Prevent accidental page refresh
+            window.addEventListener('beforeunload', function(e) {
+                e.preventDefault();
+                e.returnValue = '';
+            });
+        });
+    </script>
+}

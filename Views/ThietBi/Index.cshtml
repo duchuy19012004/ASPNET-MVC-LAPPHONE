@@ -1,0 +1,487 @@
+@model IEnumerable<phonev2.Models.ThietBi>
+
+@{
+    ViewData["Title"] = "Quản Lý Thiết Bị";
+    Layout = "_AdminLayout";
+}
+
+<div class="container-fluid">
+    <!-- Header -->
+    <div class="row mb-3">
+        <div class="col-md-6">
+            <h2 class="text-primary">
+                <i class="fas fa-mobile-alt me-2"></i>@ViewData["Title"]
+            </h2>
+            <p class="text-muted">Quản lý thiết bị điện thoại, laptop của khách hàng</p>
+        </div>
+        <div class="col-md-6 text-end">
+            <a asp-action="Create" class="btn btn-success">
+                <i class="fas fa-plus me-1"></i>Thêm Thiết Bị
+            </a>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="get" class="row g-3">
+                <!-- Tìm kiếm -->
+                <div class="col-md-4">
+                    <label for="searchString" class="form-label">Tìm kiếm</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="fas fa-search"></i></span>
+                        <input type="text" class="form-control" id="searchString" name="searchString" 
+                               value="@ViewData["CurrentFilter"]" placeholder="Tìm theo tên, hãng, model...">
+                    </div>
+                </div>
+
+                <!-- Lọc theo loại thiết bị -->
+                <div class="col-md-3">
+                    <label for="categoryFilter" class="form-label">Loại thiết bị</label>
+                    <select class="form-select" id="categoryFilter" name="categoryFilter">
+                        <option value="">Tất cả loại</option>
+                        @if (ViewBag.CategoryList != null)
+                        {
+                            @foreach (var category in ViewBag.CategoryList)
+                            {
+                                <option value="@category" selected="@(category == ViewData["CurrentCategory"])">
+                                    @category
+                                </option>
+                            }
+                        }
+                    </select>
+                </div>
+
+                <!-- Lọc theo khách hàng -->
+                <div class="col-md-3">
+                    <label for="customerFilter" class="form-label">Khách hàng</label>
+                    <select class="form-select" id="customerFilter" name="customerFilter">
+                        <option value="">Tất cả khách hàng</option>
+                        @if (ViewBag.KhachHangList != null)
+                        {
+                            @foreach (var item in ViewBag.KhachHangList)
+                            {
+                                <option value="@item.Value" selected="@(item.Value == ViewData["CurrentCustomer"]?.ToString())">
+                                    @item.Text
+                                </option>
+                            }
+                        }
+                    </select>
+                </div>
+
+                <!-- Nút lọc -->
+                <div class="col-md-2 d-flex align-items-end">
+                    <button type="submit" class="btn btn-primary me-2">
+                        <i class="fas fa-filter me-1"></i>Lọc
+                    </button>
+                    <a asp-action="Index" class="btn btn-outline-secondary">
+                        <i class="fas fa-redo me-1"></i>Reset
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Thống kê nhanh -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h5 class="card-title">Tổng thiết bị</h5>
+                            <h3>@ViewBag.TotalCount</h3>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-mobile-alt fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h5 class="card-title">Điện thoại</h5>
+                            <h3>@Model.Count(tb => tb.LaThietBiDienThoai())</h3>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-phone fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-info text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h5 class="card-title">Laptop</h5>
+                            <h3>@Model.Count(tb => tb.LaThietBiLaptop())</h3>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-laptop fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-warning text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h5 class="card-title">Khác</h5>
+                            <h3>@Model.Count(tb => !tb.LaThietBiDienThoai() && !tb.LaThietBiLaptop())</h3>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-tablet fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bảng dữ liệu -->
+    <div class="card">
+        <div class="card-header">
+            <h5 class="card-title mb-0">
+                <i class="fas fa-list me-2"></i>Danh sách thiết bị
+                <span class="badge bg-secondary ms-2">@ViewBag.TotalCount thiết bị</span>
+            </h5>
+        </div>
+        <div class="card-body">
+            @if (Model != null && Model.Any())
+            {
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>
+                                    <a asp-action="Index" asp-route-sortOrder="@ViewData["NameSortParm"]" 
+                                       asp-route-searchString="@ViewData["CurrentFilter"]"
+                                       asp-route-categoryFilter="@ViewData["CurrentCategory"]"
+                                       asp-route-customerFilter="@ViewData["CurrentCustomer"]"
+                                       class="text-white text-decoration-none">
+                                        Tên thiết bị
+                                        @if (ViewData["CurrentSort"]?.ToString() == "")
+                                        {
+                                            <i class="fas fa-sort-up"></i>
+                                        }
+                                        else if (ViewData["CurrentSort"]?.ToString() == "name_desc")
+                                        {
+                                            <i class="fas fa-sort-down"></i>
+                                        }
+                                        else
+                                        {
+                                            <i class="fas fa-sort"></i>
+                                        }
+                                    </a>
+                                </th>
+                                <th>
+                                    <a asp-action="Index" asp-route-sortOrder="@ViewData["CategorySortParm"]" 
+                                       asp-route-searchString="@ViewData["CurrentFilter"]"
+                                       asp-route-categoryFilter="@ViewData["CurrentCategory"]"
+                                       asp-route-customerFilter="@ViewData["CurrentCustomer"]"
+                                       class="text-white text-decoration-none">
+                                        Loại thiết bị
+                                        @if (ViewData["CurrentSort"]?.ToString() == "category")
+                                        {
+                                            <i class="fas fa-sort-up"></i>
+                                        }
+                                        else if (ViewData["CurrentSort"]?.ToString() == "category_desc")
+                                        {
+                                            <i class="fas fa-sort-down"></i>
+                                        }
+                                        else
+                                        {
+                                            <i class="fas fa-sort"></i>
+                                        }
+                                    </a>
+                                </th>
+                                <th>
+                                    <a asp-action="Index" asp-route-sortOrder="@ViewData["BrandSortParm"]" 
+                                       asp-route-searchString="@ViewData["CurrentFilter"]"
+                                       asp-route-categoryFilter="@ViewData["CurrentCategory"]"
+                                       asp-route-customerFilter="@ViewData["CurrentCustomer"]"
+                                       class="text-white text-decoration-none">
+                                        Hãng / Model
+                                        @if (ViewData["CurrentSort"]?.ToString() == "brand")
+                                        {
+                                            <i class="fas fa-sort-up"></i>
+                                        }
+                                        else if (ViewData["CurrentSort"]?.ToString() == "brand_desc")
+                                        {
+                                            <i class="fas fa-sort-down"></i>
+                                        }
+                                        else
+                                        {
+                                            <i class="fas fa-sort"></i>
+                                        }
+                                    </a>
+                                </th>
+                                <th>
+                                    <a asp-action="Index" asp-route-sortOrder="@ViewData["CustomerSortParm"]" 
+                                       asp-route-searchString="@ViewData["CurrentFilter"]"
+                                       asp-route-categoryFilter="@ViewData["CurrentCategory"]"
+                                       asp-route-customerFilter="@ViewData["CurrentCustomer"]"
+                                       class="text-white text-decoration-none">
+                                        Khách hàng
+                                        @if (ViewData["CurrentSort"]?.ToString() == "customer")
+                                        {
+                                            <i class="fas fa-sort-up"></i>
+                                        }
+                                        else if (ViewData["CurrentSort"]?.ToString() == "customer_desc")
+                                        {
+                                            <i class="fas fa-sort-down"></i>
+                                        }
+                                        else
+                                        {
+                                            <i class="fas fa-sort"></i>
+                                        }
+                                    </a>
+                                </th>
+                                <th>Mã định danh</th>
+                                <th>Thao tác</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model)
+                            {
+                                <tr>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <span class="me-2">@item.LayIconThietBi()</span>
+                                            <div>
+                                                <strong>@Html.DisplayFor(modelItem => item.TenThietBi)</strong>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="@item.LoaiThietBiBadge">
+                                            @Html.DisplayFor(modelItem => item.LoaiThietBi)
+                                        </span>
+                                    </td>
+                                    <td>
+                                        @if (!string.IsNullOrEmpty(item.HangSanXuat))
+                                        {
+                                            <div>
+                                                <strong>@item.HangSanXuat</strong>
+                                                @if (!string.IsNullOrEmpty(item.Model))
+                                                {
+                                                    <br><small class="text-muted">@item.Model</small>
+                                                }
+                                            </div>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">Chưa có thông tin</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <div class="me-2">
+                                                <div class="bg-primary rounded-circle d-flex align-items-center justify-content-center" 
+                                                     style="width: 32px; height: 32px;">
+                                                    <span class="text-white fw-bold">
+                                                        @(item.KhachHang?.HoTen?.Substring(0, 1).ToUpper() ?? "?")
+                                                    </span>
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <strong>@(item.KhachHang?.HoTen ?? "Không xác định")</strong>
+                                                @if (item.KhachHang != null)
+                                                {
+                                                    <br><small class="text-muted">@item.KhachHang.SoDienThoai</small>
+                                                }
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <code class="bg-light p-1 rounded">@item.LayMaNhanDienThietBi()</code>
+                                    </td>
+                                    <td>
+                                        <div class="btn-group btn-group-sm" role="group">
+                                            <a asp-action="Details" asp-route-id="@item.MaThietBi" 
+                                               class="btn btn-outline-info" title="Chi tiết">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                            <a asp-action="Edit" asp-route-id="@item.MaThietBi" 
+                                               class="btn btn-outline-warning" title="Sửa">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                            <a asp-action="Delete" asp-route-id="@item.MaThietBi" 
+                                               class="btn btn-outline-danger" title="Xóa">
+                                                <i class="fas fa-trash"></i>
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Phân trang -->
+                @if (ViewBag.TotalPages > 1)
+                {
+                    <nav aria-label="Page navigation" class="mt-4">
+                        <ul class="pagination justify-content-center">
+                            <!-- Previous -->
+                            @if (ViewBag.CurrentPage > 1)
+                            {
+                                <li class="page-item">
+                                    <a class="page-link" asp-action="Index" 
+                                       asp-route-page="@(ViewBag.CurrentPage - 1)"
+                                       asp-route-searchString="@ViewData["CurrentFilter"]"
+                                       asp-route-categoryFilter="@ViewData["CurrentCategory"]"
+                                       asp-route-customerFilter="@ViewData["CurrentCustomer"]"
+                                       asp-route-sortOrder="@ViewData["CurrentSort"]">
+                                        <i class="fas fa-chevron-left"></i>
+                                    </a>
+                                </li>
+                            }
+
+                            <!-- Page numbers -->
+                            @{
+                                int startPage = Math.Max(1, ViewBag.CurrentPage - 2);
+                                int endPage = Math.Min(ViewBag.TotalPages, ViewBag.CurrentPage + 2);
+                            }
+
+                            @if (startPage > 1)
+                            {
+                                <li class="page-item">
+                                    <a class="page-link" asp-action="Index" asp-route-page="1"
+                                       asp-route-searchString="@ViewData["CurrentFilter"]"
+                                       asp-route-categoryFilter="@ViewData["CurrentCategory"]"
+                                       asp-route-customerFilter="@ViewData["CurrentCustomer"]"
+                                       asp-route-sortOrder="@ViewData["CurrentSort"]">1</a>
+                                </li>
+                                @if (startPage > 2)
+                                {
+                                    <li class="page-item disabled">
+                                        <span class="page-link">...</span>
+                                    </li>
+                                }
+                            }
+
+                            @for (int i = startPage; i <= endPage; i++)
+                            {
+                                <li class="page-item @(i == ViewBag.CurrentPage ? "active" : "")">
+                                    <a class="page-link" asp-action="Index" asp-route-page="@i"
+                                       asp-route-searchString="@ViewData["CurrentFilter"]"
+                                       asp-route-categoryFilter="@ViewData["CurrentCategory"]"
+                                       asp-route-customerFilter="@ViewData["CurrentCustomer"]"
+                                       asp-route-sortOrder="@ViewData["CurrentSort"]">@i</a>
+                                </li>
+                            }
+
+                            @if (endPage < ViewBag.TotalPages)
+                            {
+                                @if (endPage < ViewBag.TotalPages - 1)
+                                {
+                                    <li class="page-item disabled">
+                                        <span class="page-link">...</span>
+                                    </li>
+                                }
+                                <li class="page-item">
+                                    <a class="page-link" asp-action="Index" asp-route-page="@ViewBag.TotalPages"
+                                       asp-route-searchString="@ViewData["CurrentFilter"]"
+                                       asp-route-categoryFilter="@ViewData["CurrentCategory"]"
+                                       asp-route-customerFilter="@ViewData["CurrentCustomer"]"
+                                       asp-route-sortOrder="@ViewData["CurrentSort"]">@ViewBag.TotalPages</a>
+                                </li>
+                            }
+
+                            <!-- Next -->
+                            @if (ViewBag.CurrentPage < ViewBag.TotalPages)
+                            {
+                                <li class="page-item">
+                                    <a class="page-link" asp-action="Index" 
+                                       asp-route-page="@(ViewBag.CurrentPage + 1)"
+                                       asp-route-searchString="@ViewData["CurrentFilter"]"
+                                       asp-route-categoryFilter="@ViewData["CurrentCategory"]"
+                                       asp-route-customerFilter="@ViewData["CurrentCustomer"]"
+                                       asp-route-sortOrder="@ViewData["CurrentSort"]">
+                                        <i class="fas fa-chevron-right"></i>
+                                    </a>
+                                </li>
+                            }
+                        </ul>
+                    </nav>
+
+                    <!-- Thông tin phân trang -->
+                    <div class="text-center text-muted">
+                        Hiển thị @((ViewBag.CurrentPage - 1) * ViewBag.PageSize + 1) - 
+                        @(Math.Min(ViewBag.CurrentPage * ViewBag.PageSize, ViewBag.TotalCount)) 
+                        trong tổng số @ViewBag.TotalCount thiết bị
+                    </div>
+                }
+            }
+            else
+            {
+                <!-- Empty state -->
+                <div class="text-center py-5">
+                    <i class="fas fa-mobile-alt fa-4x text-muted mb-3"></i>
+                    <h4 class="text-muted">Chưa có thiết bị nào</h4>
+                    <p class="text-muted mb-4">
+                        @if (!string.IsNullOrEmpty(ViewData["CurrentFilter"]?.ToString()) || 
+                             !string.IsNullOrEmpty(ViewData["CurrentCategory"]?.ToString()) || 
+                             !string.IsNullOrEmpty(ViewData["CurrentCustomer"]?.ToString()))
+                        {
+                            <span>Không tìm thấy thiết bị nào phù hợp với bộ lọc.</span>
+                        }
+                        else
+                        {
+                            <span>Hãy thêm thiết bị đầu tiên cho hệ thống.</span>
+                        }
+                    </p>
+                    @if (string.IsNullOrEmpty(ViewData["CurrentFilter"]?.ToString()) && 
+                         string.IsNullOrEmpty(ViewData["CurrentCategory"]?.ToString()) && 
+                         string.IsNullOrEmpty(ViewData["CurrentCustomer"]?.ToString()))
+                    {
+                        <a asp-action="Create" class="btn btn-primary">
+                            <i class="fas fa-plus me-1"></i>Thêm Thiết Bị Đầu Tiên
+                        </a>
+                    }
+                    else
+                    {
+                        <a asp-action="Index" class="btn btn-outline-primary">
+                            <i class="fas fa-times me-1"></i>Xóa Bộ Lọc
+                        </a>
+                    }
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Auto submit form khi thay đổi filter
+        $('#categoryFilter, #customerFilter').change(function() {
+            $(this).closest('form').submit();
+        });
+
+        // Clear search on Escape key
+        $('#searchString').keyup(function(e) {
+            if (e.keyCode === 27) { // Escape key
+                $(this).val('');
+            }
+        });
+
+        // Focus vào search box khi load trang
+        $(document).ready(function() {
+            $('#searchString').focus();
+        });
+
+        // Hiển thị loading khi submit form
+        $('form').submit(function() {
+            $('button[type="submit"]').prop('disabled', true).html('<i class="fas fa-spinner fa-spin me-1"></i>Đang tìm...');
+        });
+    </script>
+}

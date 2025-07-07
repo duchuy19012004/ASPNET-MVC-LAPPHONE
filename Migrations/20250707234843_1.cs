@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace phonev2.Migrations
 {
     /// <inheritdoc />
-    public partial class all : Migration
+    public partial class _1 : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -108,6 +108,29 @@ namespace phonev2.Migrations
                     table.CheckConstraint("CK_NhanVien_NgayNghiViec", "NgayNghiViec IS NULL OR NgayNghiViec >= NgayVaoLam");
                     table.CheckConstraint("CK_NhanVien_NgaySinh", "NgaySinh <= GETDATE()");
                     table.CheckConstraint("CK_NhanVien_NgayVaoLam", "NgayVaoLam >= NgaySinh");
+                });
+
+            migrationBuilder.CreateTable(
+                name: "ThietBi",
+                columns: table => new
+                {
+                    mathietbi = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    makhachhang = table.Column<int>(type: "int", nullable: false),
+                    tenthietbi = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
+                    loaithietbi = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    hangsanxuat = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: true),
+                    model = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ThietBi", x => x.mathietbi);
+                    table.ForeignKey(
+                        name: "FK_ThietBi_KhachHang_makhachhang",
+                        column: x => x.makhachhang,
+                        principalTable: "KhachHang",
+                        principalColumn: "makhachhang",
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(
@@ -380,6 +403,31 @@ namespace phonev2.Migrations
                 name: "IX_PhieuNhap_trangthai",
                 table: "PhieuNhap",
                 column: "trangthai");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ThietBi_hangsanxuat",
+                table: "ThietBi",
+                column: "hangsanxuat");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ThietBi_loaithietbi",
+                table: "ThietBi",
+                column: "loaithietbi");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ThietBi_makhachhang",
+                table: "ThietBi",
+                column: "makhachhang");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ThietBi_model",
+                table: "ThietBi",
+                column: "model");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ThietBi_tenthietbi",
+                table: "ThietBi",
+                column: "tenthietbi");
         }
 
         /// <inheritdoc />
@@ -392,13 +440,16 @@ namespace phonev2.Migrations
                 name: "DichVu");
 
             migrationBuilder.DropTable(
-                name: "KhachHang");
+                name: "ThietBi");
 
             migrationBuilder.DropTable(
                 name: "LinhKien");
 
             migrationBuilder.DropTable(
                 name: "PhieuNhap");
+
+            migrationBuilder.DropTable(
+                name: "KhachHang");
 
             migrationBuilder.DropTable(
                 name: "LoaiLinhKien");

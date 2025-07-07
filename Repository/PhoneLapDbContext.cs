@@ -18,8 +18,9 @@ namespace phonev2.Repository
         public DbSet<KhachHang> KhachHang { get; set; }
         public DbSet<PhieuNhap> PhieuNhap { get; set; }
         public DbSet<ChiTietPhieuNhap> ChiTietPhieuNhap { get; set; }
+        public DbSet<ThietBi> ThietBi { get; set; }
         
-        
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
@@ -152,7 +153,9 @@ namespace phonev2.Repository
                 // Constraints
                 entity.HasCheckConstraint("CK_KhachHang_TongChiTieu", "TongChiTieu >= 0");
                 entity.HasCheckConstraint("CK_KhachHang_NgayTao", "NgayTao <= GETDATE()");
-            });          
+            });
+
+            // Cấu hình bảng PhieuNhap
             modelBuilder.Entity<PhieuNhap>(entity =>
             {
                 entity.HasKey(e => e.MaPhieuNhap);
@@ -217,6 +220,30 @@ namespace phonev2.Repository
                 entity.HasCheckConstraint("CK_ChiTietPhieuNhap_GiaNhap", "GiaNhap >= 0");
                 entity.HasCheckConstraint("CK_ChiTietPhieuNhap_ThanhTien", "ThanhTien >= 0");
             });
+
+            // Cấu hình bảng ThietBi
+            modelBuilder.Entity<ThietBi>(entity =>
+            {
+                entity.HasKey(e => e.MaThietBi);
+                entity.Property(e => e.TenThietBi).IsRequired().HasMaxLength(200);
+                entity.Property(e => e.LoaiThietBi).IsRequired().HasMaxLength(50);
+                entity.Property(e => e.HangSanXuat).HasMaxLength(100);
+                entity.Property(e => e.Model).HasMaxLength(100);
+
+                // Foreign Key relationships
+                entity.HasOne(e => e.KhachHang)
+                      .WithMany()
+                      .HasForeignKey(e => e.MaKhachHang)
+                      .OnDelete(DeleteBehavior.Restrict);
+
+                // Index cho tìm kiếm nhanh
+                entity.HasIndex(e => e.TenThietBi);
+                entity.HasIndex(e => e.LoaiThietBi);
+                entity.HasIndex(e => e.MaKhachHang);
+                entity.HasIndex(e => e.HangSanXuat);
+                entity.HasIndex(e => e.Model);
+            });
+            
         }
     }
 }

@@ -12,8 +12,8 @@ using phonev2.Repository;
 namespace phonev2.Migrations
 {
     [DbContext(typeof(PhoneLapDbContext))]
-    [Migration("20250707100204_all")]
-    partial class all
+    [Migration("20250707234843_1")]
+    partial class _1
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -523,6 +523,56 @@ namespace phonev2.Migrations
                         });
                 });
 
+            modelBuilder.Entity("phonev2.Models.ThietBi", b =>
+                {
+                    b.Property<int>("MaThietBi")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasColumnName("mathietbi");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("MaThietBi"));
+
+                    b.Property<string>("HangSanXuat")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)")
+                        .HasColumnName("hangsanxuat");
+
+                    b.Property<string>("LoaiThietBi")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)")
+                        .HasColumnName("loaithietbi");
+
+                    b.Property<int>("MaKhachHang")
+                        .HasColumnType("int")
+                        .HasColumnName("makhachhang");
+
+                    b.Property<string>("Model")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)")
+                        .HasColumnName("model");
+
+                    b.Property<string>("TenThietBi")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)")
+                        .HasColumnName("tenthietbi");
+
+                    b.HasKey("MaThietBi");
+
+                    b.HasIndex("HangSanXuat");
+
+                    b.HasIndex("LoaiThietBi");
+
+                    b.HasIndex("MaKhachHang");
+
+                    b.HasIndex("Model");
+
+                    b.HasIndex("TenThietBi");
+
+                    b.ToTable("ThietBi");
+                });
+
             modelBuilder.Entity("phonev2.Models.ChiTietPhieuNhap", b =>
                 {
                     b.HasOne("phonev2.Models.LinhKien", "LinhKien")
@@ -570,6 +620,17 @@ namespace phonev2.Migrations
                     b.Navigation("NhaCungCap");
 
                     b.Navigation("NhanVien");
+                });
+
+            modelBuilder.Entity("phonev2.Models.ThietBi", b =>
+                {
+                    b.HasOne("phonev2.Models.KhachHang", "KhachHang")
+                        .WithMany()
+                        .HasForeignKey("MaKhachHang")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("KhachHang");
                 });
 
             modelBuilder.Entity("phonev2.Models.PhieuNhap", b =>

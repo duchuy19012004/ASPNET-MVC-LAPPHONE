@@ -1,0 +1,310 @@
+@model phonev2.Models.ThietBi
+
+@{
+    ViewData["Title"] = "Thêm Thiết Bị Mới";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<!-- Header -->
+<div class="row mb-3">
+    <div class="col-md-6">
+        <h2 class="text-success">
+            <i class="fas fa-plus-circle me-2"></i>@ViewData["Title"]
+        </h2>
+        <p class="text-muted">Thêm thiết bị mới vào hệ thống</p>
+    </div>
+    <div class="col-md-6 text-end">
+        <a asp-action="Index" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left me-1"></i>Quay lại danh sách
+        </a>
+    </div>
+</div>
+
+<!-- Hiển thị thông báo lỗi -->
+@if (!ViewData.ModelState.IsValid)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="fas fa-exclamation-triangle me-2"></i>
+        <strong>Có lỗi xảy ra!</strong> Vui lòng kiểm tra lại thông tin nhập vào.
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+<!-- Form thêm thiết bị -->
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-mobile-alt me-2"></i>Thông tin thiết bị
+                </h5>
+            </div>
+            <div class="card-body">
+                <form asp-action="Create" method="post" novalidate>
+                    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                    <!-- Khách hàng -->
+                    <div class="row mb-3">
+                        <label asp-for="MaKhachHang" class="col-sm-3 col-form-label">
+                            <i class="fas fa-user me-1"></i>Khách hàng <span class="text-danger">*</span>
+                        </label>
+                        <div class="col-sm-9">
+                            <select asp-for="MaKhachHang" class="form-select" asp-items="ViewBag.KhachHangList">
+                                <option value="">-- Chọn khách hàng --</option>
+                            </select>
+                            <span asp-validation-for="MaKhachHang" class="text-danger"></span>
+                            <div class="form-text">
+                                <i class="fas fa-info-circle me-1"></i>
+                                Chọn khách hàng sở hữu thiết bị này
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tên thiết bị -->
+                    <div class="row mb-3">
+                        <label asp-for="TenThietBi" class="col-sm-3 col-form-label">
+                            <i class="fas fa-tag me-1"></i>Tên thiết bị <span class="text-danger">*</span>
+                        </label>
+                        <div class="col-sm-9">
+                            <input asp-for="TenThietBi" class="form-control" placeholder="Ví dụ: iPhone 15 Pro Max, MacBook Air M2">
+                            <span asp-validation-for="TenThietBi" class="text-danger"></span>
+                            <div class="form-text">
+                                <i class="fas fa-info-circle me-1"></i>
+                                Nhập tên chi tiết của thiết bị
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Loại thiết bị -->
+                    <div class="row mb-3">
+                        <label asp-for="LoaiThietBi" class="col-sm-3 col-form-label">
+                            <i class="fas fa-list me-1"></i>Loại thiết bị <span class="text-danger">*</span>
+                        </label>
+                        <div class="col-sm-9">
+                            <select asp-for="LoaiThietBi" class="form-select">
+                                <option value="">-- Chọn loại thiết bị --</option>
+                                <option value="Điện thoại">📱 Điện thoại</option>
+                                <option value="Laptop">💻 Laptop</option>
+                            </select>
+                            <span asp-validation-for="LoaiThietBi" class="text-danger"></span>
+                            <div class="form-text">
+                                <i class="fas fa-info-circle me-1"></i>
+                                Chọn loại thiết bị: Điện thoại hoặc Laptop
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Hãng sản xuất -->
+                    <div class="row mb-3">
+                        <label asp-for="HangSanXuat" class="col-sm-3 col-form-label">
+                            <i class="fas fa-building me-1"></i>Hãng sản xuất
+                        </label>
+                        <div class="col-sm-9">
+                            <input asp-for="HangSanXuat" class="form-control" placeholder="Ví dụ: Apple, Samsung, Dell, HP, Asus">
+                            <span asp-validation-for="HangSanXuat" class="text-danger"></span>
+                            <div class="form-text">
+                                <i class="fas fa-info-circle me-1"></i>
+                                Nhập tên hãng sản xuất thiết bị
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Model -->
+                    <div class="row mb-3">
+                        <label asp-for="Model" class="col-sm-3 col-form-label">
+                            <i class="fas fa-code me-1"></i>Model
+                        </label>
+                        <div class="col-sm-9">
+                            <input asp-for="Model" class="form-control" placeholder="Ví dụ: Pro Max, Air M2, Gaming 15">
+                            <span asp-validation-for="Model" class="text-danger"></span>
+                            <div class="form-text">
+                                <i class="fas fa-info-circle me-1"></i>
+                                Nhập model/phiên bản cụ thể của thiết bị
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Nút hành động -->
+                    <div class="row">
+                        <div class="col-sm-9 offset-sm-3">
+                            <div class="d-flex gap-2">
+                                <button type="submit" class="btn btn-success">
+                                    <i class="fas fa-save me-1"></i>Lưu thiết bị
+                                </button>
+                                <button type="reset" class="btn btn-outline-secondary">
+                                    <i class="fas fa-undo me-1"></i>Nhập lại
+                                </button>
+                                <a asp-action="Index" class="btn btn-outline-danger">
+                                    <i class="fas fa-times me-1"></i>Hủy
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sidebar hướng dẫn -->
+    <div class="col-lg-4">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="card-title mb-0">
+                    <i class="fas fa-lightbulb me-2"></i>Hướng dẫn
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <h6 class="text-primary">
+                        <i class="fas fa-user me-1"></i>Khách hàng
+                    </h6>
+                    <p class="small text-muted">
+                        Chọn khách hàng sở hữu thiết bị. Nếu chưa có trong danh sách, 
+                        hãy thêm khách hàng mới trước.
+                    </p>
+                </div>
+
+                <div class="mb-3">
+                    <h6 class="text-primary">
+                        <i class="fas fa-mobile-alt me-1"></i>Thông tin thiết bị
+                    </h6>
+                    <p class="small text-muted">
+                        Nhập đầy đủ thông tin để dễ dàng nhận diện thiết bị khi sửa chữa.
+                        Tên thiết bị nên chi tiết và rõ ràng.
+                    </p>
+                </div>
+
+                <div class="mb-3">
+                    <h6 class="text-primary">
+                        <i class="fas fa-tags me-1"></i>Loại thiết bị
+                    </h6>
+                    <ul class="small text-muted mb-0">
+                        <li><strong>Điện thoại:</strong> Smartphone, iPhone, Android</li>
+                        <li><strong>Laptop:</strong> Máy tính xách tay, Notebook</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick tips -->
+        <div class="card mt-3">
+            <div class="card-header">
+                <h6 class="card-title mb-0">
+                    <i class="fas fa-tips me-2"></i>Gợi ý nhanh
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <button type="button" class="btn btn-outline-primary btn-sm" onclick="fillSamplePhone()">
+                        <i class="fas fa-mobile-alt me-1"></i>Mẫu điện thoại
+                    </button>
+                    <button type="button" class="btn btn-outline-success btn-sm" onclick="fillSampleLaptop()">
+                        <i class="fas fa-laptop me-1"></i>Mẫu laptop
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    
+    <script>
+        $(document).ready(function() {
+            // Focus vào dropdown khách hàng khi load trang
+            $('#MaKhachHang').focus();
+
+            // Tự động focus đến trường tiếp theo khi chọn xong
+            $('#MaKhachHang').change(function() {
+                if ($(this).val()) {
+                    $('#TenThietBi').focus();
+                }
+            });
+
+            // Placeholder động cho tên thiết bị
+            $('#LoaiThietBi').change(function() {
+                var loai = $(this).val();
+                var placeholder = '';
+                
+                if (loai === 'Điện thoại') {
+                    placeholder = 'Ví dụ: iPhone 15 Pro Max, Samsung Galaxy S24 Ultra';
+                } else if (loai === 'Laptop') {
+                    placeholder = 'Ví dụ: MacBook Air M2, Dell XPS 15, ASUS ROG Strix';
+                } else {
+                    placeholder = 'Nhập tên chi tiết của thiết bị';
+                }
+                
+                $('#TenThietBi').attr('placeholder', placeholder);
+            });
+
+            // Validation khi submit
+            $('form').submit(function(e) {
+                var isValid = true;
+                
+                // Kiểm tra khách hàng
+                if (!$('#MaKhachHang').val()) {
+                    isValid = false;
+                    showError('#MaKhachHang', 'Vui lòng chọn khách hàng');
+                }
+                
+                // Kiểm tra tên thiết bị
+                if (!$('#TenThietBi').val().trim()) {
+                    isValid = false;
+                    showError('#TenThietBi', 'Vui lòng nhập tên thiết bị');
+                }
+                
+                // Kiểm tra loại thiết bị
+                if (!$('#LoaiThietBi').val()) {
+                    isValid = false;
+                    showError('#LoaiThietBi', 'Vui lòng chọn loại thiết bị');
+                }
+                
+                if (!isValid) {
+                    e.preventDefault();
+                    showAlert('Vui lòng điền đầy đủ thông tin bắt buộc!', 'danger');
+                }
+            });
+
+            // Clear error khi user nhập lại
+            $('input, select').on('input change', function() {
+                $(this).removeClass('is-invalid');
+                $(this).siblings('.text-danger').text('');
+            });
+        });
+
+        // Hàm hiển thị lỗi
+        function showError(selector, message) {
+            $(selector).addClass('is-invalid');
+            $(selector).siblings('.text-danger').text(message);
+        }
+
+        // Hàm hiển thị thông báo
+        function showAlert(message, type) {
+            var alertHtml = `
+                <div class="alert alert-${type} alert-dismissible fade show" role="alert">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    ${message}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            `;
+            $('.row').first().before(alertHtml);
+        }
+
+        // Điền dữ liệu mẫu điện thoại
+        function fillSamplePhone() {
+            $('#TenThietBi').val('iPhone 15 Pro Max 256GB');
+            $('#LoaiThietBi').val('Điện thoại').trigger('change');
+            $('#HangSanXuat').val('Apple');
+            $('#Model').val('Pro Max');
+        }
+
+        // Điền dữ liệu mẫu laptop
+        function fillSampleLaptop() {
+            $('#TenThietBi').val('MacBook Air 13 inch M2');
+            $('#LoaiThietBi').val('Laptop').trigger('change');
+            $('#HangSanXuat').val('Apple');
+            $('#Model').val('Air M2');
+        }
+    </script>
+}
