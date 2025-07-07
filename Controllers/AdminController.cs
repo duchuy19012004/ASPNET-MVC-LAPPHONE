@@ -71,8 +71,7 @@ namespace phonev2.Controllers
 
         public IActionResult PhieuSua()
         {
-            ViewData["Title"] = "Quản Lý Phiếu Sửa Chữa";
-            return View();
+            return RedirectToAction("Index", "PhieuSua");
         }
 
         public IActionResult HoaDon()

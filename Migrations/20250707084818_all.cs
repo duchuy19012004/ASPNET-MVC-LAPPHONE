@@ -5,7 +5,7 @@
 namespace phonev2.Migrations
 {
     /// <inheritdoc />
-    public partial class phieunhapv11 : Migration
+    public partial class all : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
