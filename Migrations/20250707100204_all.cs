@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace phonev2.Migrations
 {
     /// <inheritdoc />
-    public partial class phieusua : Migration
+    public partial class all : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -111,30 +111,6 @@ namespace phonev2.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "ThietBi",
-                columns: table => new
-                {
-                    mathietbi = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    makhachhang = table.Column<int>(type: "int", nullable: false),
-                    tenthietbi = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
-                    loaithietbi = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
-                    hangsanxuat = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true),
-                    model = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true),
-                    soserial = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_ThietBi", x => x.mathietbi);
-                    table.ForeignKey(
-                        name: "FK_ThietBi_KhachHang_makhachhang",
-                        column: x => x.makhachhang,
-                        principalTable: "KhachHang",
-                        principalColumn: "makhachhang",
-                        onDelete: ReferentialAction.Restrict);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "LinhKien",
                 columns: table => new
                 {
@@ -197,49 +173,6 @@ namespace phonev2.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "PhieuSua",
-                columns: table => new
-                {
-                    maphieusua = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    makhachhang = table.Column<int>(type: "int", nullable: false),
-                    manhanvien = table.Column<int>(type: "int", nullable: false),
-                    mathietbi = table.Column<int>(type: "int", nullable: false),
-                    ngaynhan = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    ngayhentra = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    ngaytrathucte = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    tinhtrangnhan = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
-                    motaloi = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
-                    trangthai = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
-                    tongtien = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    ghichu = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_PhieuSua", x => x.maphieusua);
-                    table.CheckConstraint("CK_PhieuSua_TongTien", "TongTien >= 0");
-                    table.CheckConstraint("CK_PhieuSua_TrangThai", "TrangThai IN ('Tiếp nhận', 'Đang sửa', 'Chờ linh kiện', 'Hoàn thành', 'Đã giao', 'Hủy')");
-                    table.ForeignKey(
-                        name: "FK_PhieuSua_KhachHang_makhachhang",
-                        column: x => x.makhachhang,
-                        principalTable: "KhachHang",
-                        principalColumn: "makhachhang",
-                        onDelete: ReferentialAction.Restrict);
-                    table.ForeignKey(
-                        name: "FK_PhieuSua_NhanVien_manhanvien",
-                        column: x => x.manhanvien,
-                        principalTable: "NhanVien",
-                        principalColumn: "manhanvien",
-                        onDelete: ReferentialAction.Restrict);
-                    table.ForeignKey(
-                        name: "FK_PhieuSua_ThietBi_mathietbi",
-                        column: x => x.mathietbi,
-                        principalTable: "ThietBi",
-                        principalColumn: "mathietbi",
-                        onDelete: ReferentialAction.Restrict);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "ChiTietPhieuNhap",
                 columns: table => new
                 {
@@ -269,84 +202,6 @@ namespace phonev2.Migrations
                         principalColumn: "maphieunhap",
                         onDelete: ReferentialAction.Cascade);
                 });
-
-            migrationBuilder.CreateTable(
-                name: "ChiTiet_SuaChua",
-                columns: table => new
-                {
-                    maphieusua = table.Column<int>(type: "int", nullable: false),
-                    madichvu = table.Column<int>(type: "int", nullable: false),
-                    ghichu = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: false),
-                    giadichvu = table.Column<decimal>(type: "decimal(18,2)", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_ChiTiet_SuaChua", x => new { x.maphieusua, x.madichvu });
-                    table.CheckConstraint("CK_ChiTiet_SuaChua_GiaDichVu", "GiaDichVu >= 0");
-                    table.ForeignKey(
-                        name: "FK_ChiTiet_SuaChua_DichVu_madichvu",
-                        column: x => x.madichvu,
-                        principalTable: "DichVu",
-                        principalColumn: "madichvu",
-                        onDelete: ReferentialAction.Restrict);
-                    table.ForeignKey(
-                        name: "FK_ChiTiet_SuaChua_PhieuSua_maphieusua",
-                        column: x => x.maphieusua,
-                        principalTable: "PhieuSua",
-                        principalColumn: "maphieusua",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "ChiTietLK",
-                columns: table => new
-                {
-                    maphieusua = table.Column<int>(type: "int", nullable: false),
-                    malinhkien = table.Column<int>(type: "int", nullable: false),
-                    soluong = table.Column<int>(type: "int", nullable: false),
-                    giaban = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    thanhtien = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    ghichu = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_ChiTietLK", x => new { x.maphieusua, x.malinhkien });
-                    table.CheckConstraint("CK_ChiTietLK_GiaBan", "GiaBan >= 0");
-                    table.CheckConstraint("CK_ChiTietLK_SoLuong", "SoLuong > 0");
-                    table.CheckConstraint("CK_ChiTietLK_ThanhTien", "ThanhTien >= 0");
-                    table.ForeignKey(
-                        name: "FK_ChiTietLK_LinhKien_malinhkien",
-                        column: x => x.malinhkien,
-                        principalTable: "LinhKien",
-                        principalColumn: "malinhkien",
-                        onDelete: ReferentialAction.Restrict);
-                    table.ForeignKey(
-                        name: "FK_ChiTietLK_PhieuSua_maphieusua",
-                        column: x => x.maphieusua,
-                        principalTable: "PhieuSua",
-                        principalColumn: "maphieusua",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateIndex(
-                name: "IX_ChiTiet_SuaChua_madichvu",
-                table: "ChiTiet_SuaChua",
-                column: "madichvu");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_ChiTiet_SuaChua_maphieusua",
-                table: "ChiTiet_SuaChua",
-                column: "maphieusua");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_ChiTietLK_malinhkien",
-                table: "ChiTietLK",
-                column: "malinhkien");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_ChiTietLK_maphieusua",
-                table: "ChiTietLK",
-                column: "maphieusua");
 
             migrationBuilder.CreateIndex(
                 name: "IX_ChiTietPhieuNhap_malinhkien",
@@ -525,82 +380,11 @@ namespace phonev2.Migrations
                 name: "IX_PhieuNhap_trangthai",
                 table: "PhieuNhap",
                 column: "trangthai");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_PhieuSua_makhachhang",
-                table: "PhieuSua",
-                column: "makhachhang");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_PhieuSua_manhanvien",
-                table: "PhieuSua",
-                column: "manhanvien");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_PhieuSua_mathietbi",
-                table: "PhieuSua",
-                column: "mathietbi");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_PhieuSua_ngayhentra",
-                table: "PhieuSua",
-                column: "ngayhentra");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_PhieuSua_ngaynhan",
-                table: "PhieuSua",
-                column: "ngaynhan");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_PhieuSua_ngaytrathucte",
-                table: "PhieuSua",
-                column: "ngaytrathucte");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_PhieuSua_tongtien",
-                table: "PhieuSua",
-                column: "tongtien");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_PhieuSua_trangthai",
-                table: "PhieuSua",
-                column: "trangthai");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_ThietBi_hangsanxuat",
-                table: "ThietBi",
-                column: "hangsanxuat");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_ThietBi_loaithietbi",
-                table: "ThietBi",
-                column: "loaithietbi");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_ThietBi_makhachhang",
-                table: "ThietBi",
-                column: "makhachhang");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_ThietBi_soserial",
-                table: "ThietBi",
-                column: "soserial");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_ThietBi_tenthietbi",
-                table: "ThietBi",
-                column: "tenthietbi");
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropTable(
-                name: "ChiTiet_SuaChua");
-
-            migrationBuilder.DropTable(
-                name: "ChiTietLK");
-
             migrationBuilder.DropTable(
                 name: "ChiTietPhieuNhap");
 
@@ -608,16 +392,13 @@ namespace phonev2.Migrations
                 name: "DichVu");
 
             migrationBuilder.DropTable(
-                name: "PhieuSua");
+                name: "KhachHang");
 
             migrationBuilder.DropTable(
                 name: "LinhKien");
 
             migrationBuilder.DropTable(
                 name: "PhieuNhap");
-
-            migrationBuilder.DropTable(
-                name: "ThietBi");
 
             migrationBuilder.DropTable(
                 name: "LoaiLinhKien");
@@ -627,9 +408,6 @@ namespace phonev2.Migrations
 
             migrationBuilder.DropTable(
                 name: "NhanVien");
-
-            migrationBuilder.DropTable(
-                name: "KhachHang");
         }
     }
 }
