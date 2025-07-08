@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using phonev2.Repository;
 
@@ -11,9 +12,11 @@ using phonev2.Repository;
 namespace phonev2.Migrations
 {
     [DbContext(typeof(PhoneLapDbContext))]
-    partial class PhoneLapDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250708081304_dbase")]
+    partial class dbase
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -614,19 +617,11 @@ namespace phonev2.Migrations
                         .HasColumnType("int")
                         .HasColumnName("manhanvien");
 
-                    b.Property<DateTime?>("NgayHenTra")
-                        .HasColumnType("datetime2")
-                        .HasColumnName("ngayhentra");
-
                     b.Property<DateTime>("NgaySua")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
                         .HasColumnName("ngaysua")
                         .HasDefaultValueSql("GETDATE()");
-
-                    b.Property<DateTime?>("NgayTraThucTe")
-                        .HasColumnType("datetime2")
-                        .HasColumnName("ngaytrathucte");
 
                     b.Property<decimal?>("TongTien")
                         .ValueGeneratedOnAdd()
@@ -634,10 +629,10 @@ namespace phonev2.Migrations
                         .HasDefaultValue(0m)
                         .HasColumnName("tongtien");
 
-                    b.Property<int>("TrangThai")
+                    b.Property<bool>("TrangThai")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasDefaultValue(0)
+                        .HasColumnType("bit")
+                        .HasDefaultValue(true)
                         .HasColumnName("trangthai");
 
                     b.HasKey("MaPhieuSua");
@@ -646,11 +641,7 @@ namespace phonev2.Migrations
 
                     b.HasIndex("MaNhanVien");
 
-                    b.HasIndex("NgayHenTra");
-
                     b.HasIndex("NgaySua");
-
-                    b.HasIndex("NgayTraThucTe");
 
                     b.HasIndex("TrangThai");
 

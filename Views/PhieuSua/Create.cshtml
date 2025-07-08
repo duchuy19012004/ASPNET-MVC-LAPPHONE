@@ -1,0 +1,151 @@
+@model phonev2.Models.ViewModels.PhieuSuaCreateViewModel
+@{
+    ViewData["Title"] = "Thêm Phiếu Sửa";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-10">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">@ViewData["Title"]</h4>
+                </div>
+                <div class="card-body">
+                    <form asp-action="Create" method="post">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label asp-for="PhieuSua.NgaySua" class="form-label"></label>
+                                    <input asp-for="PhieuSua.NgaySua" class="form-control" type="date" min="2020-01-01" max="2030-12-31" />
+                                    <span asp-validation-for="PhieuSua.NgaySua" class="text-danger"></span>
+                                </div>
+                                <div class="mb-3">
+                                    <label asp-for="PhieuSua.NgayHenTra" class="form-label">Ngày Hẹn Trả</label>
+                                    <input asp-for="PhieuSua.NgayHenTra" class="form-control" type="date" min="2020-01-01" max="2030-12-31" />
+                                    <span asp-validation-for="PhieuSua.NgayHenTra" class="text-danger"></span>
+                                </div>
+                                <div class="mb-3">
+                                    <label asp-for="PhieuSua.MaKhachHang" class="form-label">Khách Hàng</label>
+                                    <select asp-for="PhieuSua.MaKhachHang" class="form-select" asp-items="Model.KhachHangList">
+                                        <option value="">-- Chọn khách hàng --</option>
+                                    </select>
+                                    <span asp-validation-for="PhieuSua.MaKhachHang" class="text-danger"></span>
+                                </div>
+                                <div class="mb-3">
+                                    <label asp-for="PhieuSua.MaNhanVien" class="form-label">Nhân Viên</label>
+                                    <select asp-for="PhieuSua.MaNhanVien" class="form-select" asp-items="Model.NhanVienList">
+                                        <option value="">-- Chọn nhân viên --</option>
+                                    </select>
+                                    <span asp-validation-for="PhieuSua.MaNhanVien" class="text-danger"></span>
+                                </div>
+                                <div class="mb-3">
+                                    <label asp-for="PhieuSua.GhiChu" class="form-label"></label>
+                                    <textarea asp-for="PhieuSua.GhiChu" class="form-control"></textarea>
+                                    <span asp-validation-for="PhieuSua.GhiChu" class="text-danger"></span>
+                                </div>
+                                <div class="mb-3">
+                                    <label asp-for="PhieuSua.TrangThai" class="form-label"></label>
+                                    <select asp-for="PhieuSua.TrangThai" class="form-select">
+                                        <option value="0">Tiếp nhận</option>
+                                        <option value="1">Đang sửa</option>
+                                        <option value="2">Hoàn thành</option>
+                                        <option value="3">Hủy</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Chọn Dịch Vụ</label>
+                                    <div id="dichvu-container">
+                                        <div class="row mb-2 align-items-center">
+                                            <div class="col-12">
+                                                <select name="DichVus[0].MaDichVu" class="form-select">
+                                                    <option value="">-- Chọn dịch vụ --</option>
+                                                    @foreach (var dv in Model.DichVuList)
+                                                    {
+                                                        <option value="@dv.Value">@dv.Text</option>
+                                                    }
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <button type="button" class="btn btn-sm btn-outline-primary" onclick="addDichVuRow()">+ Thêm dịch vụ</button>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Chọn Linh Kiện</label>
+                                    <div id="linhkien-container">
+                                        <div class="row mb-2 align-items-center">
+                                            <div class="col-8">
+                                                <select name="LinhKiens[0].MaLinhKien" class="form-select">
+                                                    <option value="">-- Chọn linh kiện --</option>
+                                                    @foreach (var lk in Model.LinhKienList)
+                                                    {
+                                                        <option value="@lk.Value">@lk.Text</option>
+                                                    }
+                                                </select>
+                                            </div>
+                                            <div class="col-4">
+                                                <input type="number" name="LinhKiens[0].SoLuong" value="1" min="1" class="form-control" placeholder="Số lượng" />
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <button type="button" class="btn btn-sm btn-outline-primary" onclick="addLinhKienRow()">+ Thêm linh kiện</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="text-end">
+                            <button type="submit" class="btn btn-success"><i class="fas fa-save"></i> Lưu</button>
+                            <a asp-action="Index" class="btn btn-secondary">Quay lại</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        // Render sẵn option HTML cho dropdown dịch vụ và linh kiện
+        const dichVuOptions = `@Html.Raw(string.Join("", Model.DichVuList.Select(dv => $"<option value='{dv.Value}'>{dv.Text}</option>")))`;
+        const linhKienOptions = `@Html.Raw(string.Join("", Model.LinhKienList.Select(lk => $"<option value='{lk.Value}'>{lk.Text}</option>")))`;
+
+        let dichVuIndex = 1;
+        let linhKienIndex = 1;
+        function addDichVuRow() {
+            const container = document.getElementById('dichvu-container');
+            const row = document.createElement('div');
+            row.className = 'row mb-2 align-items-center';
+            row.innerHTML = `
+                <div class="col-12">
+                    <select name="DichVus[${dichVuIndex}].MaDichVu" class="form-select">
+                        <option value="">-- Chọn dịch vụ --</option>
+                        ${dichVuOptions}
+                    </select>
+                </div>
+            `;
+            container.appendChild(row);
+            dichVuIndex++;
+        }
+        function addLinhKienRow() {
+            const container = document.getElementById('linhkien-container');
+            const row = document.createElement('div');
+            row.className = 'row mb-2 align-items-center';
+            row.innerHTML = `
+                <div class="col-8">
+                    <select name="LinhKiens[${linhKienIndex}].MaLinhKien" class="form-select">
+                        <option value="">-- Chọn linh kiện --</option>
+                        ${linhKienOptions}
+                    </select>
+                </div>
+                <div class="col-4">
+                    <input type="number" name="LinhKiens[${linhKienIndex}].SoLuong" value="1" min="1" class="form-control" placeholder="Số lượng" />
+                </div>
+            `;
+            container.appendChild(row);
+            linhKienIndex++;
+        }
+    </script>
+} 

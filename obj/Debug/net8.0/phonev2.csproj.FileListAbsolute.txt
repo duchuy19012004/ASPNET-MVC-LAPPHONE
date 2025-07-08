@@ -244,6 +244,7 @@ C:\Users\juven\Desktop\phonev2\obj\Debug\net8.0\phonev2.csproj.CoreCompileInputs
 C:\Users\juven\Desktop\phonev2\obj\Debug\net8.0\phonev2.MvcApplicationPartsAssemblyInfo.cache
 C:\Users\juven\Desktop\phonev2\obj\Debug\net8.0\phonev2.RazorAssemblyInfo.cache
 C:\Users\juven\Desktop\phonev2\obj\Debug\net8.0\phonev2.RazorAssemblyInfo.cs
+C:\Users\juven\Desktop\phonev2\obj\Debug\net8.0\phonev2.sourcelink.json
 C:\Users\juven\Desktop\phonev2\obj\Debug\net8.0\rjimswa.dswa.cache.json
 C:\Users\juven\Desktop\phonev2\obj\Debug\net8.0\rjsmrazor.dswa.cache.json
 C:\Users\juven\Desktop\phonev2\obj\Debug\net8.0\rjsmcshtml.dswa.cache.json
@@ -260,4 +261,3 @@ C:\Users\juven\Desktop\phonev2\obj\Debug\net8.0\refint\phonev2.dll
 C:\Users\juven\Desktop\phonev2\obj\Debug\net8.0\phonev2.pdb
 C:\Users\juven\Desktop\phonev2\obj\Debug\net8.0\phonev2.genruntimeconfig.cache
 C:\Users\juven\Desktop\phonev2\obj\Debug\net8.0\ref\phonev2.dll
-C:\Users\juven\Desktop\phonev2\obj\Debug\net8.0\phonev2.sourcelink.json

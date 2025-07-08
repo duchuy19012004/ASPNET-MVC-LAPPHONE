@@ -1,0 +1,233 @@
+@model phonev2.Models.PhieuSua
+@using phonev2.Models
+@using Microsoft.AspNetCore.Mvc.Rendering
+@{
+    Layout = null;
+}
+
+<div class="modal-header bg-warning text-dark">
+    <h5 class="modal-title"><i class="fas fa-edit"></i> Chỉnh sửa Phiếu Sửa #@Model.MaPhieuSua</h5>
+    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+</div>
+
+<form asp-action="Edit" method="post" id="edit-form-@Model.MaPhieuSua">
+    <div class="modal-body">
+        <input type="hidden" asp-for="MaPhieuSua" />
+        
+        <div class="row">
+            <div class="col-md-6">
+                <div class="card border-0 shadow-sm mb-3">
+                    <div class="card-header bg-light">
+                        <h6 class="mb-0"><i class="fas fa-info-circle"></i> Thông tin cơ bản</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label asp-for="NgaySua" class="form-label">Ngày Sửa</label>
+                            <input asp-for="NgaySua" class="form-control" type="date" min="2020-01-01" max="2030-12-31" />
+                            <span asp-validation-for="NgaySua" class="text-danger"></span>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label asp-for="NgayHenTra" class="form-label">Ngày Hẹn Trả</label>
+                            <input asp-for="NgayHenTra" class="form-control" type="date" min="2020-01-01" max="2030-12-31" />
+                            <span asp-validation-for="NgayHenTra" class="text-danger"></span>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label asp-for="NgayTraThucTe" class="form-label">Ngày Trả Thực Tế</label>
+                            <input asp-for="NgayTraThucTe" class="form-control" type="date" readonly 
+                                   value="@(Model.NgayTraThucTe?.ToString("yyyy-MM-dd"))" 
+                                   style="background-color: #f8f9fa;" />
+                            <small class="text-muted">Tự động cập nhật khi chuyển trạng thái thành "Hoàn thành"</small>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label asp-for="MaKhachHang" class="form-label">Khách Hàng</label>
+                            <select asp-for="MaKhachHang" class="form-select" asp-items="ViewBag.KhachHangList">
+                                <option value="">-- Chọn khách hàng --</option>
+                            </select>
+                            <span asp-validation-for="MaKhachHang" class="text-danger"></span>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label asp-for="MaNhanVien" class="form-label">Nhân Viên</label>
+                            <select asp-for="MaNhanVien" class="form-select" asp-items="ViewBag.NhanVienList">
+                                <option value="">-- Chọn nhân viên --</option>
+                            </select>
+                            <span asp-validation-for="MaNhanVien" class="text-danger"></span>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label asp-for="TrangThai" class="form-label">Trạng Thái</label>
+                            <select asp-for="TrangThai" class="form-select">
+                                <option value="0" selected="@(Model.TrangThai == TrangThaiPhieuSua.TiepNhan)">
+                                    <i class="fas fa-clipboard-list"></i> Tiếp nhận
+                                </option>
+                                <option value="1" selected="@(Model.TrangThai == TrangThaiPhieuSua.DangSua)">
+                                    <i class="fas fa-tools"></i> Đang sửa
+                                </option>
+                                <option value="2" selected="@(Model.TrangThai == TrangThaiPhieuSua.HoanThanh)">
+                                    <i class="fas fa-check-circle"></i> Hoàn thành
+                                </option>
+                                <option value="3" selected="@(Model.TrangThai == TrangThaiPhieuSua.Huy)">
+                                    <i class="fas fa-times-circle"></i> Hủy
+                                </option>
+                            </select>
+                            <span asp-validation-for="TrangThai" class="text-danger"></span>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label asp-for="GhiChu" class="form-label">Ghi Chú</label>
+                            <textarea asp-for="GhiChu" class="form-control" rows="3" placeholder="Nhập ghi chú..."></textarea>
+                            <span asp-validation-for="GhiChu" class="text-danger"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-6">
+                <div class="card border-0 shadow-sm mb-3">
+                    <div class="card-header bg-light">
+                        <h6 class="mb-0"><i class="fas fa-tools"></i> Dịch vụ đã chọn</h6>
+                    </div>
+                    <div class="card-body">
+                        @if (Model.ChiTietPhieuSuas != null && Model.ChiTietPhieuSuas.Any())
+                        {
+                            <div class="table-responsive">
+                                <table class="table table-sm">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>Tên Dịch Vụ</th>
+                                            <th class="text-end">Giá</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (var dv in Model.ChiTietPhieuSuas)
+                                        {
+                                            <tr>
+                                                <td>
+                                                    <span class="badge bg-info text-dark">
+                                                        <i class="fas fa-wrench"></i> @dv.DichVu?.TenDichVu
+                                                    </span>
+                                                </td>
+                                                <td class="text-end">@(dv.DichVu?.GiaDichVu.ToString("N0") ?? "0") VNĐ</td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        }
+                        else
+                        {
+                            <p class="text-muted text-center mb-0">
+                                <i class="fas fa-exclamation-circle"></i> Chưa có dịch vụ nào
+                            </p>
+                        }
+                    </div>
+                </div>
+                
+                <div class="card border-0 shadow-sm">
+                    <div class="card-header bg-light">
+                        <h6 class="mb-0"><i class="fas fa-microchip"></i> Linh kiện đã chọn</h6>
+                    </div>
+                    <div class="card-body">
+                        @if (Model.ChiTietLinhKiens != null && Model.ChiTietLinhKiens.Any())
+                        {
+                            <div class="table-responsive">
+                                <table class="table table-sm">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>Tên Linh Kiện</th>
+                                            <th class="text-center">SL</th>
+                                            <th class="text-end">Thành tiền</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (var lk in Model.ChiTietLinhKiens)
+                                        {
+                                            <tr>
+                                                <td>
+                                                    <span class="badge bg-secondary">
+                                                        <i class="fas fa-microchip"></i> @lk.LinhKien?.TenLinhKien
+                                                    </span>
+                                                </td>
+                                                <td class="text-center">@lk.SoLuong</td>
+                                                <td class="text-end">@(((lk.LinhKien?.GiaBan ?? 0) * lk.SoLuong).ToString("N0")) VNĐ</td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        }
+                        else
+                        {
+                            <p class="text-muted text-center mb-0">
+                                <i class="fas fa-exclamation-circle"></i> Chưa có linh kiện nào
+                            </p>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <hr class="my-3" />
+        
+        @{
+            decimal tongTienDichVu = Model.ChiTietPhieuSuas?.Sum(dv => dv.DichVu?.GiaDichVu ?? 0) ?? 0;
+            decimal tongTienLinhKien = Model.ChiTietLinhKiens?.Sum(lk => (lk.LinhKien?.GiaBan ?? 0) * lk.SoLuong) ?? 0;
+            decimal tongTien = tongTienDichVu + tongTienLinhKien;
+        }
+        
+        <div class="alert alert-info mb-0">
+            <div class="row text-center">
+                <div class="col-md-4">
+                    <h6 class="mb-1"><i class="fas fa-tools text-primary"></i> Dịch vụ</h6>
+                    <span class="fs-6 fw-bold text-primary">@tongTienDichVu.ToString("N0") VNĐ</span>
+                </div>
+                <div class="col-md-4">
+                    <h6 class="mb-1"><i class="fas fa-microchip text-success"></i> Linh kiện</h6>
+                    <span class="fs-6 fw-bold text-success">@tongTienLinhKien.ToString("N0") VNĐ</span>
+                </div>
+                <div class="col-md-4">
+                    <h6 class="mb-1"><i class="fas fa-coins text-danger"></i> Tổng cộng</h6>
+                    <span class="fs-5 fw-bold text-danger">@tongTien.ToString("N0") VNĐ</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="modal-footer bg-light">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+            <i class="fas fa-times"></i> Hủy
+        </button>
+        <button type="submit" class="btn btn-warning">
+            <i class="fas fa-save"></i> Cập nhật
+        </button>
+    </div>
+</form>
+
+<script>
+    // Handle form submission
+    $('#edit-form-@Model.MaPhieuSua').on('submit', function(e) {
+        e.preventDefault();
+        var form = $(this);
+        
+        $.ajax({
+            url: form.attr('action'),
+            type: 'POST',
+            data: form.serialize(),
+            success: function(response) {
+                if (response.success !== false) {
+                    $('#phieusua-edit-modal').modal('hide');
+                    location.reload(); // Reload page to show updated data
+                } else {
+                    // Handle errors
+                    alert('Có lỗi xảy ra: ' + response.message);
+                }
+            },
+            error: function() {
+                alert('Có lỗi xảy ra khi cập nhật phiếu sửa!');
+            }
+        });
+    });
+</script> 

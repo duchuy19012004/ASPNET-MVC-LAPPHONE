@@ -12,8 +12,8 @@ using phonev2.Repository;
 namespace phonev2.Migrations
 {
     [DbContext(typeof(PhoneLapDbContext))]
-    [Migration("20250707234922_2")]
-    partial class _2
+    [Migration("20250708074848_db")]
+    partial class db
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

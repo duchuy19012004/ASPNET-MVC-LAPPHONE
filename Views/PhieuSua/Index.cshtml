@@ -1,0 +1,219 @@
+@using Microsoft.AspNetCore.Mvc.Rendering
+@model IEnumerable<phonev2.Models.PhieuSua>
+@{
+    ViewData["Title"] = "Danh sách Phiếu Sửa";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+    var sortValue = ViewBag.Sort as string ?? "";
+}
+
+<div class="container-fluid">
+    @Html.AntiForgeryToken()
+    <!-- Stats Cards -->
+    <div class="row mb-4">
+        <div class="col-xl-3 col-md-6 mb-3">
+            <div class="stats-card" style="background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);">
+                <div class="d-flex align-items-center">
+                    <div class="flex-grow-1">
+                        <h3 class="mb-0">@ViewBag.TiepNhan</h3>
+                        <p class="mb-0">Tiếp Nhận</p>
+                    </div>
+                    <div class="ms-3">
+                        <i class="fas fa-clipboard-list fa-2x opacity-75"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6 mb-3">
+            <div class="stats-card warning">
+                <div class="d-flex align-items-center">
+                    <div class="flex-grow-1">
+                        <h3 class="mb-0">@ViewBag.DangSua</h3>
+                        <p class="mb-0">Đang Sửa</p>
+                    </div>
+                    <div class="ms-3">
+                        <i class="fas fa-tools fa-2x opacity-75"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6 mb-3">
+            <div class="stats-card success">
+                <div class="d-flex align-items-center">
+                    <div class="flex-grow-1">
+                        <h3 class="mb-0">@ViewBag.HoanThanh</h3>
+                        <p class="mb-0">Hoàn Thành</p>
+                    </div>
+                    <div class="ms-3">
+                        <i class="fas fa-check-circle fa-2x opacity-75"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6 mb-3">
+            <div class="stats-card" style="background: linear-gradient(135deg, #dc3545 0%, #b02a37 100%);">
+                <div class="d-flex align-items-center">
+                    <div class="flex-grow-1">
+                        <h3 class="mb-0">@ViewBag.Huy</h3>
+                        <p class="mb-0">Hủy</p>
+                    </div>
+                    <div class="ms-3">
+                        <i class="fas fa-times-circle fa-2x opacity-75"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mb-3 align-items-center">
+        <div class="col-md-5 col-lg-4">
+            <form method="get" class="d-flex align-items-center gap-2" autocomplete="off" style="max-width: 100%;">
+                <input type="text" name="search" class="form-control rounded-pill px-3 py-2" style="max-width: 250px;" placeholder="Tìm theo khách hàng, nhân viên, dịch vụ..." value="@ViewBag.Search" />
+                <button type="submit" class="btn btn-outline-primary rounded-pill px-3 py-2"><i class="fas fa-search"></i> Tìm kiếm</button>
+            </form>
+        </div>
+        <div class="col-md-4 col-lg-3">
+            <form method="get" class="d-flex align-items-center gap-2">
+                <input type="hidden" name="search" value="@ViewBag.Search" />
+                <input type="hidden" name="pageSize" value="@ViewBag.PageSize" />
+                <label for="phieusua-sort" class="form-label mb-0 me-2">Sắp xếp theo</label>
+                <select name="sort" id="phieusua-sort" class="form-select d-inline-block w-auto" style="min-width: 180px;" onchange="this.form.submit()">
+                    @if (sortValue == "name_asc") {<option value="name_asc" selected>Tên A-Z</option>} else {<option value="name_asc">Tên A-Z</option>}
+                    @if (sortValue == "name_desc") {<option value="name_desc" selected>Tên Z-A</option>} else {<option value="name_desc">Tên Z-A</option>}
+                    @if (sortValue == "price_asc") {<option value="price_asc" selected>Giá thấp → cao</option>} else {<option value="price_asc">Giá thấp → cao</option>}
+                    @if (sortValue == "price_desc") {<option value="price_desc" selected>Giá cao → thấp</option>} else {<option value="price_desc">Giá cao → thấp</option>}
+                    @if (sortValue == "oldest") {<option value="oldest" selected>Cũ nhất</option>} else {<option value="oldest">Cũ nhất</option>}
+                    @if (sortValue == "newest") {<option value="newest" selected>Mới nhất</option>} else {<option value="newest">Mới nhất</option>}
+                </select>
+            </form>
+        </div>
+        <div class="col text-end">
+            <a class="btn btn-primary rounded-pill px-4 py-2" asp-action="Create"><i class="fas fa-plus"></i> Thêm Phiếu Sửa</a>
+        </div>
+    </div>
+    <div id="phieusua-table-wrapper">
+        @Html.Partial("_PhieuSuaTable", Model)
+    </div>
+</div>
+
+<!-- Modal Details -->
+<div id="phieusua-details-modal" class="modal fade" tabindex="-1" aria-labelledby="detailsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <!-- Nội dung sẽ được load động bằng AJAX -->
+        </div>
+    </div>
+</div>
+
+<!-- Modal Edit -->
+<div id="phieusua-edit-modal" class="modal fade" tabindex="-1" aria-labelledby="editModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <!-- Nội dung sẽ được load động bằng AJAX -->
+        </div>
+    </div>
+</div>
+
+<!-- Modal Delete Confirmation -->
+<div id="phieusua-delete-modal" class="modal fade" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title" id="deleteModalLabel">
+                    <i class="fas fa-trash-alt"></i> Xác nhận xóa
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="text-center mb-3">
+                    <i class="fas fa-exclamation-triangle text-warning" style="font-size: 3rem;"></i>
+                </div>
+                <p class="text-center mb-3">
+                    Bạn có chắc chắn muốn xóa phiếu sửa <strong id="delete-phieu-ma"></strong> không?
+                </p>
+                <div class="alert alert-warning" role="alert">
+                    <i class="fas fa-info-circle"></i>
+                    <strong>Cảnh báo:</strong> Việc xóa này không thể hoàn tác. Tất cả dữ liệu liên quan đến phiếu sửa này sẽ bị xóa vĩnh viễn.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times"></i> Hủy
+                </button>
+                <button type="button" class="btn btn-danger" id="confirm-delete-btn">
+                    <i class="fas fa-trash-alt"></i> Xóa
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        $(document).ready(function () {
+            // Modal details
+            $(document).on('click', '.btn-details-modal', function (e) {
+                e.preventDefault();
+                var url = $(this).attr('href');
+                $('#phieusua-details-modal .modal-content').html('<div class="text-center p-5"><div class="spinner-border"></div></div>');
+                $('#phieusua-details-modal').modal('show');
+                $.get(url, function (data) {
+                    $('#phieusua-details-modal .modal-content').html(data);
+                });
+            });
+            
+            // Modal edit
+            $(document).on('click', '.btn-edit-modal', function (e) {
+                e.preventDefault();
+                var url = $(this).attr('href');
+                $('#phieusua-edit-modal .modal-content').html('<div class="text-center p-5"><div class="spinner-border text-warning"></div><p class="mt-2">Đang tải...</p></div>');
+                $('#phieusua-edit-modal').modal('show');
+                $.get(url, function (data) {
+                    $('#phieusua-edit-modal .modal-content').html(data);
+                });
+            });
+
+            // Modal delete confirmation
+            let deleteUrl = '';
+            $(document).on('click', '.btn-delete-modal', function (e) {
+                e.preventDefault();
+                deleteUrl = $(this).attr('href');
+                var phieuMa = $(this).data('phieu-ma');
+                $('#delete-phieu-ma').text('#' + phieuMa);
+                $('#phieusua-delete-modal').modal('show');
+            });
+
+            // Confirm delete action
+            $('#confirm-delete-btn').on('click', function () {
+                if (deleteUrl) {
+                    $(this).prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Đang xóa...');
+                    
+                    // Create form and submit
+                    var form = $('<form>', {
+                        'method': 'POST',
+                        'action': deleteUrl
+                    });
+                    
+                    // Add anti-forgery token
+                    var token = $('input[name="__RequestVerificationToken"]').val();
+                    if (token) {
+                        form.append($('<input>', {
+                            'type': 'hidden',
+                            'name': '__RequestVerificationToken',
+                            'value': token
+                        }));
+                    }
+                    
+                    $('body').append(form);
+                    form.submit();
+                }
+            });
+
+            // Reset delete modal when closed
+            $('#phieusua-delete-modal').on('hidden.bs.modal', function () {
+                deleteUrl = '';
+                $('#confirm-delete-btn').prop('disabled', false).html('<i class="fas fa-trash-alt"></i> Xóa');
+            });
+        });
+    </script>
+} 
