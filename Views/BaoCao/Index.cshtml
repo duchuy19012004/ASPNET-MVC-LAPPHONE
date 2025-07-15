@@ -1,0 +1,113 @@
+@{
+    ViewData["Title"] = "Báo cáo thống kê phiếu sửa";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-lg-6 mb-3">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-chart-bar"></i> Thống kê số phiếu sửa theo tháng
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="phieuSuaChart" width="400" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-6 mb-3">
+            <div class="card shadow-sm">
+                <div class="card-header bg-success text-white">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-chart-line"></i> Thống kê tổng tiền theo tháng
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="tongTienChart" width="400" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        $(document).ready(function () {
+            var thongKeTheoThang = @Html.Raw(Json.Serialize(ViewBag.ThongKeTheoThang));
+            var thongKeTienTheoThang = @Html.Raw(Json.Serialize(ViewBag.ThongKeTienTheoThang));
+
+            // Chart 1: Số phiếu sửa theo tháng
+            var ctx1 = document.getElementById('phieuSuaChart').getContext('2d');
+            var phieuSuaChart = new Chart(ctx1, {
+                type: 'bar',
+                data: {
+                    labels: thongKeTheoThang.map(item => item.thang),
+                    datasets: [{
+                        label: 'Số phiếu sửa',
+                        data: thongKeTheoThang.map(item => item.soPhieu),
+                        backgroundColor: 'rgba(54, 162, 235, 0.8)',
+                        borderColor: 'rgba(54, 162, 235, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                stepSize: 1
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    }
+                }
+            });
+
+            // Chart 2: Tổng tiền theo tháng
+            var ctx2 = document.getElementById('tongTienChart').getContext('2d');
+            var tongTienChart = new Chart(ctx2, {
+                type: 'line',
+                data: {
+                    labels: thongKeTienTheoThang.map(item => item.thang),
+                    datasets: [{
+                        label: 'Tổng tiền (VNĐ)',
+                        data: thongKeTienTheoThang.map(item => item.tongTien),
+                        backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                        borderColor: 'rgba(75, 192, 192, 1)',
+                        borderWidth: 2,
+                        fill: true,
+                        tension: 0.1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return new Intl.NumberFormat('vi-VN').format(value) + ' VNĐ';
+                                }
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    }
+                }
+            });
+        });
+    </script>
+}
