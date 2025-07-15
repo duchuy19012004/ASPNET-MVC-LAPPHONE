@@ -49,8 +49,9 @@
                         
                         <div class="mb-3">
                             <label asp-for="NgayHenTra" class="form-label">Ngày Hẹn Trả</label>
-                            <input asp-for="NgayHenTra" class="form-control" type="date" min="2020-01-01" max="2030-12-31" />
+                            <input asp-for="NgayHenTra" class="form-control" type="date" min="2020-01-01" max="2030-12-31" id="ngayHenTra" />
                             <span asp-validation-for="NgayHenTra" class="text-danger"></span>
+                            <small class="text-muted">Ngày hẹn trả phải lớn hơn hoặc bằng ngày sửa</small>
                         </div>
                         
                         <div class="mb-3">
@@ -313,5 +314,35 @@
     // Auto-hide error highlights when user starts typing/selecting
     $('input, select').on('input change', function() {
         $(this).removeClass('is-invalid');
+    });
+
+    // Validation cho ngày hẹn trả
+    // Cập nhật min date cho ngày hẹn trả khi ngày sửa thay đổi
+    $('input[name="NgaySua"]').on('change', function() {
+        var ngaySua = $(this).val();
+        if (ngaySua) {
+            // Set min date cho ngày hẹn trả = ngày sửa (có thể bằng)
+            $('#ngayHenTra').attr('min', ngaySua);
+            
+            // Kiểm tra ngày hẹn trả hiện tại
+            var ngayHenTraHienTai = $('#ngayHenTra').val();
+            if (ngayHenTraHienTai && ngayHenTraHienTai < ngaySua) {
+                $('#ngayHenTra').val('');
+                alert('Ngày hẹn trả phải lớn hơn hoặc bằng ngày sửa!');
+            }
+        }
+    });
+
+    // Thêm validation cho ngày hẹn trả vào form validation
+    $('#edit-form-@Model.MaPhieuSua').on('submit', function(e) {
+        var ngaySua = $('input[name="NgaySua"]').val();
+        var ngayHenTra = $('#ngayHenTra').val();
+        
+        if (ngayHenTra && ngayHenTra < ngaySua) {
+            e.preventDefault();
+            alert('Ngày hẹn trả phải lớn hơn hoặc bằng ngày sửa!');
+            $('#ngayHenTra').focus();
+            return false;
+        }
     });
 </script> 

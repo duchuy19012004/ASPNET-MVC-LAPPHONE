@@ -296,6 +296,12 @@ namespace phonev2.Controllers
         {
             try
             {
+                // Validation cho ngày hẹn trả
+                if (vm.PhieuSua.NgayHenTra.HasValue && vm.PhieuSua.NgayHenTra.Value < vm.PhieuSua.NgaySua)
+                {
+                    ModelState.AddModelError("PhieuSua.NgayHenTra", "Ngày hẹn trả phải lớn hơn hoặc bằng ngày sửa");
+                }
+
                 if (ModelState.IsValid)
                 {
                     // Đảm bảo ngày sửa được set
@@ -440,6 +446,12 @@ namespace phonev2.Controllers
                     return Json(new { success = false, message = "ID không hợp lệ!" });
                 }
                 return NotFound();
+            }
+            
+            // Validation cho ngày hẹn trả
+            if (phieuSua.NgayHenTra.HasValue && phieuSua.NgayHenTra.Value < phieuSua.NgaySua)
+            {
+                ModelState.AddModelError("NgayHenTra", "Ngày hẹn trả phải lớn hơn hoặc bằng ngày sửa");
             }
             
             if (ModelState.IsValid)

@@ -23,14 +23,15 @@
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="mb-3">
-                                    <label asp-for="PhieuSua.NgaySua" class="form-label"></label>
-                                    <input asp-for="PhieuSua.NgaySua" class="form-control" type="date" min="2020-01-01" max="2030-12-31" />
+                                    <label asp-for="PhieuSua.NgaySua" class="form-label">Ngày Sửa <span class="text-danger">*</span></label>
+                                    <input asp-for="PhieuSua.NgaySua" class="form-control" type="date" min="2020-01-01" max="2030-12-31" required id="ngaySua" />
                                     <span asp-validation-for="PhieuSua.NgaySua" class="text-danger"></span>
                                 </div>
                                 <div class="mb-3">
                                     <label asp-for="PhieuSua.NgayHenTra" class="form-label">Ngày Hẹn Trả</label>
-                                    <input asp-for="PhieuSua.NgayHenTra" class="form-control" type="date" min="2020-01-01" max="2030-12-31" />
+                                    <input asp-for="PhieuSua.NgayHenTra" class="form-control" type="date" min="2020-01-01" max="2030-12-31" id="ngayHenTra" />
                                     <span asp-validation-for="PhieuSua.NgayHenTra" class="text-danger"></span>
+                                    <small class="text-muted">Ngày hẹn trả phải lớn hơn hoặc bằng ngày sửa</small>
                                 </div>
                                 <div class="mb-3">
                                     <label asp-for="PhieuSua.MaKhachHang" class="form-label">Khách Hàng</label>
@@ -154,5 +155,37 @@
             container.appendChild(row);
             linhKienIndex++;
         }
+
+        // Validation cho ngày hẹn trả
+        $(document).ready(function() {
+            // Cập nhật min date cho ngày hẹn trả khi ngày sửa thay đổi
+            $('#ngaySua').on('change', function() {
+                var ngaySua = $(this).val();
+                if (ngaySua) {
+                    // Set min date cho ngày hẹn trả = ngày sửa (có thể bằng)
+                    $('#ngayHenTra').attr('min', ngaySua);
+                    
+                    // Kiểm tra ngày hẹn trả hiện tại
+                    var ngayHenTraHienTai = $('#ngayHenTra').val();
+                    if (ngayHenTraHienTai && ngayHenTraHienTai < ngaySua) {
+                        $('#ngayHenTra').val('');
+                        alert('Ngày hẹn trả phải lớn hơn hoặc bằng ngày sửa!');
+                    }
+                }
+            });
+
+            // Validation khi submit form
+            $('form').on('submit', function(e) {
+                var ngaySua = $('#ngaySua').val();
+                var ngayHenTra = $('#ngayHenTra').val();
+                
+                if (ngayHenTra && ngayHenTra < ngaySua) {
+                    e.preventDefault();
+                    alert('Ngày hẹn trả phải lớn hơn hoặc bằng ngày sửa!');
+                    $('#ngayHenTra').focus();
+                    return false;
+                }
+            });
+        });
     </script>
 } 
