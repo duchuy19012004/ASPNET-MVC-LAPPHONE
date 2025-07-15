@@ -1,0 +1,29 @@
+@model phonev2.Models.PhieuSua
+<div class="modal-header bg-danger text-white">
+    <h5 class="modal-title"><i class="fas fa-trash-alt"></i> Xác nhận xóa Phiếu Sửa #@Model.MaPhieuSua</h5>
+    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+</div>
+<form asp-action="Delete" method="post">
+    <div class="modal-body">
+        <div class="alert alert-danger">
+            <strong>Bạn có chắc chắn muốn xóa phiếu sửa này?</strong> Thao tác này không thể hoàn tác!
+        </div>
+        <dl class="row mb-0">
+            <dt class="col-sm-4">Ngày sửa</dt>
+            <dd class="col-sm-8">@Model.NgaySua.ToString("dd/MM/yyyy")</dd>
+            <dt class="col-sm-4">Khách hàng</dt>
+            <dd class="col-sm-8">@Model.MaKhachHang</dd>
+            <dt class="col-sm-4">Nhân viên</dt>
+            <dd class="col-sm-8">@Model.MaNhanVien</dd>
+            <dt class="col-sm-4">Trạng thái</dt>
+            <dd class="col-sm-8">@Model.TrangThai</dd>
+            <dt class="col-sm-4">Ghi chú</dt>
+            <dd class="col-sm-8">@Model.GhiChu</dd>
+        </dl>
+        <input type="hidden" asp-for="MaPhieuSua" />
+    </div>
+    <div class="modal-footer bg-light">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+        <button type="submit" class="btn btn-danger"><i class="fas fa-trash"></i> Xóa</button>
+    </div>
+</form> 

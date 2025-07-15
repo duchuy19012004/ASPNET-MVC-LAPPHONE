@@ -90,34 +90,6 @@
         </div>
     </div>
 
-    <!-- Charts Section -->
-    <div class="row mb-4">
-        <div class="col-lg-6 mb-3">
-            <div class="card shadow-sm">
-                <div class="card-header bg-primary text-white">
-                    <h5 class="card-title mb-0">
-                        <i class="fas fa-chart-bar"></i> Thống kê số phiếu sửa theo tháng
-                    </h5>
-                </div>
-                <div class="card-body">
-                    <canvas id="phieuSuaChart" width="400" height="200"></canvas>
-                </div>
-            </div>
-        </div>
-        <div class="col-lg-6 mb-3">
-            <div class="card shadow-sm">
-                <div class="card-header bg-success text-white">
-                    <h5 class="card-title mb-0">
-                        <i class="fas fa-chart-line"></i> Thống kê tổng tiền theo tháng
-                    </h5>
-                </div>
-                <div class="card-body">
-                    <canvas id="tongTienChart" width="400" height="200"></canvas>
-                </div>
-            </div>
-        </div>
-    </div>
-
     <div class="row mb-3 align-items-center">
         <div class="col-md-5 col-lg-4">
             <form method="get" class="d-flex align-items-center gap-2" autocomplete="off" style="max-width: 100%;">
@@ -152,196 +124,47 @@
 <!-- Modal Details -->
 <div id="phieusua-details-modal" class="modal fade" tabindex="-1" aria-labelledby="detailsModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <!-- Nội dung sẽ được load động bằng AJAX -->
-        </div>
+        <div class="modal-content"></div>
     </div>
 </div>
-
 <!-- Modal Edit -->
 <div id="phieusua-edit-modal" class="modal fade" tabindex="-1" aria-labelledby="editModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-xl">
-        <div class="modal-content">
-            <!-- Nội dung sẽ được load động bằng AJAX -->
-        </div>
+        <div class="modal-content"></div>
     </div>
 </div>
-
-<!-- Modal Delete Confirmation -->
+<!-- Modal Delete -->
 <div id="phieusua-delete-modal" class="modal fade" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
     <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header bg-danger text-white">
-                <h5 class="modal-title" id="deleteModalLabel">
-                    <i class="fas fa-trash-alt"></i> Xác nhận xóa
-                </h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <div class="text-center mb-3">
-                    <i class="fas fa-exclamation-triangle text-warning" style="font-size: 3rem;"></i>
-                </div>
-                <p class="text-center mb-3">
-                    Bạn có chắc chắn muốn xóa phiếu sửa <strong id="delete-phieu-ma"></strong> không?
-                </p>
-                <div class="alert alert-warning" role="alert">
-                    <i class="fas fa-info-circle"></i>
-                    <strong>Cảnh báo:</strong> Việc xóa này không thể hoàn tác. Tất cả dữ liệu liên quan đến phiếu sửa này sẽ bị xóa vĩnh viễn.
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                    <i class="fas fa-times"></i> Hủy
-                </button>
-                <button type="button" class="btn btn-danger" id="confirm-delete-btn">
-                    <i class="fas fa-trash-alt"></i> Xóa
-                </button>
-            </div>
-        </div>
+        <div class="modal-content"></div>
     </div>
 </div>
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
-        $(document).ready(function () {
-            // Chart data
-            var thongKeTheoThang = @Html.Raw(Json.Serialize(ViewBag.ThongKeTheoThang));
-            var thongKeTienTheoThang = @Html.Raw(Json.Serialize(ViewBag.ThongKeTienTheoThang));
-            
-            // Chart 1: Số phiếu sửa theo tháng
-            var ctx1 = document.getElementById('phieuSuaChart').getContext('2d');
-            var phieuSuaChart = new Chart(ctx1, {
-                type: 'bar',
-                data: {
-                    labels: thongKeTheoThang.map(item => item.thang),
-                    datasets: [{
-                        label: 'Số phiếu sửa',
-                        data: thongKeTheoThang.map(item => item.soPhieu),
-                        backgroundColor: 'rgba(54, 162, 235, 0.8)',
-                        borderColor: 'rgba(54, 162, 235, 1)',
-                        borderWidth: 1
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            ticks: {
-                                stepSize: 1
-                            }
-                        }
-                    },
-                    plugins: {
-                        legend: {
-                            display: false
-                        }
-                    }
-                }
+        $(document).on('click', '.btn-details-modal', function () {
+            var url = $(this).data('url');
+            $('#phieusua-details-modal .modal-content').html('<div class="text-center p-5"><div class="spinner-border"></div></div>');
+            $('#phieusua-details-modal').modal('show');
+            $.get(url, function (data) {
+                $('#phieusua-details-modal .modal-content').html(data);
             });
-            
-            // Chart 2: Tổng tiền theo tháng
-            var ctx2 = document.getElementById('tongTienChart').getContext('2d');
-            var tongTienChart = new Chart(ctx2, {
-                type: 'line',
-                data: {
-                    labels: thongKeTienTheoThang.map(item => item.thang),
-                    datasets: [{
-                        label: 'Tổng tiền (VNĐ)',
-                        data: thongKeTienTheoThang.map(item => item.tongTien),
-                        backgroundColor: 'rgba(75, 192, 192, 0.2)',
-                        borderColor: 'rgba(75, 192, 192, 1)',
-                        borderWidth: 2,
-                        fill: true,
-                        tension: 0.1
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            ticks: {
-                                callback: function(value) {
-                                    return new Intl.NumberFormat('vi-VN').format(value) + ' VNĐ';
-                                }
-                            }
-                        }
-                    },
-                    plugins: {
-                        legend: {
-                            display: false
-                        }
-                    }
-                }
+        });
+        $(document).on('click', '.btn-edit-modal', function () {
+            var url = $(this).data('url');
+            $('#phieusua-edit-modal .modal-content').html('<div class="text-center p-5"><div class="spinner-border text-warning"></div><p class="mt-2">Đang tải...</p></div>');
+            $('#phieusua-edit-modal').modal('show');
+            $.get(url, function (data) {
+                $('#phieusua-edit-modal .modal-content').html(data);
             });
-
-            // Modal details
-            $(document).on('click', '.btn-details-modal', function (e) {
-                e.preventDefault();
-                var url = $(this).attr('href');
-                $('#phieusua-details-modal .modal-content').html('<div class="text-center p-5"><div class="spinner-border"></div></div>');
-                $('#phieusua-details-modal').modal('show');
-                $.get(url, function (data) {
-                    $('#phieusua-details-modal .modal-content').html(data);
-                });
-            });
-            
-            // Modal edit
-            $(document).on('click', '.btn-edit-modal', function (e) {
-                e.preventDefault();
-                var url = $(this).attr('href');
-                $('#phieusua-edit-modal .modal-content').html('<div class="text-center p-5"><div class="spinner-border text-warning"></div><p class="mt-2">Đang tải...</p></div>');
-                $('#phieusua-edit-modal').modal('show');
-                $.get(url, function (data) {
-                    $('#phieusua-edit-modal .modal-content').html(data);
-                });
-            });
-
-            // Modal delete confirmation
-            let deleteUrl = '';
-            $(document).on('click', '.btn-delete-modal', function (e) {
-                e.preventDefault();
-                deleteUrl = $(this).attr('href');
-                var phieuMa = $(this).data('phieu-ma');
-                $('#delete-phieu-ma').text('#' + phieuMa);
-                $('#phieusua-delete-modal').modal('show');
-            });
-
-            // Confirm delete action
-            $('#confirm-delete-btn').on('click', function () {
-                if (deleteUrl) {
-                    $(this).prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Đang xóa...');
-                    
-                    // Create form and submit
-                    var form = $('<form>', {
-                        'method': 'POST',
-                        'action': deleteUrl
-                    });
-                    
-                    // Add anti-forgery token
-                    var token = $('input[name="__RequestVerificationToken"]').val();
-                    if (token) {
-                        form.append($('<input>', {
-                            'type': 'hidden',
-                            'name': '__RequestVerificationToken',
-                            'value': token
-                        }));
-                    }
-                    
-                    $('body').append(form);
-                    form.submit();
-                }
-            });
-
-            // Reset delete modal when closed
-            $('#phieusua-delete-modal').on('hidden.bs.modal', function () {
-                deleteUrl = '';
-                $('#confirm-delete-btn').prop('disabled', false).html('<i class="fas fa-trash-alt"></i> Xóa');
+        });
+        $(document).on('click', '.btn-delete-modal', function () {
+            var url = $(this).data('url');
+            $('#phieusua-delete-modal .modal-content').html('<div class="text-center p-5"><div class="spinner-border text-danger"></div><p class="mt-2">Đang tải...</p></div>');
+            $('#phieusua-delete-modal').modal('show');
+            $.get(url, function (data) {
+                $('#phieusua-delete-modal .modal-content').html(data);
             });
         });
     </script>

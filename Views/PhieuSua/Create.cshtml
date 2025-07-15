@@ -35,9 +35,14 @@
                                 </div>
                                 <div class="mb-3">
                                     <label asp-for="PhieuSua.MaKhachHang" class="form-label">Khách Hàng</label>
-                                    <select asp-for="PhieuSua.MaKhachHang" class="form-select" asp-items="Model.KhachHangList">
-                                        <option value="">-- Chọn khách hàng --</option>
-                                    </select>
+                                    <div class="input-group">
+                                        <select asp-for="PhieuSua.MaKhachHang" class="form-select" asp-items="Model.KhachHangList" id="khachHangDropdown">
+                                            <option value="">-- Chọn khách hàng --</option>
+                                        </select>
+                                        <button type="button" class="btn btn-outline-primary" id="btnAddKhachHang" tabindex="-1">
+                                            <i class="fas fa-user-plus"></i> Thêm khách hàng mới
+                                        </button>
+                                    </div>
                                     <span asp-validation-for="PhieuSua.MaKhachHang" class="text-danger"></span>
                                 </div>
                                 <div class="mb-3">
@@ -113,6 +118,13 @@
     </div>
 </div>
 
+<!-- Modal thêm khách hàng -->
+<div class="modal fade" id="addKhachHangModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content"></div>
+  </div>
+</div>
+
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
     <script>
@@ -185,6 +197,48 @@
                     $('#ngayHenTra').focus();
                     return false;
                 }
+            });
+        });
+
+        $(function() {
+            // Mở modal thêm khách hàng
+            $('#btnAddKhachHang').click(function() {
+                $('#addKhachHangModal .modal-content').html('<div class="text-center p-5"><div class="spinner-border"></div></div>');
+                $('#addKhachHangModal').modal('show');
+                $.get('/KhachHang/Create', function(html) {
+                    $('#addKhachHangModal .modal-content').html(html);
+                });
+            });
+
+            // Submit form thêm khách hàng qua AJAX
+            $(document).on('submit', '#addKhachHangModal form', function(e) {
+                e.preventDefault();
+                var $form = $(this);
+                $.ajax({
+                    url: $form.attr('action'),
+                    method: 'POST',
+                    data: $form.serialize(),
+                    success: function(res) {
+                        if (res.success) {
+                            // Đóng modal
+                            $('#addKhachHangModal').modal('hide');
+                            // Reload dropdown khách hàng
+                            $.get('/KhachHang/GetActiveCustomers', function(data) {
+                                var $dropdown = $('#khachHangDropdown');
+                                $dropdown.empty();
+                                $dropdown.append('<option value="">-- Chọn khách hàng --</option>');
+                                $.each(data, function(i, kh) {
+                                    $dropdown.append('<option value="' + kh.value + '">' + kh.text + '</option>');
+                                });
+                                // Chọn khách hàng vừa tạo
+                                $dropdown.val(res.id);
+                            });
+                        } else {
+                            // Hiển thị lại form với lỗi
+                            $('#addKhachHangModal .modal-content').html(res.html);
+                        }
+                    }
+                });
             });
         });
     </script>

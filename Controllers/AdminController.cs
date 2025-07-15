@@ -173,5 +173,10 @@ namespace phonev2.Controllers
             ViewData["Title"] = "Thống Kê";
             return View();
         }
+
+        public IActionResult ThongKePhieuSua()
+        {
+            return RedirectToAction("Index", "PhieuSuaThongKe");
+        }
     }
 }

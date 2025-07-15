@@ -3,6 +3,7 @@
     Layout = "_AdminLayout";
 }
 
+
 @section PageActions {
     <div class="btn-group">
         <a asp-action="Create" class="btn btn-primary">
@@ -14,7 +15,7 @@
         
     </div>
 }
-<!-- Search & Filter Section -->
+
 <div class="card mb-4">
     <div class="card-body">
         <form asp-action="Index" method="get" class="row g-3">
@@ -83,7 +84,7 @@
     </div>
 </div>
 
-<!-- Stats Cards -->
+
 <div class="row mb-4">
     <div class="col-md-3">
         <div class="card bg-primary text-white">
@@ -139,7 +140,7 @@
     </div>
 </div>
 
-<!-- Data Table -->
+
 <div class="card">
     <div class="card-header d-flex justify-content-between align-items-center">
         <h5 class="mb-0">
@@ -346,8 +347,6 @@
                     </tbody>
                 </table>
             </div>
-
-            <!-- Pagination -->
             @if (ViewBag.TotalPages > 1)
             {
                 <div class="card-footer">
@@ -401,6 +400,7 @@
         }
         else
         {
+
             <div class="text-center py-5">
                 <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
                 <h5 class="text-muted">Không tìm thấy linh kiện nào</h5>
@@ -419,104 +419,7 @@
     </div>
 </div>
 
-@section Scripts {
-    <script>
-        // Toggle Status AJAX
-        $('.toggle-status').on('click', function() {
-            const btn = $(this);
-            const id = btn.data('id');
-            
-            btn.prop('disabled', true);
-            
-            $.post('@Url.Action("ToggleStatus")', { id: id })
-                .done(function(response) {
-                    if (response.success) {
-                        const newStatus = response.status;
-                        btn.data('status', newStatus.toString());
-                        
-                        if (newStatus) {
-                            btn.removeClass('btn-secondary').addClass('btn-success');
-                            btn.html('<i class="fas fa-check me-1"></i>Đang bán');
-                        } else {
-                            btn.removeClass('btn-success').addClass('btn-secondary');
-                            btn.html('<i class="fas fa-times me-1"></i>Ngừng bán');
-                        }
-                        
-                        showToast('Đã cập nhật trạng thái thành công!', 'success');
-                    } else {
-                        showToast('Có lỗi xảy ra: ' + response.message, 'error');
-                    }
-                })
-                .fail(function() {
-                    showToast('Không thể kết nối đến server!', 'error');
-                })
-                .always(function() {
-                    btn.prop('disabled', false);
-                });
-        });
 
-        // Stock Update AJAX
-        $('.stock-btn').on('click', function() {
-            const btn = $(this);
-            const id = btn.data('id');
-            const action = btn.data('action');
-            
-            const quantity = prompt(`Nhập số lượng muốn ${action === 'add' ? 'cộng' : 'trừ'}:`, '1');
-            if (!quantity || isNaN(quantity) || parseInt(quantity) <= 0) return;
-            
-            btn.prop('disabled', true);
-            
-            $.post('@Url.Action("UpdateStock")', { 
-                id: id, 
-                quantity: parseInt(quantity), 
-                action: action 
-            })
-                .done(function(response) {
-                    if (response.success) {
-                        // Update stock display
-                        const row = btn.closest('tr');
-                        const stockBadge = row.find('.badge');
-                        stockBadge.text(response.newStock);
-                        stockBadge.attr('class', response.stockClass);
-                        
-                        // Update row color based on stock
-                        row.removeClass('table-danger table-warning');
-                        if (response.newStock === 0) {
-                            row.addClass('table-danger');
-                        } else if (response.newStock <= 5) {
-                            row.addClass('table-warning');
-                        }
-                        
-                        showToast(`Đã cập nhật tồn kho thành công! Số lượng mới: ${response.newStock}`, 'success');
-                    } else {
-                        showToast('Có lỗi xảy ra: ' + response.message, 'error');
-                    }
-                })
-                .fail(function() {
-                    showToast('Không thể kết nối đến server!', 'error');
-                })
-                .always(function() {
-                    btn.prop('disabled', false);
-                });
-        });
-        
-        // Toast notification function
-        function showToast(message, type) {
-            const toastId = 'toast-' + Date.now();
-            const toastClass = type === 'success' ? 'bg-success' : 'bg-danger';
-            
-            const toast = `
-                <div id="${toastId}" class="toast ${toastClass} text-white" role="alert" style="position: fixed; top: 20px; right: 20px; z-index: 9999;">
-                    <div class="toast-body">
-                        ${message}
-                    </div>
-                </div>
-            `;
-            
-            $('body').append(toast);
-            $('#' + toastId).toast({ delay: 3000 }).toast('show');
-            
-            setTimeout(() => $('#' + toastId).remove(), 4000);
-        }
-    </script>
+@section Scripts {
+    <script src="~/js/linhkien.js"></script>
 }

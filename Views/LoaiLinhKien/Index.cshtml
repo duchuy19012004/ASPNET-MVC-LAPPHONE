@@ -61,7 +61,7 @@
             <div class="card-body">
                 <div class="d-flex justify-content-between">
                     <div>
-                        <h4 class="mb-0">@ViewBag.TotalCount</h4>
+                        <h4 class="mb-0">@ViewBag.Statistics?.Total</h4>
                         <p class="mb-0">Tổng Loại LK</p>
                     </div>
                     <i class="fas fa-tags fa-2x opacity-75"></i>
@@ -74,7 +74,7 @@
             <div class="card-body">
                 <div class="d-flex justify-content-between">
                     <div>
-                        <h4 class="mb-0">@Model.Count(l => l.TrangThai)</h4>
+                        <h4 class="mb-0">@ViewBag.Statistics?.Active</h4>
                         <p class="mb-0">Đang Hoạt Động</p>
                     </div>
                     <i class="fas fa-check-circle fa-2x opacity-75"></i>
@@ -87,7 +87,7 @@
             <div class="card-body">
                 <div class="d-flex justify-content-between">
                     <div>
-                        <h4 class="mb-0">@Model.Count(l => !l.TrangThai)</h4>
+                        <h4 class="mb-0">@ViewBag.Statistics?.Inactive</h4>
                         <p class="mb-0">Ngừng Hoạt Động</p>
                     </div>
                     <i class="fas fa-pause-circle fa-2x opacity-75"></i>
@@ -100,10 +100,10 @@
             <div class="card-body">
                 <div class="d-flex justify-content-between">
                     <div>
-                        <h4 class="mb-0">@(Model.Where(l => l.ThoiGianBaoHanh.HasValue && l.ThoiGianBaoHanh > 0).Any() ? Model.Where(l => l.ThoiGianBaoHanh.HasValue && l.ThoiGianBaoHanh > 0).Average(l => l.ThoiGianBaoHanh).Value.ToString("0") + " tháng" : "N/A")</h4>
-                        <p class="mb-0">BH Trung Bình</p>
+                        <h4 class="mb-0">@(ViewBag.Statistics?.ActivePercentage + "%")</h4>
+                        <p class="mb-0">Tỷ Lệ Hoạt Động</p>
                     </div>
-                    <i class="fas fa-shield-alt fa-2x opacity-75"></i>
+                    <i class="fas fa-percentage fa-2x opacity-75"></i>
                 </div>
             </div>
         </div>

@@ -1,7 +1,8 @@
 @model phonev2.Models.KhachHang
 
 @{
-    Layout = "_AdminLayout";
+    var isAjax = ViewContext.HttpContext.Request.Headers["X-Requested-With"] == "XMLHttpRequest";
+    Layout = isAjax ? null : "_AdminLayout";
 }
 
 <div class="d-flex justify-content-between align-items-center mb-4">
@@ -10,9 +11,12 @@
         <p class="text-muted mb-0">Thêm thông tin khách hàng mới</p>
     </div>
     <div>
-        <a asp-action="Index" class="btn btn-outline-secondary">
-            <i class="fas fa-arrow-left me-1"></i> Quay lại
-        </a>
+        @if (!isAjax)
+        {
+            <a asp-action="Index" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left me-1"></i> Quay lại
+            </a>
+        }
     </div>
 </div>
 
@@ -63,12 +67,24 @@
                     </div>
 
                     <div class="d-grid gap-2 d-md-flex justify-content-md-end">
-                        <a asp-action="Index" class="btn btn-secondary btn-lg me-md-2">
-                            <i class="fas fa-times me-1"></i> Hủy Bỏ
-                        </a>
-                        <button type="submit" class="btn btn-primary btn-lg">
-                            <i class="fas fa-save me-1"></i> Lưu Khách Hàng
-                        </button>
+                        @if (isAjax)
+                        {
+                            <button type="button" class="btn btn-secondary btn-sm me-md-2" data-bs-dismiss="modal">
+                                <i class="fas fa-times me-1"></i> Hủy Bỏ
+                            </button>
+                            <button type="submit" class="btn btn-primary btn-sm">
+                                <i class="fas fa-save me-1"></i> Lưu Khách Hàng
+                            </button>
+                        }
+                        else
+                        {
+                            <a asp-action="Index" class="btn btn-secondary btn-lg me-md-2">
+                                <i class="fas fa-times me-1"></i> Hủy Bỏ
+                            </a>
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="fas fa-save me-1"></i> Lưu Khách Hàng
+                            </button>
+                        }
                     </div>
                 </form>
             </div>

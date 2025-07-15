@@ -3,6 +3,7 @@
     Layout = "_AdminLayout";
 }
 
+
 @section PageActions {
     <div class="btn-group">
         <a asp-action="Index" class="btn btn-secondary">
@@ -17,7 +18,7 @@
     </div>
 }
 
-<!-- Alert Header -->
+
 <div class="alert alert-warning border-warning shadow-sm mb-4" role="alert">
     <div class="d-flex align-items-center">
         <i class="fas fa-exclamation-triangle fa-2x me-3"></i>
@@ -31,7 +32,7 @@
     </div>
 </div>
 
-<!-- Filter Threshold -->
+
 <div class="card mb-4">
     <div class="card-body">
         <form asp-action="LowStockAlert" method="get" class="row g-3 align-items-end">
@@ -60,7 +61,7 @@
     </div>
 </div>
 
-<!-- Summary Stats -->
+
 <div class="row mb-4">
     <div class="col-md-3">
         <div class="card bg-danger text-white">
@@ -96,7 +97,7 @@
     </div>
 </div>
 
-<!-- Low Stock Items -->
+
 <div class="card">
     <div class="card-header d-flex justify-content-between align-items-center">
         <h5 class="mb-0">
@@ -248,7 +249,7 @@
     </div>
 </div>
 
-<!-- Restock Recommendations -->
+
 @if (Model.Any())
 {
     <div class="card mt-4">
@@ -343,7 +344,9 @@
     </div>
 }
 
+
 @section Scripts {
+    <script src="~/js/linhkien.js"></script>
     <script>
         $(document).ready(function() {
             // Select All functionality
@@ -510,25 +513,6 @@
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
-        }
-        
-        // Toast notification function
-        function showToast(message, type) {
-            const toastId = 'toast-' + Date.now();
-            const toastClass = type === 'success' ? 'bg-success' : type === 'warning' ? 'bg-warning' : 'bg-danger';
-            
-            const toast = `
-                <div id="${toastId}" class="toast ${toastClass} text-white" role="alert" style="position: fixed; top: 20px; right: 20px; z-index: 9999;">
-                    <div class="toast-body">
-                        ${message}
-                    </div>
-                </div>
-            `;
-            
-            $('body').append(toast);
-            $('#' + toastId).toast({ delay: 4000 }).toast('show');
-            
-            setTimeout(() => $('#' + toastId).remove(), 5000);
         }
     </script>
 }

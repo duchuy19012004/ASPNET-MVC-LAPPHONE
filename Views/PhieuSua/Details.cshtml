@@ -1,10 +1,7 @@
-@model phonev2.Models.PhieuSua
+@model phonev2.Models.ViewModels.PhieuSuaEditViewModel
 @using Microsoft.AspNetCore.Mvc.Rendering
-@{
-    Layout = null;
-}
 <div class="modal-header bg-primary text-white">
-    <h5 class="modal-title"><i class="fas fa-file-invoice"></i> Chi tiết Phiếu Sửa #@Model.MaPhieuSua</h5>
+    <h5 class="modal-title"><i class="fas fa-file-invoice"></i> Chi tiết Phiếu Sửa #@Model.PhieuSua.MaPhieuSua</h5>
     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
 </div>
 <div class="modal-body p-0">
@@ -14,12 +11,12 @@
                 <div class="col-md-6">
                     <dl class="row mb-0">
                         <dt class="col-sm-5">Ngày Sửa</dt>
-                        <dd class="col-sm-7">@Model.NgaySua.ToString("dd/MM/yyyy")</dd>
+                        <dd class="col-sm-7">@Model.PhieuSua.NgaySua.ToString("dd/MM/yyyy")</dd>
                         <dt class="col-sm-5">Ngày Hẹn Trả</dt>
                         <dd class="col-sm-7">
-                            @if (Model.NgayHenTra != null)
+                            @if (Model.PhieuSua.NgayHenTra != null)
                             {
-                                @Model.NgayHenTra.Value.ToString("dd/MM/yyyy")
+                                @Model.PhieuSua.NgayHenTra.Value.ToString("dd/MM/yyyy")
                             }
                             else
                             {
@@ -28,10 +25,10 @@
                         </dd>
                         <dt class="col-sm-5">Ngày Trả Thực Tế</dt>
                         <dd class="col-sm-7">
-                            @if (Model.NgayTraThucTe != null)
+                            @if (Model.PhieuSua.NgayTraThucTe != null)
                             {
                                 <span class="badge bg-success">
-                                    <i class="fas fa-calendar-check"></i> @Model.NgayTraThucTe.Value.ToString("dd/MM/yyyy")
+                                    <i class="fas fa-calendar-check"></i> @Model.PhieuSua.NgayTraThucTe.Value.ToString("dd/MM/yyyy")
                                 </span>
                             }
                             else
@@ -42,16 +39,16 @@
                         <dt class="col-sm-5">Khách Hàng</dt>
                         <dd class="col-sm-7">
                             @{
-                                var khachHangList = ViewBag.KhachHangList as IEnumerable<SelectListItem>;
-                                if (Model.MaKhachHang != null && Model.MaKhachHang > 0 && khachHangList != null)
+                                var khachHangList = Model.KhachHangList as IEnumerable<SelectListItem>;
+                                if (Model.PhieuSua.MaKhachHang != null && Model.PhieuSua.MaKhachHang > 0 && khachHangList != null)
                                 {
-                                    var kh = khachHangList.FirstOrDefault(x => x.Value == Model.MaKhachHang.ToString());
+                                    var kh = khachHangList.FirstOrDefault(x => x.Value == Model.PhieuSua.MaKhachHang.ToString());
                                     if (kh != null) { @kh.Text; }
-                                    else { @Model.MaKhachHang; }
+                                    else { @Model.PhieuSua.MaKhachHang; }
                                 }
-                                else if (Model.MaKhachHang != null && Model.MaKhachHang > 0)
+                                else if (Model.PhieuSua.MaKhachHang != null && Model.PhieuSua.MaKhachHang > 0)
                                 {
-                                    @Model.MaKhachHang;
+                                    @Model.PhieuSua.MaKhachHang;
                                 }
                                 else
                                 {
@@ -62,16 +59,16 @@
                         <dt class="col-sm-5">Nhân Viên</dt>
                         <dd class="col-sm-7">
                             @{
-                                var nhanVienList = ViewBag.NhanVienList as IEnumerable<SelectListItem>;
-                                if (Model.MaNhanVien != null && Model.MaNhanVien > 0 && nhanVienList != null)
+                                var nhanVienList = Model.NhanVienList as IEnumerable<SelectListItem>;
+                                if (Model.PhieuSua.MaNhanVien != null && Model.PhieuSua.MaNhanVien > 0 && nhanVienList != null)
                                 {
-                                    var nv = nhanVienList.FirstOrDefault(x => x.Value == Model.MaNhanVien.ToString());
+                                    var nv = nhanVienList.FirstOrDefault(x => x.Value == Model.PhieuSua.MaNhanVien.ToString());
                                     if (nv != null) { @nv.Text; }
-                                    else { @Model.MaNhanVien; }
+                                    else { @Model.PhieuSua.MaNhanVien; }
                                 }
-                                else if (Model.MaNhanVien != null && Model.MaNhanVien > 0)
+                                else if (Model.PhieuSua.MaNhanVien != null && Model.PhieuSua.MaNhanVien > 0)
                                 {
-                                    @Model.MaNhanVien;
+                                    @Model.PhieuSua.MaNhanVien;
                                 }
                                 else
                                 {
@@ -80,14 +77,14 @@
                             }
                         </dd>
                         <dt class="col-sm-5">Ghi Chú</dt>
-                        <dd class="col-sm-7">@Model.GhiChu</dd>
+                        <dd class="col-sm-7">@Model.PhieuSua.GhiChu</dd>
                     </dl>
                 </div>
                 <div class="col-md-6">
                     <dl class="row mb-0">
                         <dt class="col-sm-5">Trạng Thái</dt>
                         <dd class="col-sm-7">
-                            @switch (Model.TrangThai)
+                            @switch (Model.PhieuSua.TrangThai)
                             {
                                 case phonev2.Models.TrangThaiPhieuSua.TiepNhan:
                                     <span class="badge bg-primary"><i class="fas fa-clipboard-list"></i> Tiếp nhận</span>
@@ -104,7 +101,7 @@
                             }
                         </dd>
                         <dt class="col-sm-5">Mã Phiếu</dt>
-                        <dd class="col-sm-7">@Model.MaPhieuSua</dd>
+                        <dd class="col-sm-7">@Model.PhieuSua.MaPhieuSua</dd>
                     </dl>
                 </div>
             </div>
@@ -120,9 +117,9 @@
                             </tr>
                         </thead>
                         <tbody>
-                            @if (Model.ChiTietPhieuSuas != null && Model.ChiTietPhieuSuas.Any())
+                            @if (Model.PhieuSua.ChiTietPhieuSuas != null && Model.PhieuSua.ChiTietPhieuSuas.Any())
                             {
-                                foreach (var dv in Model.ChiTietPhieuSuas)
+                                foreach (var dv in Model.PhieuSua.ChiTietPhieuSuas)
                                 {
                                     <tr>
                                         <td>@dv.DichVu?.TenDichVu</td>
@@ -149,9 +146,9 @@
                             </tr>
                         </thead>
                         <tbody>
-                            @if (Model.ChiTietLinhKiens != null && Model.ChiTietLinhKiens.Any())
+                            @if (Model.PhieuSua.ChiTietLinhKiens != null && Model.PhieuSua.ChiTietLinhKiens.Any())
                             {
-                                foreach (var lk in Model.ChiTietLinhKiens)
+                                foreach (var lk in Model.PhieuSua.ChiTietLinhKiens)
                                 {
                                     <tr>
                                         <td>@lk.LinhKien?.TenLinhKien</td>
@@ -173,16 +170,16 @@
             @{
                 decimal tongTienDichVu = 0;
                 decimal tongTienLinhKien = 0;
-                if (Model.ChiTietPhieuSuas != null)
+                if (Model.PhieuSua.ChiTietPhieuSuas != null)
                 {
-                    foreach (var dv in Model.ChiTietPhieuSuas)
+                    foreach (var dv in Model.PhieuSua.ChiTietPhieuSuas)
                     {
                         tongTienDichVu += (dv.DichVu?.GiaDichVu ?? 0);
                     }
                 }
-                if (Model.ChiTietLinhKiens != null)
+                if (Model.PhieuSua.ChiTietLinhKiens != null)
                 {
-                    foreach (var lk in Model.ChiTietLinhKiens)
+                    foreach (var lk in Model.PhieuSua.ChiTietLinhKiens)
                     {
                         tongTienLinhKien += (lk.LinhKien?.GiaBan ?? 0) * lk.SoLuong;
                     }

@@ -1,8 +1,7 @@
-@model phonev2.Models.PhieuSua
+@model phonev2.Models.ViewModels.PhieuSuaEditViewModel
 @using phonev2.Models
 @using Microsoft.AspNetCore.Mvc.Rendering
 @{
-    Layout = null;
 }
 
 <style>
@@ -26,13 +25,13 @@
 </style>
 
 <div class="modal-header bg-warning text-dark">
-    <h5 class="modal-title"><i class="fas fa-edit"></i> Chỉnh sửa Phiếu Sửa #@Model.MaPhieuSua</h5>
+    <h5 class="modal-title"><i class="fas fa-edit"></i> Chỉnh sửa Phiếu Sửa #@Model.PhieuSua.MaPhieuSua</h5>
     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
 </div>
 
-<form asp-action="Edit" method="post" id="edit-form-@Model.MaPhieuSua">
+<form asp-action="Edit" method="post" id="edit-form-@Model.PhieuSua.MaPhieuSua">
     <div class="modal-body">
-        <input type="hidden" asp-for="MaPhieuSua" />
+        <input type="hidden" asp-for="PhieuSua.MaPhieuSua" />
         
         <div class="row">
             <div class="col-md-6">
@@ -42,65 +41,65 @@
                     </div>
                     <div class="card-body">
                         <div class="mb-3">
-                            <label asp-for="NgaySua" class="form-label">Ngày Sửa <span class="text-danger">*</span></label>
-                            <input asp-for="NgaySua" class="form-control" type="date" min="2020-01-01" max="2030-12-31" required />
-                            <span asp-validation-for="NgaySua" class="text-danger"></span>
+                            <label asp-for="PhieuSua.NgaySua" class="form-label">Ngày Sửa <span class="text-danger">*</span></label>
+                            <input asp-for="PhieuSua.NgaySua" class="form-control" type="date" min="2020-01-01" max="2030-12-31" required />
+                            <span asp-validation-for="PhieuSua.NgaySua" class="text-danger"></span>
                         </div>
                         
                         <div class="mb-3">
-                            <label asp-for="NgayHenTra" class="form-label">Ngày Hẹn Trả</label>
-                            <input asp-for="NgayHenTra" class="form-control" type="date" min="2020-01-01" max="2030-12-31" id="ngayHenTra" />
-                            <span asp-validation-for="NgayHenTra" class="text-danger"></span>
+                            <label asp-for="PhieuSua.NgayHenTra" class="form-label">Ngày Hẹn Trả</label>
+                            <input asp-for="PhieuSua.NgayHenTra" class="form-control" type="date" min="2020-01-01" max="2030-12-31" id="ngayHenTra" />
+                            <span asp-validation-for="PhieuSua.NgayHenTra" class="text-danger"></span>
                             <small class="text-muted">Ngày hẹn trả phải lớn hơn hoặc bằng ngày sửa</small>
                         </div>
                         
                         <div class="mb-3">
-                            <label asp-for="NgayTraThucTe" class="form-label">Ngày Trả Thực Tế</label>
-                            <input asp-for="NgayTraThucTe" class="form-control" type="date" readonly 
-                                   value="@(Model.NgayTraThucTe?.ToString("yyyy-MM-dd"))" 
+                            <label asp-for="PhieuSua.NgayTraThucTe" class="form-label">Ngày Trả Thực Tế</label>
+                            <input asp-for="PhieuSua.NgayTraThucTe" class="form-control" type="date" readonly 
+                                   value="@(Model.PhieuSua.NgayTraThucTe?.ToString("yyyy-MM-dd"))" 
                                    style="background-color: #f8f9fa;" />
                             <small class="text-muted">Tự động cập nhật khi chuyển trạng thái thành "Hoàn thành"</small>
                         </div>
                         
                         <div class="mb-3">
-                            <label asp-for="MaKhachHang" class="form-label">Khách Hàng <span class="text-danger">*</span></label>
-                            <select asp-for="MaKhachHang" class="form-select" asp-items="ViewBag.KhachHangList" required>
+                            <label asp-for="PhieuSua.MaKhachHang" class="form-label">Khách Hàng <span class="text-danger">*</span></label>
+                            <select asp-for="PhieuSua.MaKhachHang" class="form-select" asp-items="Model.KhachHangList" required>
                                 <option value="">-- Chọn khách hàng --</option>
                             </select>
-                            <span asp-validation-for="MaKhachHang" class="text-danger"></span>
+                            <span asp-validation-for="PhieuSua.MaKhachHang" class="text-danger"></span>
                         </div>
                         
                         <div class="mb-3">
-                            <label asp-for="MaNhanVien" class="form-label">Nhân Viên <span class="text-danger">*</span></label>
-                            <select asp-for="MaNhanVien" class="form-select" asp-items="ViewBag.NhanVienList" required>
+                            <label asp-for="PhieuSua.MaNhanVien" class="form-label">Nhân Viên <span class="text-danger">*</span></label>
+                            <select asp-for="PhieuSua.MaNhanVien" class="form-select" asp-items="Model.NhanVienList" required>
                                 <option value="">-- Chọn nhân viên --</option>
                             </select>
-                            <span asp-validation-for="MaNhanVien" class="text-danger"></span>
+                            <span asp-validation-for="PhieuSua.MaNhanVien" class="text-danger"></span>
                         </div>
                         
                         <div class="mb-3">
-                            <label asp-for="TrangThai" class="form-label">Trạng Thái</label>
-                            <select asp-for="TrangThai" class="form-select">
-                                <option value="0" selected="@(Model.TrangThai == TrangThaiPhieuSua.TiepNhan)">
+                            <label asp-for="PhieuSua.TrangThai" class="form-label">Trạng Thái</label>
+                            <select asp-for="PhieuSua.TrangThai" class="form-select">
+                                <option value="0" selected="@(Model.PhieuSua.TrangThai == TrangThaiPhieuSua.TiepNhan)">
                                     <i class="fas fa-clipboard-list"></i> Tiếp nhận
                                 </option>
-                                <option value="1" selected="@(Model.TrangThai == TrangThaiPhieuSua.DangSua)">
+                                <option value="1" selected="@(Model.PhieuSua.TrangThai == TrangThaiPhieuSua.DangSua)">
                                     <i class="fas fa-tools"></i> Đang sửa
                                 </option>
-                                <option value="2" selected="@(Model.TrangThai == TrangThaiPhieuSua.HoanThanh)">
+                                <option value="2" selected="@(Model.PhieuSua.TrangThai == TrangThaiPhieuSua.HoanThanh)">
                                     <i class="fas fa-check-circle"></i> Hoàn thành
                                 </option>
-                                <option value="3" selected="@(Model.TrangThai == TrangThaiPhieuSua.Huy)">
+                                <option value="3" selected="@(Model.PhieuSua.TrangThai == TrangThaiPhieuSua.Huy)">
                                     <i class="fas fa-times-circle"></i> Hủy
                                 </option>
                             </select>
-                            <span asp-validation-for="TrangThai" class="text-danger"></span>
+                            <span asp-validation-for="PhieuSua.TrangThai" class="text-danger"></span>
                         </div>
                         
                         <div class="mb-3">
-                            <label asp-for="GhiChu" class="form-label">Ghi Chú</label>
-                            <textarea asp-for="GhiChu" class="form-control" rows="3" placeholder="Nhập ghi chú..."></textarea>
-                            <span asp-validation-for="GhiChu" class="text-danger"></span>
+                            <label asp-for="PhieuSua.GhiChu" class="form-label">Ghi Chú</label>
+                            <textarea asp-for="PhieuSua.GhiChu" class="form-control" rows="3" placeholder="Nhập ghi chú..."></textarea>
+                            <span asp-validation-for="PhieuSua.GhiChu" class="text-danger"></span>
                         </div>
                     </div>
                 </div>
@@ -112,7 +111,7 @@
                         <h6 class="mb-0"><i class="fas fa-tools"></i> Dịch vụ đã chọn</h6>
                     </div>
                     <div class="card-body">
-                        @if (Model.ChiTietPhieuSuas != null && Model.ChiTietPhieuSuas.Any())
+                        @if (Model.PhieuSua.ChiTietPhieuSuas != null && Model.PhieuSua.ChiTietPhieuSuas.Any())
                         {
                             <div class="table-responsive">
                                 <table class="table table-sm">
@@ -123,7 +122,7 @@
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        @foreach (var dv in Model.ChiTietPhieuSuas)
+                                        @foreach (var dv in Model.PhieuSua.ChiTietPhieuSuas)
                                         {
                                             <tr>
                                                 <td>
@@ -152,7 +151,7 @@
                         <h6 class="mb-0"><i class="fas fa-microchip"></i> Linh kiện đã chọn</h6>
                     </div>
                     <div class="card-body">
-                        @if (Model.ChiTietLinhKiens != null && Model.ChiTietLinhKiens.Any())
+                        @if (Model.PhieuSua.ChiTietLinhKiens != null && Model.PhieuSua.ChiTietLinhKiens.Any())
                         {
                             <div class="table-responsive">
                                 <table class="table table-sm">
@@ -164,7 +163,7 @@
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        @foreach (var lk in Model.ChiTietLinhKiens)
+                                        @foreach (var lk in Model.PhieuSua.ChiTietLinhKiens)
                                         {
                                             <tr>
                                                 <td>
@@ -194,8 +193,8 @@
         <hr class="my-3" />
         
         @{
-            decimal tongTienDichVu = Model.ChiTietPhieuSuas?.Sum(dv => dv.DichVu?.GiaDichVu ?? 0) ?? 0;
-            decimal tongTienLinhKien = Model.ChiTietLinhKiens?.Sum(lk => (lk.LinhKien?.GiaBan ?? 0) * lk.SoLuong) ?? 0;
+            decimal tongTienDichVu = Model.PhieuSua.ChiTietPhieuSuas?.Sum(dv => dv.DichVu?.GiaDichVu ?? 0) ?? 0;
+            decimal tongTienLinhKien = Model.PhieuSua.ChiTietLinhKiens?.Sum(lk => (lk.LinhKien?.GiaBan ?? 0) * lk.SoLuong) ?? 0;
             decimal tongTien = tongTienDichVu + tongTienLinhKien;
         }
         
@@ -221,7 +220,7 @@
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
             <i class="fas fa-times"></i> Hủy
         </button>
-        <button type="submit" class="btn btn-warning" id="submit-btn-@Model.MaPhieuSua">
+        <button type="submit" class="btn btn-warning" id="submit-btn-@Model.PhieuSua.MaPhieuSua">
             <i class="fas fa-save"></i> Cập nhật
         </button>
     </div>
@@ -229,10 +228,10 @@
 
 <script>
     // Handle form submission
-    $('#edit-form-@Model.MaPhieuSua').on('submit', function(e) {
+    $('#edit-form-@Model.PhieuSua.MaPhieuSua').on('submit', function(e) {
         e.preventDefault();
         var form = $(this);
-        var submitBtn = $('#submit-btn-@Model.MaPhieuSua');
+        var submitBtn = $('#submit-btn-@Model.PhieuSua.MaPhieuSua');
         
         // Disable submit button to prevent double submission
         submitBtn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Đang cập nhật...');
@@ -276,10 +275,10 @@
     });
     
     // Add validation before submit
-    $('#edit-form-@Model.MaPhieuSua').on('submit', function(e) {
-        var ngaySua = $('input[name="NgaySua"]').val();
-        var maKhachHang = $('select[name="MaKhachHang"]').val();
-        var maNhanVien = $('select[name="MaNhanVien"]').val();
+    $('#edit-form-@Model.PhieuSua.MaPhieuSua').on('submit', function(e) {
+        var ngaySua = $('input[name="PhieuSua.NgaySua"]').val();
+        var maKhachHang = $('select[name="PhieuSua.MaKhachHang"]').val();
+        var maNhanVien = $('select[name="PhieuSua.MaNhanVien"]').val();
         var isValid = true;
         var errorMessages = [];
         
@@ -287,19 +286,19 @@
         $('.form-control, .form-select').removeClass('is-invalid');
         
         if (!ngaySua) {
-            $('input[name="NgaySua"]').addClass('is-invalid');
+            $('input[name="PhieuSua.NgaySua"]').addClass('is-invalid');
             errorMessages.push('Vui lòng chọn ngày sửa!');
             isValid = false;
         }
         
         if (!maKhachHang) {
-            $('select[name="MaKhachHang"]').addClass('is-invalid');
+            $('select[name="PhieuSua.MaKhachHang"]').addClass('is-invalid');
             errorMessages.push('Vui lòng chọn khách hàng!');
             isValid = false;
         }
         
         if (!maNhanVien) {
-            $('select[name="MaNhanVien"]').addClass('is-invalid');
+            $('select[name="PhieuSua.MaNhanVien"]').addClass('is-invalid');
             errorMessages.push('Vui lòng chọn nhân viên!');
             isValid = false;
         }
@@ -318,7 +317,7 @@
 
     // Validation cho ngày hẹn trả
     // Cập nhật min date cho ngày hẹn trả khi ngày sửa thay đổi
-    $('input[name="NgaySua"]').on('change', function() {
+    $('input[name="PhieuSua.NgaySua"]').on('change', function() {
         var ngaySua = $(this).val();
         if (ngaySua) {
             // Set min date cho ngày hẹn trả = ngày sửa (có thể bằng)
@@ -334,8 +333,8 @@
     });
 
     // Thêm validation cho ngày hẹn trả vào form validation
-    $('#edit-form-@Model.MaPhieuSua').on('submit', function(e) {
-        var ngaySua = $('input[name="NgaySua"]').val();
+    $('#edit-form-@Model.PhieuSua.MaPhieuSua').on('submit', function(e) {
+        var ngaySua = $('input[name="PhieuSua.NgaySua"]').val();
         var ngayHenTra = $('#ngayHenTra').val();
         
         if (ngayHenTra && ngayHenTra < ngaySua) {

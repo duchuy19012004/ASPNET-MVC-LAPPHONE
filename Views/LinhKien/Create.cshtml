@@ -3,6 +3,7 @@
     Layout = "_AdminLayout";
 }
 
+
 @section PageActions {
     <a asp-action="Index" class="btn btn-secondary">
         <i class="fas fa-arrow-left me-1"></i> Quay Lại Danh Sách
@@ -306,157 +307,8 @@
     </div>
 </div>
 
+
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
-    
-    <script>
-        $(document).ready(function() {
-            
-            // Format number with dots (Vietnamese style)
-            function formatCurrency(num) {
-                if (!num || num == 0) return '0 VNĐ';
-                return parseInt(num).toLocaleString('vi-VN') + ' VNĐ';
-            }
-            
-            // Update price displays
-            function updatePriceDisplays() {
-                const costPrice = parseFloat($('#GiaNhap').val()) || 0;
-                const sellPrice = parseFloat($('#GiaBan').val()) || 0;
-                const quantity = parseInt($('#SoLuongTon').val()) || 0;
-                
-                // Format and show prices
-                if (costPrice > 0) {
-                    $('#formattedCost').text(formatCurrency(costPrice));
-                    $('#costDisplay').fadeIn(200);
-                } else {
-                    $('#costDisplay').fadeOut(200);
-                }
-                
-                if (sellPrice > 0) {
-                    $('#formattedPrice').text(formatCurrency(sellPrice));
-                    $('#priceDisplay').fadeIn(200);
-                } else {
-                    $('#priceDisplay').fadeOut(200);
-                }
-                
-                // Calculate profit
-                const profit = sellPrice - costPrice;
-                const profitPercent = costPrice > 0 ? Math.round((profit / costPrice) * 100) : 0;
-                const totalProfit = profit * quantity;
-                
-                $('#profitAmount').text(formatCurrency(profit));
-                $('#profitPercent').text(profitPercent + '%');
-                $('#totalProfit').text(formatCurrency(totalProfit));
-                
-                // Update profit colors
-                $('#profitAmount').removeClass('text-success text-danger text-muted')
-                    .addClass(profit > 0 ? 'text-success' : profit < 0 ? 'text-danger' : 'text-muted');
-                
-                // Update suggestions
-                if (costPrice > 0) {
-                    $('#suggest20').text(formatCurrency(costPrice * 1.2));
-                    $('#suggest30').text(formatCurrency(costPrice * 1.3));
-                    $('#suggest50').text(formatCurrency(costPrice * 1.5));
-                }
-            }
-            
-            // Real-time preview
-            function updatePreview() {
-                const name = $('#TenLinhKien').val() || 'Tên linh kiện sẽ hiển thị ở đây';
-                const brand = $('#HangSanXuat').val() || 'Chưa có hãng sản xuất';
-                const categoryText = $('#MaLoaiLinhKien option:selected').text() || 'Chưa chọn loại';
-                const specs = $('#ThongSoKyThuat').val();
-                const sellPrice = parseFloat($('#GiaBan').val()) || 0;
-                const costPrice = parseFloat($('#GiaNhap').val()) || 0;
-                const quantity = parseInt($('#SoLuongTon').val()) || 0;
-                
-                $('#previewName span').text(name);
-                $('#previewBrand span').text(brand);
-                $('#previewCategory span').text(categoryText);
-                $('#previewPrice').text(formatCurrency(sellPrice));
-                $('#previewCost').text('Giá nhập: ' + formatCurrency(costPrice));
-                $('#previewStock span').text(quantity + ' cái');
-                
-                // Update stock status
-                let stockStatus, stockClass;
-                if (quantity === 0) {
-                    stockStatus = 'Hết hàng';
-                    stockClass = 'bg-danger';
-                } else if (quantity <= 5) {
-                    stockStatus = 'Sắp hết';
-                    stockClass = 'bg-warning';
-                } else if (quantity <= 20) {
-                    stockStatus = 'Ít hàng';
-                    stockClass = 'bg-info';
-                } else {
-                    stockStatus = 'Còn nhiều';
-                    stockClass = 'bg-success';
-                }
-                
-                $('#previewStockStatus').text(stockStatus);
-                $('#previewStock').attr('class', `badge ${stockClass} fs-6 px-3 py-2`);
-                
-                // Show/hide specs
-                if (specs && specs.trim()) {
-                    $('#previewSpecsText').text(specs);
-                    $('#previewSpecs').slideDown(300);
-                } else {
-                    $('#previewSpecs').slideUp(300);
-                }
-                
-                updatePriceDisplays();
-            }
-            
-            // Update preview on input change
-            $('#TenLinhKien, #HangSanXuat, #MaLoaiLinhKien, #ThongSoKyThuat, #GiaNhap, #GiaBan, #SoLuongTon').on('input change', updatePreview);
-            
-            // Price formatting
-            $('#GiaNhap, #GiaBan').on('input', updatePriceDisplays);
-            
-            // Apply suggestion buttons
-            $('.apply-suggestion').on('click', function() {
-                const percent = parseFloat($(this).data('percent'));
-                const costPrice = parseFloat($('#GiaNhap').val()) || 0;
-                
-                if (costPrice > 0) {
-                    const suggestedPrice = Math.round(costPrice * (1 + percent / 100));
-                    $('#GiaBan').val(suggestedPrice);
-                    updatePreview();
-                }
-            });
-            
-            // Switch label change
-            $('#trangThaiSwitch').on('change', function() {
-                const label = $(this).is(':checked') ? 'Linh kiện đang được bán' : 'Linh kiện ngừng bán';
-                $('.switch-label').text(label);
-            });
-            
-            // Auto-focus first field
-            $('#TenLinhKien').focus();
-            
-            // Initial preview update
-            updatePreview();
-            
-            // Form validation enhancement
-            $('form').on('submit', function(e) {
-                const costPrice = parseFloat($('#GiaNhap').val()) || 0;
-                const sellPrice = parseFloat($('#GiaBan').val()) || 0;
-                
-                if (sellPrice < costPrice) {
-                    e.preventDefault();
-                    alert('Cảnh báo: Giá bán thấp hơn giá nhập. Bạn sẽ bị lỗ!');
-                    $('#GiaBan').focus();
-                    return false;
-                }
-                
-                if (costPrice > 0 && sellPrice > costPrice * 3) {
-                    if (!confirm('Giá bán cao hơn 300% giá nhập. Bạn có chắc chắn?')) {
-                        e.preventDefault();
-                        $('#GiaBan').focus();
-                        return false;
-                    }
-                }
-            });
-        });
-    </script>
+    <script src="~/js/linhkien.js"></script>
 }

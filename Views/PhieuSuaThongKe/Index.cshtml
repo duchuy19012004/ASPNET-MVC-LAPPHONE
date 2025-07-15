@@ -1,0 +1,312 @@
+@{
+    ViewData["Title"] = "Báo cáo thống kê phiếu sửa";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="container-fluid py-3">
+    <h2 class="mb-4"><i class="fas fa-chart-bar me-2"></i>Báo cáo thống kê phiếu sửa</h2>
+    <div class="row mb-3">
+        <div class="col-md-4 col-lg-3">
+            <label class="form-label fw-bold">Chọn kiểu thống kê</label>
+            <select id="filter-type" class="form-select">
+                <option value="month">Theo tháng</option>
+                <option value="week">Theo tuần</option>
+                <option value="year">Theo năm</option>
+            </select>
+        </div>
+        <div class="col-md-3 col-lg-2">
+            <label class="form-label fw-bold">Năm</label>
+            <input id="filter-year" type="number" class="form-control" min="2000" max="2100" value="@DateTime.Now.Year" />
+        </div>
+        <div class="col-md-3 col-lg-2 d-none" id="month-group">
+            <label class="form-label fw-bold">Tháng</label>
+            <select id="filter-month" class="form-select">
+                @for (int m = 1; m <= 12; m++) {
+                    if (m == DateTime.Now.Month) {
+                        <option value="@m" selected>Tháng @m</option>
+                    } else {
+                        <option value="@m">Tháng @m</option>
+                    }
+                }
+            </select>
+        </div>
+        <div class="col-md-3 col-lg-2 d-none" id="week-group">
+            <label class="form-label fw-bold">Tuần</label>
+            <select id="filter-week" class="form-select">
+                @for (int w = 1; w <= 53; w++) {
+                    <option value="@w">Tuần @w</option>
+                }
+            </select>
+        </div>
+        <div class="col-md-2 d-flex align-items-end">
+            <div class="form-check me-2">
+                <input class="form-check-input" type="checkbox" id="filter-today">
+                <label class="form-check-label" for="filter-today">Chỉ ngày hôm nay</label>
+            </div>
+            <button id="btn-filter" class="btn btn-primary w-100"><i class="fas fa-filter me-1"></i>Lọc</button>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-lg-6">
+            <div class="card shadow-sm">
+                <div class="card-header bg-success text-white">
+                    <i class="fas fa-chart-line me-2"></i>Biểu đồ tổng tiền phiếu sửa
+                </div>
+                <div class="card-body">
+                    <canvas id="chart-tongtien" height="220"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-6">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <i class="fas fa-chart-bar me-2"></i>Biểu đồ số phiếu sửa
+                </div>
+                <div class="card-body">
+                    <canvas id="chart-sophieusua" height="220"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row g-4 mt-2">
+        <div class="col-lg-6">
+            <div class="card shadow-sm">
+                <div class="card-header bg-info text-white">
+                    <i class="fas fa-chart-line me-2"></i>Top 5 linh kiện sử dụng nhiều nhất
+                </div>
+                <div class="card-body">
+                    <canvas id="chart-toplinhkien" height="220"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-6">
+            <div class="card shadow-sm">
+                <div class="card-header bg-warning text-dark">
+                    <i class="fas fa-chart-line me-2"></i>Thống kê loại linh kiện sử dụng
+                </div>
+                <div class="card-body">
+                    <canvas id="chart-loailinhkien" height="220"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        let chartTongTien, chartSoPhieu, chartTopLinhKien, chartLoaiLinhKien;
+        function renderCharts(labels, tongTienData, soPhieuData) {
+            if (chartTongTien) chartTongTien.destroy();
+            if (chartSoPhieu) chartSoPhieu.destroy();
+            const ctx1 = document.getElementById('chart-tongtien').getContext('2d');
+            const ctx2 = document.getElementById('chart-sophieusua').getContext('2d');
+            chartTongTien = new Chart(ctx1, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Tổng tiền (VNĐ)',
+                        data: tongTienData,
+                        borderColor: '#28a745',
+                        backgroundColor: 'rgba(40,167,69,0.1)',
+                        fill: true,
+                        tension: 0.3,
+                        pointRadius: 4,
+                        pointBackgroundColor: '#28a745',
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: { display: true },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return context.dataset.label + ': ' + context.parsed.y.toLocaleString('vi-VN') + ' VNĐ';
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return value.toLocaleString('vi-VN');
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+            chartSoPhieu = new Chart(ctx2, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Số phiếu sửa',
+                        data: soPhieuData,
+                        backgroundColor: '#007bff',
+                        borderRadius: 6,
+                        maxBarThickness: 32
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return 'Số phiếu: ' + context.parsed.y;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                precision: 0
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function renderTopLinhKienChart(labels, data) {
+            if (chartTopLinhKien) chartTopLinhKien.destroy();
+            const ctx = document.getElementById('chart-toplinhkien').getContext('2d');
+            chartTopLinhKien = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Số lần sử dụng',
+                        data: data,
+                        borderColor: '#17a2b8',
+                        backgroundColor: 'rgba(23,162,184,0.1)',
+                        fill: true,
+                        tension: 0.3,
+                        pointRadius: 4,
+                        pointBackgroundColor: '#17a2b8',
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: { display: true },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return context.dataset.label + ': ' + context.parsed.y;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: { precision: 0 }
+                        }
+                    }
+                }
+            });
+        }
+
+        function renderLoaiLinhKienChart(labels, data) {
+            if (chartLoaiLinhKien) chartLoaiLinhKien.destroy();
+            const ctx = document.getElementById('chart-loailinhkien').getContext('2d');
+            chartLoaiLinhKien = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Số lần sử dụng',
+                        data: data,
+                        borderColor: '#ffc107',
+                        backgroundColor: 'rgba(255,193,7,0.1)',
+                        fill: true,
+                        tension: 0.3,
+                        pointRadius: 4,
+                        pointBackgroundColor: '#ffc107',
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: { display: true },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return context.dataset.label + ': ' + context.parsed.y;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: { precision: 0 }
+                        }
+                    }
+                }
+            });
+        }
+
+        async function fetchDataAndRender() {
+            const type = $('#filter-type').val();
+            const year = $('#filter-year').val();
+            const month = $('#filter-month').val();
+            const week = $('#filter-week').val();
+            const today = $('#filter-today').is(':checked');
+            let url = `/PhieuSuaThongKe/GetThongKe?type=${type}&year=${year}`;
+            if (type === 'month') url += `&month=${month}`;
+            if (type === 'week') url += `&week=${week}`;
+            if (today) url += `&today=true`;
+            const res = await fetch(url);
+            const data = await res.json();
+            const labels = data.map(x => x.label);
+            const tongTienData = data.map(x => x.tongTien);
+            const soPhieuData = data.map(x => x.soPhieu);
+            renderCharts(labels, tongTienData, soPhieuData);
+
+            // Top 5 linh kiện
+            let urlTop = `/PhieuSuaThongKe/GetTopLinhKien?type=${type}&year=${year}`;
+            if (type === 'month') urlTop += `&month=${month}`;
+            if (type === 'week') urlTop += `&week=${week}`;
+            if (today) urlTop += `&today=true`;
+            const resTop = await fetch(urlTop);
+            const dataTop = await resTop.json();
+            renderTopLinhKienChart(dataTop.map(x => x.tenLinhKien), dataTop.map(x => x.soLan));
+
+            // Thống kê loại linh kiện
+            let urlLoai = `/PhieuSuaThongKe/GetThongKeLoaiLinhKien?type=${type}&year=${year}`;
+            if (type === 'month') urlLoai += `&month=${month}`;
+            if (type === 'week') urlLoai += `&week=${week}`;
+            if (today) urlLoai += `&today=true`;
+            const resLoai = await fetch(urlLoai);
+            const dataLoai = await resLoai.json();
+            renderLoaiLinhKienChart(dataLoai.map(x => x.tenLoaiLinhKien), dataLoai.map(x => x.soLan));
+        }
+
+        $(document).ready(function() {
+            function updateFilterVisibility() {
+                const type = $('#filter-type').val();
+                $('#month-group').toggleClass('d-none', type !== 'month');
+                $('#week-group').toggleClass('d-none', type !== 'week');
+            }
+            $('#filter-type').on('change', updateFilterVisibility);
+            updateFilterVisibility();
+            $('#btn-filter').on('click', function(e) {
+                e.preventDefault();
+                fetchDataAndRender();
+            });
+            // Tự động load lần đầu
+            fetchDataAndRender();
+        });
+    </script>
+} 

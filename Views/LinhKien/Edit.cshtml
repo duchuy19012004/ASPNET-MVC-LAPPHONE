@@ -3,6 +3,7 @@
     Layout = "_AdminLayout";
 }
 
+
 @section PageActions {
     <div class="btn-group">
         <a asp-action="Details" asp-route-id="@Model.MaLinhKien" class="btn btn-info">
@@ -13,6 +14,7 @@
         </a>
     </div>
 }
+
 
 <div class="row justify-content-center">
     <div class="col-lg-10">
@@ -379,229 +381,8 @@
     </div>
 </div>
 
+
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
-    
-    <script>
-        $(document).ready(function() {
-            // Store original values for comparison
-            const originalValues = {
-                name: '@Html.Raw(Model.TenLinhKien.Replace("'", "\\'"))',
-                brand: '@Html.Raw((Model.HangSanXuat ?? "").Replace("'", "\\'"))',
-                specs: '@Html.Raw((Model.ThongSoKyThuat ?? "").Replace("'", "\\'").Replace("\n", "\\n").Replace("\r", ""))',
-                costPrice: @Model.GiaNhap,
-                sellPrice: @Model.GiaBan,
-                stock: @Model.SoLuongTon,
-                category: @Model.MaLoaiLinhKien,
-                status: @Model.TrangThai.ToString().ToLower()
-            };
-            
-            // Format number with dots (Vietnamese style)
-            function formatCurrency(num) {
-                if (!num || num == 0) return '0 VNĐ';
-                return parseInt(num).toLocaleString('vi-VN') + ' VNĐ';
-            }
-            
-            // Update price displays
-            function updatePriceDisplays() {
-                const costPrice = parseFloat($('#GiaNhap').val()) || 0;
-                const sellPrice = parseFloat($('#GiaBan').val()) || 0;
-                const quantity = parseInt($('#SoLuongTon').val()) || 0;
-                
-                // Format and show prices
-                if (costPrice > 0 && costPrice !== originalValues.costPrice) {
-                    $('#formattedCost').text(formatCurrency(costPrice));
-                    $('#costDisplay').fadeIn(200);
-                } else {
-                    $('#costDisplay').fadeOut(200);
-                }
-                
-                if (sellPrice > 0 && sellPrice !== originalValues.sellPrice) {
-                    $('#formattedPrice').text(formatCurrency(sellPrice));
-                    $('#priceDisplay').fadeIn(200);
-                } else {
-                    $('#priceDisplay').fadeOut(200);
-                }
-                
-                // Calculate profit
-                const profit = sellPrice - costPrice;
-                const profitPercent = costPrice > 0 ? Math.round((profit / costPrice) * 100) : 0;
-                const totalProfit = profit * quantity;
-                
-                $('#profitAmount').text(formatCurrency(profit));
-                $('#profitPercent').text(profitPercent + '%');
-                $('#totalProfit').text(formatCurrency(totalProfit));
-                
-                // Update profit colors
-                $('#profitAmount').removeClass('text-success text-danger text-muted')
-                    .addClass(profit > 0 ? 'text-success' : profit < 0 ? 'text-danger' : 'text-muted');
-                
-                // Update suggestions based on current cost price
-                if (costPrice > 0) {
-                    $('#suggest20').text(formatCurrency(costPrice * 1.2));
-                    $('#suggest30').text(formatCurrency(costPrice * 1.3));
-                    $('#suggest50').text(formatCurrency(costPrice * 1.5));
-                }
-            }
-            
-            // Update preview and track changes
-            function updatePreview() {
-                const name = $('#TenLinhKien').val() || originalValues.name;
-                const brand = $('#HangSanXuat').val() || 'Chưa có hãng';
-                const categoryText = $('#MaLoaiLinhKien option:selected').text() || 'Chưa chọn loại';
-                const specs = $('#ThongSoKyThuat').val();
-                const sellPrice = parseFloat($('#GiaBan').val()) || 0;
-                const costPrice = parseFloat($('#GiaNhap').val()) || 0;
-                const quantity = parseInt($('#SoLuongTon').val()) || 0;
-                
-                $('#previewName span').text(name);
-                $('#previewBrand span').text(brand);
-                $('#previewCategory span').text(categoryText);
-                $('#previewPrice').text(formatCurrency(sellPrice));
-                $('#previewCost').text('Giá nhập: ' + formatCurrency(costPrice));
-                $('#previewStock span').text(quantity + ' cái');
-                
-                // Update stock status
-                let stockStatus, stockClass;
-                if (quantity === 0) {
-                    stockStatus = 'Hết hàng';
-                    stockClass = 'badge bg-danger';
-                } else if (quantity <= 5) {
-                    stockStatus = 'Sắp hết';
-                    stockClass = 'badge bg-warning';
-                } else if (quantity <= 20) {
-                    stockStatus = 'Ít hàng';
-                    stockClass = 'badge bg-info';
-                } else {
-                    stockStatus = 'Còn nhiều';
-                    stockClass = 'badge bg-success';
-                }
-                
-                $('#previewStockStatus').text(stockStatus);
-                $('#previewStock').attr('class', `${stockClass} fs-6 px-3 py-2`);
-                
-                // Update specs
-                if (specs && specs.trim()) {
-                    $('#previewSpecsText').text(specs);
-                    if ($('#previewSpecs').length === 0) {
-                        $('#previewCard .card-body').append(`
-                            <hr>
-                            <div class="row" id="previewSpecs">
-                                <div class="col-12">
-                                    <strong class="text-muted">Thông số kỹ thuật:</strong>
-                                    <p class="mb-0" id="previewSpecsText">${specs}</p>
-                                </div>
-                            </div>
-                        `);
-                    }
-                } else {
-                    $('#previewSpecs').remove();
-                }
-                
-                // Update price displays
-                updatePriceDisplays();
-                
-                // Track changes
-                trackChanges();
-            }
-            
-            // Apply suggestion buttons
-            $('.apply-suggestion').on('click', function() {
-                const percent = parseFloat($(this).data('percent'));
-                const costPrice = parseFloat($('#GiaNhap').val()) || originalValues.costPrice;
-                
-                if (costPrice > 0) {
-                    const suggestedPrice = Math.round(costPrice * (1 + percent / 100));
-                    $('#GiaBan').val(suggestedPrice);
-                    updatePreview();
-                }
-            });
-            
-            // Track and display changes
-            function trackChanges() {
-                const currentName = $('#TenLinhKien').val();
-                const currentBrand = $('#HangSanXuat').val();
-                const currentSpecs = $('#ThongSoKyThuat').val();
-                const currentCostPrice = parseFloat($('#GiaNhap').val()) || 0;
-                const currentSellPrice = parseFloat($('#GiaBan').val()) || 0;
-                const currentStock = parseInt($('#SoLuongTon').val()) || 0;
-                const currentCategory = parseInt($('#MaLoaiLinhKien').val()) || 0;
-                const currentStatus = $('#trangThaiSwitch').is(':checked');
-                
-                let changes = [];
-                
-                if (currentName !== originalValues.name) {
-                    changes.push(`<li><strong>Tên:</strong> ${originalValues.name} → ${currentName}</li>`);
-                }
-                if (currentBrand !== originalValues.brand) {
-                    changes.push(`<li><strong>Hãng:</strong> ${originalValues.brand || 'Chưa có'} → ${currentBrand || 'Chưa có'}</li>`);
-                }
-                if (currentSpecs !== originalValues.specs) {
-                    changes.push(`<li><strong>Thông số:</strong> Đã thay đổi</li>`);
-                }
-                if (currentCostPrice !== originalValues.costPrice) {
-                    changes.push(`<li><strong>Giá nhập:</strong> ${formatCurrency(originalValues.costPrice)} → ${formatCurrency(currentCostPrice)}</li>`);
-                }
-                if (currentSellPrice !== originalValues.sellPrice) {
-                    changes.push(`<li><strong>Giá bán:</strong> ${formatCurrency(originalValues.sellPrice)} → ${formatCurrency(currentSellPrice)}</li>`);
-                }
-                if (currentStock !== originalValues.stock) {
-                    changes.push(`<li><strong>Tồn kho:</strong> ${originalValues.stock} → ${currentStock} cái</li>`);
-                }
-                if (currentCategory !== originalValues.category) {
-                    changes.push(`<li><strong>Loại:</strong> Đã thay đổi</li>`);
-                }
-                if (currentStatus !== originalValues.status) {
-                    changes.push(`<li><strong>Trạng thái:</strong> ${originalValues.status ? 'Đang bán' : 'Ngừng bán'} → ${currentStatus ? 'Đang bán' : 'Ngừng bán'}</li>`);
-                }
-                
-                if (changes.length > 0) {
-                    $('#changesSummary').html(`<ul class="list-unstyled text-warning">${changes.join('')}</ul>`);
-                } else {
-                    $('#changesSummary').html('<p class="text-muted"><em>Chưa có thay đổi nào</em></p>');
-                }
-                
-                // Highlight changed fields
-                highlightChangedFields();
-            }
-            
-            // Highlight changed fields
-            function highlightChangedFields() {
-                const fields = [
-                    { id: '#TenLinhKien', original: originalValues.name, current: $('#TenLinhKien').val() },
-                    { id: '#HangSanXuat', original: originalValues.brand, current: $('#HangSanXuat').val() },
-                    { id: '#ThongSoKyThuat', original: originalValues.specs, current: $('#ThongSoKyThuat').val() },
-                    { id: '#GiaNhap', original: originalValues.costPrice, current: parseFloat($('#GiaNhap').val()) || 0 },
-                    { id: '#GiaBan', original: originalValues.sellPrice, current: parseFloat($('#GiaBan').val()) || 0 },
-                    { id: '#SoLuongTon', original: originalValues.stock, current: parseInt($('#SoLuongTon').val()) || 0 },
-                    { id: '#MaLoaiLinhKien', original: originalValues.category, current: parseInt($('#MaLoaiLinhKien').val()) || 0 },
-                    { id: '#trangThaiSwitch', original: originalValues.status, current: $('#trangThaiSwitch').is(':checked') }
-                ];
-                
-                fields.forEach(field => {
-                    const element = $(field.id);
-                    if (field.original !== field.current) {
-                        element.addClass('border-warning').removeClass('border-success');
-                    } else {
-                        element.removeClass('border-warning').addClass('border-success');
-                    }
-                });
-            }
-            
-            // Update preview on input change
-            $('#TenLinhKien, #HangSanXuat, #MaLoaiLinhKien, #ThongSoKyThuat, #GiaNhap, #GiaBan, #SoLuongTon, #trangThaiSwitch').on('input change', updatePreview);
-            
-            // Price formatting
-            $('#GiaNhap, #GiaBan').on('input', updatePriceDisplays);
-            
-            // Switch label change
-            $('#trangThaiSwitch').on('change', function() {
-                const label = $(this).is(':checked') ? 'Linh kiện đang được bán' : 'Linh kiện ngừng bán';
-                $('.switch-label').text(label);
-            });
-            
-            // Initial setup
-            updatePreview();
-        });
-    </script>
+    <script src="~/js/linhkien.js"></script>
 }

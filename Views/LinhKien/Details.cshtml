@@ -3,6 +3,7 @@
     Layout = "_AdminLayout";
 }
 
+
 @section PageActions {
     <div class="btn-group">
                 <a asp-action="Edit" asp-route-id="@Model.MaLinhKien" class="btn btn-warning">
@@ -16,6 +17,7 @@
         </a>
     </div>
 }
+
 
 <div class="row">
     <!-- Main Info Card -->
@@ -421,31 +423,11 @@
     </div>
 </div>
 
-@section Scripts {
-    <script>
-        // Toggle Status AJAX
-        $('.toggle-status').on('click', function() {
-            const btn = $(this);
-            const id = btn.data('id');
-            
-            btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin me-2"></i>Đang xử lý...');
-            
-            $.post('@Url.Action("ToggleStatus")', { id: id })
-                .done(function(response) {
-                    if (response.success) {
-                        location.reload(); // Reload to update all status displays
-                    } else {
-                        alert('Có lỗi xảy ra: ' + response.message);
-                        btn.prop('disabled', false);
-                    }
-                })
-                .fail(function() {
-                    alert('Không thể kết nối đến server!');
-                    btn.prop('disabled', false);
-                });
-        });
 
-        // Update Stock function
+@section Scripts {
+    <script src="~/js/linhkien.js"></script>
+    <script>
+        // Update Stock function for Details page
         function updateStock() {
             const action = prompt('Chọn hành động:\n1. Cộng thêm (nhập "add")\n2. Trừ bớt (nhập "subtract")\n3. Đặt lại (nhập "set")', 'add');
             if (!action || !['add', 'subtract', 'set'].includes(action)) return;
@@ -460,14 +442,14 @@
             })
             .done(function(response) {
                 if (response.success) {
-                    alert(`Đã cập nhật tồn kho thành công! Số lượng mới: ${response.newStock}`);
-                    location.reload();
+                    showToast(`Đã cập nhật tồn kho thành công! Số lượng mới: ${response.newStock}`, 'success');
+                    setTimeout(() => location.reload(), 1500);
                 } else {
-                    alert('Có lỗi xảy ra: ' + response.message);
+                    showToast('Có lỗi xảy ra: ' + response.message, 'error');
                 }
             })
             .fail(function() {
-                alert('Không thể kết nối đến server!');
+                showToast('Không thể kết nối đến server!', 'error');
             });
         }
 
@@ -483,14 +465,14 @@
             })
             .done(function(response) {
                 if (response.success) {
-                    alert(`Đã nhập thêm ${quantity} cái. Tồn kho mới: ${response.newStock}`);
-                    location.reload();
+                    showToast(`Đã nhập thêm ${quantity} cái. Tồn kho mới: ${response.newStock}`, 'success');
+                    setTimeout(() => location.reload(), 1500);
                 } else {
-                    alert('Có lỗi xảy ra: ' + response.message);
+                    showToast('Có lỗi xảy ra: ' + response.message, 'error');
                 }
             })
             .fail(function() {
-                alert('Không thể kết nối đến server!');
+                showToast('Không thể kết nối đến server!', 'error');
             });
         }
         
@@ -552,7 +534,7 @@ Trạng thái: @Model.TrangThaiText`;
             } else {
                 // Fallback: copy to clipboard
                 navigator.clipboard.writeText(componentInfo).then(function() {
-                    alert('Đã sao chép thông tin linh kiện vào clipboard!');
+                    showToast('Đã sao chép thông tin linh kiện vào clipboard!', 'success');
                 }).catch(function() {
                     // Fallback for older browsers
                     const textArea = document.createElement('textarea');
@@ -561,7 +543,7 @@ Trạng thái: @Model.TrangThaiText`;
                     textArea.select();
                     document.execCommand('copy');
                     document.body.removeChild(textArea);
-                    alert('Đã sao chép thông tin linh kiện vào clipboard!');
+                    showToast('Đã sao chép thông tin linh kiện vào clipboard!', 'success');
                 });
             }
         }
