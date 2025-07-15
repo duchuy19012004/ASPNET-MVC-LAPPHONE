@@ -5,6 +5,26 @@
     Layout = null;
 }
 
+<style>
+    .is-invalid {
+        border-color: #dc3545 !important;
+        box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25) !important;
+    }
+    
+    .form-label .text-danger {
+        font-weight: bold;
+    }
+    
+    .btn:disabled {
+        cursor: not-allowed;
+    }
+    
+    .spinner-border-sm {
+        width: 1rem;
+        height: 1rem;
+    }
+</style>
+
 <div class="modal-header bg-warning text-dark">
     <h5 class="modal-title"><i class="fas fa-edit"></i> Chỉnh sửa Phiếu Sửa #@Model.MaPhieuSua</h5>
     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -22,8 +42,8 @@
                     </div>
                     <div class="card-body">
                         <div class="mb-3">
-                            <label asp-for="NgaySua" class="form-label">Ngày Sửa</label>
-                            <input asp-for="NgaySua" class="form-control" type="date" min="2020-01-01" max="2030-12-31" />
+                            <label asp-for="NgaySua" class="form-label">Ngày Sửa <span class="text-danger">*</span></label>
+                            <input asp-for="NgaySua" class="form-control" type="date" min="2020-01-01" max="2030-12-31" required />
                             <span asp-validation-for="NgaySua" class="text-danger"></span>
                         </div>
                         
@@ -42,16 +62,16 @@
                         </div>
                         
                         <div class="mb-3">
-                            <label asp-for="MaKhachHang" class="form-label">Khách Hàng</label>
-                            <select asp-for="MaKhachHang" class="form-select" asp-items="ViewBag.KhachHangList">
+                            <label asp-for="MaKhachHang" class="form-label">Khách Hàng <span class="text-danger">*</span></label>
+                            <select asp-for="MaKhachHang" class="form-select" asp-items="ViewBag.KhachHangList" required>
                                 <option value="">-- Chọn khách hàng --</option>
                             </select>
                             <span asp-validation-for="MaKhachHang" class="text-danger"></span>
                         </div>
                         
                         <div class="mb-3">
-                            <label asp-for="MaNhanVien" class="form-label">Nhân Viên</label>
-                            <select asp-for="MaNhanVien" class="form-select" asp-items="ViewBag.NhanVienList">
+                            <label asp-for="MaNhanVien" class="form-label">Nhân Viên <span class="text-danger">*</span></label>
+                            <select asp-for="MaNhanVien" class="form-select" asp-items="ViewBag.NhanVienList" required>
                                 <option value="">-- Chọn nhân viên --</option>
                             </select>
                             <span asp-validation-for="MaNhanVien" class="text-danger"></span>
@@ -200,7 +220,7 @@
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
             <i class="fas fa-times"></i> Hủy
         </button>
-        <button type="submit" class="btn btn-warning">
+        <button type="submit" class="btn btn-warning" id="submit-btn-@Model.MaPhieuSua">
             <i class="fas fa-save"></i> Cập nhật
         </button>
     </div>
@@ -211,23 +231,87 @@
     $('#edit-form-@Model.MaPhieuSua').on('submit', function(e) {
         e.preventDefault();
         var form = $(this);
+        var submitBtn = $('#submit-btn-@Model.MaPhieuSua');
+        
+        // Disable submit button to prevent double submission
+        submitBtn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Đang cập nhật...');
         
         $.ajax({
             url: form.attr('action'),
             type: 'POST',
             data: form.serialize(),
+            dataType: 'json',
             success: function(response) {
-                if (response.success !== false) {
+                if (response.success) {
+                    // Show success message
+                    alert('Cập nhật phiếu sửa thành công!');
                     $('#phieusua-edit-modal').modal('hide');
                     location.reload(); // Reload page to show updated data
                 } else {
-                    // Handle errors
+                    // Show error message
                     alert('Có lỗi xảy ra: ' + response.message);
+                    submitBtn.prop('disabled', false).html('<i class="fas fa-save"></i> Cập nhật');
                 }
             },
-            error: function() {
-                alert('Có lỗi xảy ra khi cập nhật phiếu sửa!');
+            error: function(xhr, status, error) {
+                console.log('AJAX Error:', xhr.responseText);
+                
+                // Try to parse error response
+                try {
+                    var errorResponse = JSON.parse(xhr.responseText);
+                    if (errorResponse.message) {
+                        alert('Có lỗi xảy ra: ' + errorResponse.message);
+                    } else {
+                        alert('Có lỗi xảy ra khi cập nhật phiếu sửa!');
+                    }
+                } catch (e) {
+                    // If not JSON, show generic error
+                    alert('Có lỗi xảy ra khi cập nhật phiếu sửa! Vui lòng thử lại.');
+                }
+                
+                submitBtn.prop('disabled', false).html('<i class="fas fa-save"></i> Cập nhật');
             }
         });
+    });
+    
+    // Add validation before submit
+    $('#edit-form-@Model.MaPhieuSua').on('submit', function(e) {
+        var ngaySua = $('input[name="NgaySua"]').val();
+        var maKhachHang = $('select[name="MaKhachHang"]').val();
+        var maNhanVien = $('select[name="MaNhanVien"]').val();
+        var isValid = true;
+        var errorMessages = [];
+        
+        // Clear previous error highlights
+        $('.form-control, .form-select').removeClass('is-invalid');
+        
+        if (!ngaySua) {
+            $('input[name="NgaySua"]').addClass('is-invalid');
+            errorMessages.push('Vui lòng chọn ngày sửa!');
+            isValid = false;
+        }
+        
+        if (!maKhachHang) {
+            $('select[name="MaKhachHang"]').addClass('is-invalid');
+            errorMessages.push('Vui lòng chọn khách hàng!');
+            isValid = false;
+        }
+        
+        if (!maNhanVien) {
+            $('select[name="MaNhanVien"]').addClass('is-invalid');
+            errorMessages.push('Vui lòng chọn nhân viên!');
+            isValid = false;
+        }
+        
+        if (!isValid) {
+            e.preventDefault();
+            alert('Vui lòng kiểm tra lại các trường bắt buộc:\n' + errorMessages.join('\n'));
+            return false;
+        }
+    });
+    
+    // Auto-hide error highlights when user starts typing/selecting
+    $('input, select').on('input change', function() {
+        $(this).removeClass('is-invalid');
     });
 </script> 

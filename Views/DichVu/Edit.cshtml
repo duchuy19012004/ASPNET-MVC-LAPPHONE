@@ -210,24 +210,15 @@
                     </div>
 
                     <!-- Action Buttons -->
-                    <div class="d-grid gap-2 d-md-flex justify-content-md-between">
-                        <a asp-action="Delete" asp-route-id="@Model.MaDichVu" 
-                           class="btn btn-outline-danger"
-                           onclick="return confirm('Bạn có chắc chắn muốn xóa dịch vụ này?')">
-                            <i class="fas fa-trash me-1"></i>
-                            Xóa Dịch Vụ
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a asp-action="Index" class="btn btn-secondary btn-lg me-2">
+                            <i class="fas fa-times me-1"></i>
+                            Hủy Bỏ
                         </a>
-                        
-                        <div>
-                            <a asp-action="Index" class="btn btn-secondary btn-lg me-2">
-                                <i class="fas fa-times me-1"></i>
-                                Hủy Bỏ
-                            </a>
-                            <button type="submit" class="btn btn-warning btn-lg">
-                                <i class="fas fa-save me-1"></i>
-                                Cập Nhật
-                            </button>
-                        </div>
+                        <button type="submit" class="btn btn-warning btn-lg">
+                            <i class="fas fa-save me-1"></i>
+                            Cập Nhật
+                        </button>
                     </div>
                 </form>
             </div>

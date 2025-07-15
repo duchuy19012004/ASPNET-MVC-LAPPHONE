@@ -198,6 +198,83 @@ body {
   padding-top: 1rem;
 }
 
+/* Chart Styles */
+.card {
+  border: none;
+  border-radius: 10px;
+  box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+}
+
+.card-header {
+  border-bottom: none;
+  border-radius: 10px 10px 0 0 !important;
+  font-weight: 600;
+}
+
+.card-body {
+  padding: 1.5rem;
+}
+
+canvas {
+  max-height: 300px;
+}
+
+/* Responsive chart containers */
+@media (max-width: 768px) {
+  canvas {
+    max-height: 250px;
+  }
+
+  .card-body {
+    padding: 1rem;
+  }
+}
+
+/* Chart tooltip customization */
+.chartjs-tooltip {
+  background: rgba(0, 0, 0, 0.8) !important;
+  border-radius: 6px !important;
+  color: white !important;
+  padding: 8px 12px !important;
+  font-size: 12px !important;
+}
+
+/* Chart Responsive */
+@media (max-width: 768px) {
+  .chart-area,
+  .chart-pie,
+  .chart-bar {
+    height: 250px;
+  }
+}
+
+/* Stats Cards Enhanced */
+.stats-card {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border-radius: 1rem;
+  padding: 1.5rem;
+  margin-bottom: 1rem;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.stats-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+}
+
+.stats-card.success {
+  background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+}
+
+.stats-card.warning {
+  background: linear-gradient(135deg, #ffc107 0%, #fd7e14 100%);
+}
+
+.stats-card.info {
+  background: linear-gradient(135deg, #17a2b8 0%, #6f42c1 100%);
+}
+
 /* Responsive */
 @media (max-width: 767.98px) {
   .sidebar {

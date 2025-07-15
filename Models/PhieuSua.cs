@@ -31,10 +31,12 @@ namespace phonev2.Models
 
         [Column("makhachhang")]
         [Display(Name = "Khách Hàng")]
+        [Required(ErrorMessage = "Vui lòng chọn khách hàng")]
         public int? MaKhachHang { get; set; }
 
         [Column("manhanvien")]
         [Display(Name = "Nhân Viên")]
+        [Required(ErrorMessage = "Vui lòng chọn nhân viên")]
         public int? MaNhanVien { get; set; }
 
         [Column("tongtien")]

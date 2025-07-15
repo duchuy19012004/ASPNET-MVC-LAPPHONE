@@ -1,15 +1,16 @@
+@using System.Linq
 @{
     Layout = "_AdminLayout";
 }
 
 @section PageActions {
     <div class="btn-group" role="group">
-        <button type="button" class="btn btn-outline-primary">
+        <button type="button" class="btn btn-outline-primary" onclick="location.reload()">
             <i class="fas fa-sync-alt me-1"></i> Refresh
         </button>
-        <button type="button" class="btn btn-outline-success">
-            <i class="fas fa-download me-1"></i> Export
-        </button>
+        <a href="@Url.Action("Index", "BaoCao")" class="btn btn-outline-success">
+            <i class="fas fa-chart-bar me-1"></i> Báo Cáo Chi Tiết
+        </a>
     </div>
 }
 
@@ -19,7 +20,7 @@
         <div class="stats-card">
             <div class="d-flex align-items-center">
                 <div class="flex-grow-1">
-                    <h3 class="mb-1">@Model.TotalCustomers</h3>
+                    <h3 class="mb-1">@Model.TotalCustomers.ToString("N0")</h3>
                     <p class="mb-0">Tổng Khách Hàng</p>
                 </div>
                 <div class="ms-3">
@@ -33,7 +34,7 @@
         <div class="stats-card success">
             <div class="d-flex align-items-center">
                 <div class="flex-grow-1">
-                    <h3 class="mb-1">@Model.TotalRepairs</h3>
+                    <h3 class="mb-1">@Model.TotalRepairs.ToString("N0")</h3>
                     <p class="mb-0">Tổng Đơn Sửa Chữa</p>
                 </div>
                 <div class="ms-3">
@@ -47,7 +48,7 @@
         <div class="stats-card warning">
             <div class="d-flex align-items-center">
                 <div class="flex-grow-1">
-                    <h3 class="mb-1">@Model.TotalRevenue.ToString("N0")</h3>
+                    <h3 class="mb-1">@Model.TotalRevenue.ToString("N0") VNĐ</h3>
                     <p class="mb-0">Doanh Thu (VNĐ)</p>
                 </div>
                 <div class="ms-3">
@@ -61,7 +62,7 @@
         <div class="stats-card info">
             <div class="d-flex align-items-center">
                 <div class="flex-grow-1">
-                    <h3 class="mb-1">@Model.PendingRepairs</h3>
+                    <h3 class="mb-1">@Model.PendingRepairs.ToString("N0")</h3>
                     <p class="mb-0">Đang Xử Lý</p>
                 </div>
                 <div class="ms-3">
@@ -82,7 +83,7 @@
                     <i class="fas fa-list-ul me-2"></i>
                     Đơn Sửa Chữa Gần Đây
                 </h5>
-                <a href="/Admin/PhieuSua" class="btn btn-outline-primary btn-sm">
+                <a href="@Url.Action("Index", "PhieuSua")" class="btn btn-outline-primary btn-sm">
                     Xem Tất Cả <i class="fas fa-arrow-right ms-1"></i>
                 </a>
             </div>
@@ -100,12 +101,54 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <tr>
-                                <td colspan="6" class="text-center text-muted py-4">
-                                    <i class="fas fa-inbox fa-3x mb-3 d-block opacity-25"></i>
-                                    Chưa có dữ liệu phiếu sửa chữa
-                                </td>
-                            </tr>
+                            @if (Model.RecentRepairs != null && Model.RecentRepairs.Count > 0)
+                            {
+                                @foreach (var repair in Model.RecentRepairs)
+                                {
+                                    <tr>
+                                        <td><strong>#@repair.MaPhieuSua</strong></td>
+                                        <td>@(repair.KhachHang ?? "N/A")</td>
+                                        <td>@repair.ThietBi</td>
+                                        <td>
+                                            @{
+                                                var statusClass = repair.TrangThai switch
+                                                {
+                                                    TrangThaiPhieuSua.TiepNhan => "badge bg-primary",
+                                                    TrangThaiPhieuSua.DangSua => "badge bg-warning",
+                                                    TrangThaiPhieuSua.HoanThanh => "badge bg-success",
+                                                    TrangThaiPhieuSua.Huy => "badge bg-danger",
+                                                    _ => "badge bg-secondary"
+                                                };
+                                                var statusText = repair.TrangThai switch
+                                                {
+                                                    TrangThaiPhieuSua.TiepNhan => "Tiếp nhận",
+                                                    TrangThaiPhieuSua.DangSua => "Đang sửa",
+                                                    TrangThaiPhieuSua.HoanThanh => "Hoàn thành",
+                                                    TrangThaiPhieuSua.Huy => "Hủy",
+                                                    _ => repair.TrangThai.ToString()
+                                                };
+                                            }
+                                            <span class="@statusClass">@statusText</span>
+                                        </td>
+                                        <td>@repair.NgaySua.ToString("dd/MM/yyyy")</td>
+                                        <td>
+                                            <a href="@Url.Action("Details", "PhieuSua", new { id = repair.MaPhieuSua })" 
+                                               class="btn btn-sm btn-outline-info">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                        </td>
+                                    </tr>
+                                }
+                            }
+                            else
+                            {
+                                <tr>
+                                    <td colspan="6" class="text-center text-muted py-4">
+                                        <i class="fas fa-inbox fa-3x mb-3 d-block opacity-25"></i>
+                                        Chưa có dữ liệu phiếu sửa chữa
+                                    </td>
+                                </tr>
+                            }
                         </tbody>
                     </table>
                 </div>
@@ -124,69 +167,102 @@
             </div>
             <div class="card-body">
                 <div class="d-grid gap-2">
-                    <a href="/Admin/PhieuSua/Create" class="btn btn-primary">
+                    <a href="@Url.Action("Create", "PhieuSua")" class="btn btn-primary">
                         <i class="fas fa-plus me-2"></i>
                         Tạo Phiếu Sửa Chữa
                     </a>
-                    <a href="/Admin/KhachHang/Create" class="btn btn-outline-primary">
+                    <a href="@Url.Action("Create", "KhachHang")" class="btn btn-outline-primary">
                         <i class="fas fa-user-plus me-2"></i>
                         Thêm Khách Hàng
                     </a>
-                    <a href="/Admin/PhieuNhap/Create" class="btn btn-outline-success">
+                    <a href="@Url.Action("Create", "PhieuNhap")" class="btn btn-outline-success">
                         <i class="fas fa-file-import me-2"></i>
                         Tạo Phiếu Nhập
                     </a>
-                    <a href="/Admin/HoaDon/Create" class="btn btn-outline-warning">
-                        <i class="fas fa-file-invoice me-2"></i>
-                        Tạo Hóa Đơn
+                    <a href="@Url.Action("Index", "BaoCao")" class="btn btn-outline-warning">
+                        <i class="fas fa-chart-bar me-2"></i>
+                        Xem Báo Cáo
                     </a>
                 </div>
                 
                 <hr class="my-3">
                 
-                <h6 class="mb-3">Trạng Thái Hệ Thống</h6>
-                <div class="mb-2">
-                    <small class="text-muted">Database</small>
-                    <div class="d-flex justify-content-between">
-                        <span class="badge bg-success">Online</span>
-                        <small class="text-muted">99.9%</small>
-                    </div>
-                </div>
-                <div class="mb-2">
-                    <small class="text-muted">Server</small>
-                    <div class="d-flex justify-content-between">
-                        <span class="badge bg-success">Healthy</span>
-                        <small class="text-muted">Low Load</small>
-                    </div>
-                </div>
+                <h6 class="mb-3">Thống Kê Theo Trạng Thái</h6>
+                @if (Model.ThongKeTrangThai != null)
+                {
+                    @foreach (var item in Model.ThongKeTrangThai)
+                    {
+                        var statusColor = item.TrangThai switch
+                        {
+                            TrangThaiPhieuSua.TiepNhan => "primary",
+                            TrangThaiPhieuSua.DangSua => "warning",
+                            TrangThaiPhieuSua.HoanThanh => "success",
+                            TrangThaiPhieuSua.Huy => "danger",
+                            _ => "secondary"
+                        };
+                        var statusText = item.TrangThai switch
+                        {
+                            TrangThaiPhieuSua.TiepNhan => "Tiếp nhận",
+                            TrangThaiPhieuSua.DangSua => "Đang sửa",
+                            TrangThaiPhieuSua.HoanThanh => "Hoàn thành",
+                            TrangThaiPhieuSua.Huy => "Hủy",
+                            _ => item.TrangThai.ToString()
+                        };
+                        
+                        <div class="mb-2">
+                            <small class="text-muted">@statusText</small>
+                            <div class="d-flex justify-content-between">
+                                <span class="badge bg-@statusColor">@item.SoLuong</span>
+                                <small class="text-muted">@(item.SoLuong > 0 ? Math.Round((double)item.SoLuong / Model.TotalRepairs * 100, 1) : 0)%</small>
+                            </div>
+                        </div>
+                    }
+                }
             </div>
         </div>
         
-        <!-- Recent Activity -->
-        <div class="card mt-3">
-            <div class="card-header">
-                <h5 class="mb-0">
-                    <i class="fas fa-history me-2"></i>
-                    Hoạt Động Gần Đây
-                </h5>
-            </div>
-            <div class="card-body">
-                <div class="text-center text-muted py-3">
-                    <i class="fas fa-bell-slash fa-2x mb-2 opacity-25"></i>
-                    <p class="mb-0">Chưa có hoạt động nào</p>
+        <!-- Top Nhân Viên -->
+                 @if (Model.TopNhanVien != null && Model.TopNhanVien.Count > 0)
+        {
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-trophy me-2"></i>
+                        Top Nhân Viên
+                    </h5>
+                </div>
+                <div class="card-body">
+                    @foreach (var nv in Model.TopNhanVien)
+                    {
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <div>
+                                <strong>@nv.HoTen</strong>
+                                <br>
+                                <small class="text-muted">@nv.SoPhieuSua phiếu</small>
+                            </div>
+                            <div class="text-end">
+                                <strong class="text-success">@nv.TongDoanhThu.ToString("N0") VNĐ</strong>
+                            </div>
+                        </div>
+                        @if (nv != Model.TopNhanVien[Model.TopNhanVien.Count - 1])
+                        {
+                            <hr class="my-2">
+                        }
+                    }
                 </div>
             </div>
-        </div>
+        }
     </div>
 </div>
 
 @section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
         // Dashboard specific JavaScript
         $(document).ready(function() {
             // Auto refresh stats every 5 minutes
             setInterval(function() {
-                // TODO: Implement AJAX refresh for stats
+                location.reload();
             }, 300000);
         });
     </script>

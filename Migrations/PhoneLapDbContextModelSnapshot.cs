@@ -607,10 +607,12 @@ namespace phonev2.Migrations
                         .HasColumnName("ghichu");
 
                     b.Property<int?>("MaKhachHang")
+                        .IsRequired()
                         .HasColumnType("int")
                         .HasColumnName("makhachhang");
 
                     b.Property<int?>("MaNhanVien")
+                        .IsRequired()
                         .HasColumnType("int")
                         .HasColumnName("manhanvien");
 
@@ -799,12 +801,14 @@ namespace phonev2.Migrations
                     b.HasOne("phonev2.Models.KhachHang", null)
                         .WithMany()
                         .HasForeignKey("MaKhachHang")
-                        .OnDelete(DeleteBehavior.Restrict);
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
 
                     b.HasOne("phonev2.Models.NhanVien", null)
                         .WithMany()
                         .HasForeignKey("MaNhanVien")
-                        .OnDelete(DeleteBehavior.Restrict);
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("phonev2.Models.ThietBi", b =>

@@ -12,8 +12,8 @@ using phonev2.Repository;
 namespace phonev2.Migrations
 {
     [DbContext(typeof(PhoneLapDbContext))]
-    [Migration("20250708123914_fixphieusuav1")]
-    partial class fixphieusuav1
+    [Migration("20250715022449_db1")]
+    partial class db1
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -610,18 +610,28 @@ namespace phonev2.Migrations
                         .HasColumnName("ghichu");
 
                     b.Property<int?>("MaKhachHang")
+                        .IsRequired()
                         .HasColumnType("int")
                         .HasColumnName("makhachhang");
 
                     b.Property<int?>("MaNhanVien")
+                        .IsRequired()
                         .HasColumnType("int")
                         .HasColumnName("manhanvien");
+
+                    b.Property<DateTime?>("NgayHenTra")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("ngayhentra");
 
                     b.Property<DateTime>("NgaySua")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
                         .HasColumnName("ngaysua")
                         .HasDefaultValueSql("GETDATE()");
+
+                    b.Property<DateTime?>("NgayTraThucTe")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("ngaytrathucte");
 
                     b.Property<decimal?>("TongTien")
                         .ValueGeneratedOnAdd()
@@ -641,7 +651,11 @@ namespace phonev2.Migrations
 
                     b.HasIndex("MaNhanVien");
 
+                    b.HasIndex("NgayHenTra");
+
                     b.HasIndex("NgaySua");
+
+                    b.HasIndex("NgayTraThucTe");
 
                     b.HasIndex("TrangThai");
 
@@ -790,12 +804,14 @@ namespace phonev2.Migrations
                     b.HasOne("phonev2.Models.KhachHang", null)
                         .WithMany()
                         .HasForeignKey("MaKhachHang")
-                        .OnDelete(DeleteBehavior.Restrict);
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
 
                     b.HasOne("phonev2.Models.NhanVien", null)
                         .WithMany()
                         .HasForeignKey("MaNhanVien")
-                        .OnDelete(DeleteBehavior.Restrict);
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("phonev2.Models.ThietBi", b =>

@@ -12,6 +12,13 @@
                     <h4 class="mb-0">@ViewData["Title"]</h4>
                 </div>
                 <div class="card-body">
+                    @if (!ViewData.ModelState.IsValid)
+                    {
+                        <div class="alert alert-danger">
+                            <h5>Lỗi validation:</h5>
+                            <div asp-validation-summary="All" class="text-danger"></div>
+                        </div>
+                    }
                     <form asp-action="Create" method="post">
                         <div class="row">
                             <div class="col-md-6">

@@ -4,87 +4,38 @@
 }
 
 @section PageActions {
-    <div class="btn-group">
-        <a asp-action="Details" asp-route-id="@Model.MaDichVu" class="btn btn-info">
-            <i class="fas fa-eye me-1"></i> Xem Chi Tiết
-        </a>
-        <a asp-action="Edit" asp-route-id="@Model.MaDichVu" class="btn btn-warning">
-            <i class="fas fa-edit me-1"></i> Chỉnh Sửa
-        </a>
-        <a asp-action="Index" class="btn btn-secondary">
-            <i class="fas fa-arrow-left me-1"></i> Quay Lại
-        </a>
-    </div>
+    <a asp-action="Index" class="btn btn-secondary">
+        <i class="fas fa-arrow-left me-1"></i> Quay Lại
+    </a>
 }
 
 <div class="row justify-content-center">
     <div class="col-lg-8">
-        <!-- Warning Alert -->
-        <div class="alert alert-danger border-danger shadow-sm mb-4" role="alert">
-            <div class="d-flex align-items-center">
-                <i class="fas fa-exclamation-triangle fa-2x me-3"></i>
-                <div>
-                    <h5 class="alert-heading mb-1">Cảnh Báo: Xóa Dịch Vụ</h5>
-                    <p class="mb-0">
-                        Bạn đang chuẩn bị xóa dịch vụ này. Hành động này <strong>không thể hoàn tác</strong> được.
-                        Vui lòng kiểm tra kỹ thông tin trước khi xác nhận.
-                    </p>
-                </div>
-            </div>
-        </div>
-
-        <!-- Service Info Card -->
-        <div class="card shadow mb-4">
+        <div class="card shadow border-danger">
             <div class="card-header bg-danger text-white">
-                <h5 class="mb-0">
-                    <i class="fas fa-trash me-2"></i>
+                <h4 class="mb-0">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
                     Xác Nhận Xóa Dịch Vụ
-                </h5>
+                </h4>
             </div>
             <div class="card-body">
-                <!-- Service Preview -->
-                <div class="card bg-light mb-4">
-                    <div class="card-body">
-                        <div class="row align-items-center">
-                            <div class="col-md-8">
-                                <h4 class="card-title mb-2">
-                                    <i class="fas fa-tools me-2 text-primary"></i>
-                                    @Model.TenDichVu
-                                </h4>
-                                @if (!string.IsNullOrEmpty(Model.MoTa))
-                                {
-                                    <p class="card-text text-muted mb-2">@Model.MoTa</p>
-                                }
-                                <div class="d-flex gap-3">
-                                    <span class="badge @(Model.TrangThai ? "bg-success" : "bg-secondary") fs-6">
-                                        <i class="fas @(Model.TrangThai ? "fa-check-circle" : "fa-pause-circle") me-1"></i>
-                                        @Model.TrangThaiText
-                                    </span>
-                                    @if (Model.ThoiGianSua.HasValue)
-                                    {
-                                        <span class="badge bg-warning fs-6">
-                                            <i class="fas fa-clock me-1"></i>
-                                            @Model.ThoiGianSua phút
-                                        </span>
-                                    }
-                                </div>
-                            </div>
-                            <div class="col-md-4 text-end">
-                                <h3 class="text-success mb-1">@Model.GiaDichVuText</h3>
-                                <small class="text-muted">Mã: #@Model.MaDichVu</small>
-                            </div>
-                        </div>
-                    </div>
+                <div class="alert alert-warning" role="alert">
+                    <h5 class="alert-heading">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        Cảnh Báo!
+                    </h5>
+                    <p class="mb-0">
+                        Bạn đang chuẩn bị xóa dịch vụ <strong>"@Model.TenDichVu"</strong>. 
+                        Hành động này không thể hoàn tác và sẽ xóa vĩnh viễn tất cả dữ liệu liên quan.
+                    </p>
                 </div>
 
-                <!-- Detailed Information -->
-                <div class="row mb-4">
+                <div class="row">
                     <div class="col-md-6">
                         <h6 class="text-muted mb-3">
-                            <i class="fas fa-info-circle me-2"></i>
-                            Thông Tin Chi Tiết
+                            <i class="fas fa-info-circle me-2"></i>Thông Tin Dịch Vụ
                         </h6>
-                        <table class="table table-sm table-borderless">
+                        <table class="table table-borderless">
                             <tr>
                                 <td class="text-muted">Mã dịch vụ:</td>
                                 <td><strong>#@Model.MaDichVu</strong></td>
@@ -98,7 +49,7 @@
                                 <td><strong class="text-success">@Model.GiaDichVuText</strong></td>
                             </tr>
                             <tr>
-                                <td class="text-muted">Thời gian sửa:</td>
+                                <td class="text-muted">Thời gian:</td>
                                 <td>
                                     @if (Model.ThoiGianSua.HasValue)
                                     {
@@ -106,7 +57,7 @@
                                     }
                                     else
                                     {
-                                        <em>Chưa xác định</em>
+                                        <em class="text-muted">Chưa xác định</em>
                                     }
                                 </td>
                             </tr>
@@ -124,200 +75,70 @@
                             </tr>
                         </table>
                     </div>
-                    
                     <div class="col-md-6">
                         <h6 class="text-muted mb-3">
-                            <i class="fas fa-exclamation-circle me-2"></i>
-                            Tác Động Khi Xóa
+                            <i class="fas fa-align-left me-2"></i>Mô Tả
                         </h6>
-                        <div class="list-group list-group-flush">
-                            <div class="list-group-item border-0 px-0">
-                                <i class="fas fa-times text-danger me-2"></i>
-                                Dịch vụ sẽ bị xóa vĩnh viễn khỏi hệ thống
+                        @if (!string.IsNullOrEmpty(Model.MoTa))
+                        {
+                            <div class="bg-light p-3 rounded">
+                                <p class="mb-0">@Model.MoTa</p>
                             </div>
-                            <div class="list-group-item border-0 px-0">
-                                <i class="fas fa-times text-danger me-2"></i>
-                                Không thể khôi phục sau khi xóa
-                            </div>
-                            <div class="list-group-item border-0 px-0">
-                                <i class="fas fa-exclamation-triangle text-warning me-2"></i>
-                                Các phiếu sửa chữa đã sử dụng dịch vụ này có thể bị ảnh hưởng
-                            </div>
-                            <div class="list-group-item border-0 px-0">
-                                <i class="fas fa-chart-line text-info me-2"></i>
-                                Dữ liệu thống kê liên quan sẽ mất
+                        }
+                        else
+                        {
+                            <em class="text-muted">Chưa có mô tả</em>
+                        }
+
+                        <div class="mt-4">
+                            <h6 class="text-muted mb-3">
+                                <i class="fas fa-chart-bar me-2"></i>Thống Kê Sử Dụng
+                            </h6>
+                            <div class="row text-center">
+                                <div class="col-6">
+                                    <div class="border-end">
+                                        <h4 class="text-primary mb-1">0</h4>
+                                        <small class="text-muted">Lần sử dụng</small>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <h4 class="text-success mb-1">0 VNĐ</h4>
+                                    <small class="text-muted">Doanh thu</small>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Usage Check (Placeholder) -->
-                <div class="alert alert-warning border-warning mb-4">
-                    <div class="d-flex align-items-center">
-                        <i class="fas fa-search me-3"></i>
-                        <div>
-                            <h6 class="alert-heading mb-1">Kiểm Tra Sử Dụng</h6>
-                            <p class="mb-0">
-                                Dịch vụ này hiện <strong>chưa được sử dụng</strong> trong bất kỳ phiếu sửa chữa nào.
-                                Có thể xóa an toàn mà không ảnh hưởng đến dữ liệu khác.
-                            </p>
-                        </div>
-                    </div>
+                <hr class="my-4">
+
+                <div class="alert alert-danger" role="alert">
+                    <h6 class="alert-heading">
+                        <i class="fas fa-times-circle me-2"></i>
+                        Hậu Quả Của Việc Xóa
+                    </h6>
+                    <ul class="mb-0">
+                        <li>Dịch vụ sẽ bị xóa vĩnh viễn khỏi hệ thống</li>
+                        <li>Tất cả thông tin liên quan sẽ bị mất</li>
+                        <li>Không thể khôi phục lại dữ liệu đã xóa</li>
+                        <li>Có thể ảnh hưởng đến các phiếu sửa chữa đang sử dụng dịch vụ này</li>
+                    </ul>
                 </div>
 
-                <!-- Confirmation Form -->
                 <form asp-action="Delete" method="post">
                     <input type="hidden" asp-for="MaDichVu" />
-                    
-                    <div class="mb-4">
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" id="confirmDelete" required>
-                            <label class="form-check-label fw-bold" for="confirmDelete">
-                                Tôi hiểu rằng hành động này không thể hoàn tác và đồng ý xóa dịch vụ này
-                            </label>
-                        </div>
-                    </div>
-
-                    <div class="d-grid gap-2 d-md-flex justify-content-md-between">
-                        <div>
-                            <a asp-action="Edit" asp-route-id="@Model.MaDichVu" class="btn btn-warning me-2">
-                                <i class="fas fa-edit me-1"></i>
-                                Sửa Thay Vì Xóa
-                            </a>
-                            <a asp-action="Details" asp-route-id="@Model.MaDichVu" class="btn btn-info">
-                                <i class="fas fa-eye me-1"></i>
-                                Xem Chi Tiết
-                            </a>
-                        </div>
-                        
-                        <div>
-                            <a asp-action="Index" class="btn btn-secondary btn-lg me-2">
-                                <i class="fas fa-times me-1"></i>
-                                Hủy Bỏ
-                            </a>
-                            <button type="submit" class="btn btn-danger btn-lg" id="deleteBtn" disabled>
-                                <i class="fas fa-trash me-1"></i>
-                                Xác Nhận Xóa
-                            </button>
-                        </div>
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a asp-action="Index" class="btn btn-secondary btn-lg me-2">
+                            <i class="fas fa-times me-1"></i>
+                            Hủy Bỏ
+                        </a>
+                        <button type="submit" class="btn btn-danger btn-lg">
+                            <i class="fas fa-trash me-1"></i>
+                            Xác Nhận Xóa
+                        </button>
                     </div>
                 </form>
             </div>
         </div>
-
-        <!-- Alternative Actions -->
-        <div class="card">
-            <div class="card-header">
-                <h6 class="mb-0">
-                    <i class="fas fa-lightbulb me-2"></i>
-                    Thay Vì Xóa, Bạn Có Thể
-                </h6>
-            </div>
-            <div class="card-body">
-                <div class="row">
-                    <div class="col-md-4 text-center mb-3">
-                        <i class="fas fa-pause-circle fa-2x text-warning mb-2"></i>
-                        <h6>Tạm Ngừng</h6>
-                        <p class="text-muted small">Ngừng hoạt động tạm thời mà không mất dữ liệu</p>
-                        <button type="button" class="btn btn-outline-warning btn-sm toggle-status" 
-                                data-id="@Model.MaDichVu" 
-                                data-status="@Model.TrangThai.ToString().ToLower()">
-                            @(Model.TrangThai ? "Tạm Ngừng" : "Kích Hoạt")
-                        </button>
-                    </div>
-                    <div class="col-md-4 text-center mb-3">
-                        <i class="fas fa-edit fa-2x text-info mb-2"></i>
-                        <h6>Chỉnh Sửa</h6>
-                        <p class="text-muted small">Cập nhật thông tin để phù hợp hơn</p>
-                        <a asp-action="Edit" asp-route-id="@Model.MaDichVu" class="btn btn-outline-info btn-sm">
-                            Chỉnh Sửa
-                        </a>
-                    </div>
-                    <div class="col-md-4 text-center mb-3">
-                        <i class="fas fa-copy fa-2x text-success mb-2"></i>
-                        <h6>Sao Chép</h6>
-                        <p class="text-muted small">Tạo dịch vụ mới dựa trên dịch vụ này</p>
-                        <a asp-action="Create" class="btn btn-outline-success btn-sm">
-                            Tạo Mới
-                        </a>
-                    </div>
-                </div>
-            </div>
-        </div>
     </div>
-</div>
-
-@section Scripts {
-    <script>
-        $(document).ready(function() {
-            // Enable/disable delete button based on checkbox
-            $('#confirmDelete').on('change', function() {
-                $('#deleteBtn').prop('disabled', !$(this).is(':checked'));
-            });
-            
-            // Toggle Status AJAX
-            $('.toggle-status').on('click', function() {
-                const btn = $(this);
-                const id = btn.data('id');
-                
-                btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin me-1"></i>Đang xử lý...');
-                
-                $.post('@Url.Action("ToggleStatus")', { id: id })
-                    .done(function(response) {
-                        if (response.success) {
-                            // Reload page to update status
-                            location.reload();
-                        } else {
-                            alert('Có lỗi xảy ra: ' + response.message);
-                            btn.prop('disabled', false);
-                        }
-                    })
-                    .fail(function() {
-                        alert('Không thể kết nối đến server!');
-                        btn.prop('disabled', false);
-                    });
-            });
-            
-            // Warning animation on delete button hover
-            $('#deleteBtn').hover(
-                function() {
-                    if (!$(this).prop('disabled')) {
-                        $(this).addClass('btn-danger-animated');
-                    }
-                },
-                function() {
-                    $(this).removeClass('btn-danger-animated');
-                }
-            );
-            
-            // Double-click confirmation
-            let clickCount = 0;
-            $('#deleteBtn').on('click', function(e) {
-                if (!$(this).prop('disabled')) {
-                    clickCount++;
-                    if (clickCount === 1) {
-                        e.preventDefault();
-                        $(this).html('<i class="fas fa-exclamation-triangle me-1"></i>Nhấp lại để xác nhận');
-                        setTimeout(function() {
-                            clickCount = 0;
-                            $('#deleteBtn').html('<i class="fas fa-trash me-1"></i>Xác Nhận Xóa');
-                        }, 3000);
-                    }
-                    // Second click will submit the form normally
-                }
-            });
-        });
-    </script>
-    
-    <style>
-        .btn-danger-animated {
-            animation: pulse-danger 1s infinite;
-        }
-        
-        @@keyframes pulse-danger {
-            0% { box-shadow: 0 0 0 0 rgba(220, 53, 69, 0.7); }
-            70% { box-shadow: 0 0 0 10px rgba(220, 53, 69, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(220, 53, 69, 0); }
-        }
-    </style>
-}
+</div> 

@@ -288,6 +288,8 @@ namespace phonev2.Controllers
             return View(linhKien);
         }
 
+
+
         // GET: LinhKien/Delete/5
         public async Task<IActionResult> Delete(int? id)
         {

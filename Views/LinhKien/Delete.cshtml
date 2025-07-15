@@ -4,105 +4,38 @@
 }
 
 @section PageActions {
-    <div class="btn-group">
-        <a asp-action="Details" asp-route-id="@Model.MaLinhKien" class="btn btn-info">
-            <i class="fas fa-eye me-1"></i> Xem Chi Tiết
-        </a>
-        <a asp-action="Edit" asp-route-id="@Model.MaLinhKien" class="btn btn-warning">
-            <i class="fas fa-edit me-1"></i> Chỉnh Sửa
-        </a>
-        <a asp-action="Index" class="btn btn-secondary">
-            <i class="fas fa-arrow-left me-1"></i> Quay Lại
-        </a>
-    </div>
+    <a asp-action="Index" class="btn btn-secondary">
+        <i class="fas fa-arrow-left me-1"></i> Quay Lại
+    </a>
 }
 
 <div class="row justify-content-center">
     <div class="col-lg-8">
-        <!-- Warning Alert -->
-        <div class="alert alert-danger border-danger shadow-sm mb-4" role="alert">
-            <div class="d-flex align-items-center">
-                <i class="fas fa-exclamation-triangle fa-2x me-3"></i>
-                <div>
-                    <h5 class="alert-heading mb-1">Cảnh Báo: Xóa Linh Kiện</h5>
-                    <p class="mb-0">
-                        Bạn đang chuẩn bị xóa linh kiện này. Hành động này <strong>không thể hoàn tác</strong> được.
-                        Vui lòng kiểm tra kỹ thông tin trước khi xác nhận.
-                    </p>
-                </div>
-            </div>
-        </div>
-
-        <!-- Component Info Card -->
-        <div class="card shadow mb-4">
+        <div class="card shadow border-danger">
             <div class="card-header bg-danger text-white">
-                <h5 class="mb-0">
-                    <i class="fas fa-trash me-2"></i>
+                <h4 class="mb-0">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
                     Xác Nhận Xóa Linh Kiện
-                </h5>
+                </h4>
             </div>
             <div class="card-body">
-                <!-- Component Preview -->
-                <div class="card bg-light mb-4">
-                    <div class="card-body">
-                        <div class="row align-items-center">
-                            <div class="col-md-6">
-                                <h4 class="card-title mb-2">
-                                    <i class="fas fa-microchip me-2 text-primary"></i>
-                                    @Model.TenLinhKien
-                                </h4>
-                                @if (!string.IsNullOrEmpty(Model.HangSanXuat))
-                                {
-                                    <p class="card-text mb-1">
-                                        <i class="fas fa-industry me-1"></i>
-                                        <strong>Hãng:</strong> @Model.HangSanXuat
-                                    </p>
-                                }
-                                <p class="card-text mb-2">
-                                    <i class="fas fa-tags me-1"></i>
-                                    <strong>Loại:</strong> @Model.LoaiLinhKien?.TenLoaiLinhKien
-                                </p>
-                                <div class="d-flex gap-3">
-                                    <span class="badge @(Model.TrangThai ? "bg-success" : "bg-secondary") fs-6">
-                                        <i class="fas @(Model.TrangThai ? "fa-check-circle" : "fa-pause-circle") me-1"></i>
-                                        @Model.TrangThaiText
-                                    </span>
-                                    <span class="@Model.TonKhoCssClass fs-6">
-                                        <i class="fas fa-boxes me-1"></i>
-                                        @Model.SoLuongTon cái
-                                    </span>
-                                </div>
-                            </div>
-                            <div class="col-md-6 text-end">
-                                <h3 class="text-success mb-1">@Model.GiaBanText</h3>
-                                <p class="text-muted mb-1">Giá nhập: @Model.GiaNhapText</p>
-                                <p class="@(Model.LoiNhuan > 0 ? "text-success" : "text-danger") mb-0">
-                                    <strong>Lợi nhuận: @Model.LoiNhuanText</strong>
-                                </p>
-                                <small class="text-muted">Mã: #@Model.MaLinhKien</small>
-                            </div>
-                        </div>
-                        @if (!string.IsNullOrEmpty(Model.ThongSoKyThuat))
-                        {
-                            <hr>
-                            <div class="row">
-                                <div class="col-12">
-                                    <strong class="text-muted">Thông số kỹ thuật:</strong>
-                                    <p class="mb-0">@Model.ThongSoKyThuat</p>
-                                </div>
-                            </div>
-                        }
-                    </div>
+                <div class="alert alert-warning" role="alert">
+                    <h5 class="alert-heading">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        Cảnh Báo!
+                    </h5>
+                    <p class="mb-0">
+                        Bạn đang chuẩn bị xóa linh kiện <strong>"@Model.TenLinhKien"</strong>. 
+                        Hành động này không thể hoàn tác và sẽ xóa vĩnh viễn tất cả dữ liệu liên quan.
+                    </p>
                 </div>
 
-                <!-- Detailed Information -->
-                <div class="row mb-4">
+                <div class="row">
                     <div class="col-md-6">
                         <h6 class="text-muted mb-3">
-                            <i class="fas fa-info-circle me-2"></i>
-                            Thông Tin Chi Tiết
+                            <i class="fas fa-info-circle me-2"></i>Thông Tin Linh Kiện
                         </h6>
-                        <table class="table table-sm table-borderless">
+                        <table class="table table-borderless">
                             <tr>
                                 <td class="text-muted">Mã linh kiện:</td>
                                 <td><strong>#@Model.MaLinhKien</strong></td>
@@ -112,32 +45,48 @@
                                 <td><strong>@Model.TenLinhKien</strong></td>
                             </tr>
                             <tr>
-                                <td class="text-muted">Loại:</td>
-                                <td><strong>@Model.LoaiLinhKien?.TenLoaiLinhKien</strong></td>
+                                <td class="text-muted">Loại linh kiện:</td>
+                                <td>
+                                    <span class="badge bg-info">
+                                        @Model.LoaiLinhKien?.TenLoaiLinhKien
+                                    </span>
+                                </td>
                             </tr>
                             <tr>
                                 <td class="text-muted">Hãng sản xuất:</td>
-                                <td><strong>@(Model.HangSanXuat ?? "Chưa có")</strong></td>
+                                <td>
+                                    @if (!string.IsNullOrEmpty(Model.HangSanXuat))
+                                    {
+                                        <span class="badge bg-secondary">@Model.HangSanXuat</span>
+                                    }
+                                    else
+                                    {
+                                        <em class="text-muted">Chưa có</em>
+                                    }
+                                </td>
                             </tr>
                             <tr>
                                 <td class="text-muted">Giá nhập:</td>
-                                <td><strong class="text-warning">@Model.GiaNhapText</strong></td>
+                                <td><strong class="text-primary">@Model.GiaNhapText</strong></td>
                             </tr>
                             <tr>
                                 <td class="text-muted">Giá bán:</td>
                                 <td><strong class="text-success">@Model.GiaBanText</strong></td>
                             </tr>
                             <tr>
-                                <td class="text-muted">Lợi nhuận:</td>
-                                <td><strong class="@(Model.LoiNhuan > 0 ? "text-success" : "text-danger")">@Model.LoiNhuanText</strong></td>
-                            </tr>
-                            <tr>
                                 <td class="text-muted">Tồn kho:</td>
-                                <td><strong class="text-primary">@Model.SoLuongTon cái</strong></td>
+                                <td>
+                                    <span class="@Model.TonKhoCssClass">@Model.SoLuongTon</span>
+                                    <small class="text-muted">(@Model.TrangThaiTonKho)</small>
+                                </td>
                             </tr>
                             <tr>
-                                <td class="text-muted">Giá trị tồn kho:</td>
-                                <td><strong class="text-info">@((Model.GiaNhap * Model.SoLuongTon).ToString("N0")) VNĐ</strong></td>
+                                <td class="text-muted">Lợi nhuận:</td>
+                                <td>
+                                    <strong class="@(Model.LoiNhuan > 0 ? "text-success" : Model.LoiNhuan < 0 ? "text-danger" : "text-muted")">
+                                        @Model.LoiNhuanText (@Model.TyLeLoiNhuan%)
+                                    </strong>
+                                </td>
                             </tr>
                             <tr>
                                 <td class="text-muted">Trạng thái:</td>
@@ -148,270 +97,99 @@
                                 </td>
                             </tr>
                             <tr>
-                                <td class="text-muted">Ngày thêm:</td>
+                                <td class="text-muted">Ngày tạo:</td>
                                 <td><strong>@Model.NgayTao.ToString("dd/MM/yyyy HH:mm")</strong></td>
                             </tr>
                         </table>
                     </div>
-                    
                     <div class="col-md-6">
                         <h6 class="text-muted mb-3">
-                            <i class="fas fa-exclamation-circle me-2"></i>
-                            Tác Động Khi Xóa
+                            <i class="fas fa-cogs me-2"></i>Thông Số Kỹ Thuật
                         </h6>
-                        <div class="list-group list-group-flush">
-                            <div class="list-group-item border-0 px-0">
-                                <i class="fas fa-times text-danger me-2"></i>
-                                Linh kiện sẽ bị xóa vĩnh viễn khỏi hệ thống
-                            </div>
-                            <div class="list-group-item border-0 px-0">
-                                <i class="fas fa-times text-danger me-2"></i>
-                                Không thể khôi phục sau khi xóa
-                            </div>
-                            <div class="list-group-item border-0 px-0">
-                                <i class="fas fa-exclamation-triangle text-warning me-2"></i>
-                                Các giao dịch đã sử dụng linh kiện này có thể bị ảnh hưởng
-                            </div>
-                            <div class="list-group-item border-0 px-0">
-                                <i class="fas fa-dollar-sign text-info me-2"></i>
-                                Mất giá trị tồn kho: @((Model.GiaNhap * Model.SoLuongTon).ToString("N0")) VNĐ
-                            </div>
-                            <div class="list-group-item border-0 px-0">
-                                <i class="fas fa-chart-line text-info me-2"></i>
-                                Dữ liệu thống kê liên quan sẽ mất
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Financial Impact Warning -->
-                @if (Model.SoLuongTon > 0)
-                {
-                    <div class="alert alert-warning border-warning mb-4">
-                        <div class="d-flex align-items-center">
-                            <i class="fas fa-exclamation-triangle me-3"></i>
-                            <div>
-                                <h6 class="alert-heading mb-1">Cảnh Báo Tài Chính</h6>
-                                <p class="mb-0">
-                                    Xóa linh kiện này sẽ mất <strong>@Model.SoLuongTon cái</strong> với 
-                                    giá trị <strong>@((Model.GiaNhap * Model.SoLuongTon).ToString("N0")) VNĐ</strong> 
-                                    (giá nhập). Đề xuất xuất kho trước khi xóa.
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-                }
-
-                <!-- Usage Check (Placeholder) -->
-                <div class="alert alert-info border-info mb-4">
-                    <div class="d-flex align-items-center">
-                        <i class="fas fa-search me-3"></i>
-                        <div>
-                            <h6 class="alert-heading mb-1">Kiểm Tra Sử Dụng</h6>
-                            <p class="mb-0">
-                                Linh kiện này hiện <strong>chưa được sử dụng</strong> trong bất kỳ giao dịch nào.
-                                Có thể xóa an toàn mà không ảnh hưởng đến dữ liệu khác.
-                            </p>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Confirmation Form -->
-                <form asp-action="Delete" method="post">
-                    <input type="hidden" asp-for="MaLinhKien" />
-                    
-                    <div class="mb-4">
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" id="confirmDelete" required>
-                            <label class="form-check-label fw-bold" for="confirmDelete">
-                                Tôi hiểu rằng hành động này không thể hoàn tác và đồng ý xóa linh kiện này
-                            </label>
-                        </div>
-                        @if (Model.SoLuongTon > 0)
+                        @if (!string.IsNullOrEmpty(Model.ThongSoKyThuat))
                         {
-                            <div class="form-check mt-2">
-                                <input class="form-check-input" type="checkbox" id="confirmFinancialLoss" required>
-                                <label class="form-check-label fw-bold text-warning" for="confirmFinancialLoss">
-                                    Tôi chấp nhận mất @((Model.GiaNhap * Model.SoLuongTon).ToString("N0")) VNĐ giá trị tồn kho
-                                </label>
+                            <div class="bg-light p-3 rounded">
+                                <p class="mb-0">@Model.ThongSoKyThuat</p>
+                            </div>
+                        }
+                        else
+                        {
+                            <em class="text-muted">Chưa có thông số kỹ thuật</em>
+                        }
+
+                        <div class="mt-4">
+                            <h6 class="text-muted mb-3">
+                                <i class="fas fa-chart-line me-2"></i>Phân Tích Lợi Nhuận
+                            </h6>
+                            <div class="row text-center">
+                                <div class="col-6">
+                                    <div class="border-end">
+                                        <h5 class="text-primary mb-1">@Model.GiaNhapText</h5>
+                                        <small class="text-muted">Giá nhập</small>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <h5 class="text-success mb-1">@Model.GiaBanText</h5>
+                                    <small class="text-muted">Giá bán</small>
+                                </div>
+                            </div>
+                            <hr class="my-2">
+                            <div class="row text-center">
+                                <div class="col-6">
+                                    <div class="border-end">
+                                        <h5 class="@(Model.LoiNhuan > 0 ? "text-success" : "text-danger") mb-1">@Model.LoiNhuanText</h5>
+                                        <small class="text-muted">Lợi nhuận/cái</small>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <h5 class="text-warning mb-1">@((Model.LoiNhuan * Model.SoLuongTon).ToString("N0")) VNĐ</h5>
+                                    <small class="text-muted">Lợi nhuận tổng</small>
+                                </div>
+                            </div>
+                        </div>
+
+                        @if (Model.LoaiLinhKien?.ThoiGianBaoHanh.HasValue == true && Model.LoaiLinhKien.ThoiGianBaoHanh > 0)
+                        {
+                            <div class="mt-3">
+                                <span class="badge bg-success fs-6 px-3 py-2">
+                                    <i class="fas fa-shield-alt me-1"></i>
+                                    Bảo hành: @Model.LoaiLinhKien.ThoiGianBaoHanh tháng
+                                </span>
                             </div>
                         }
                     </div>
+                </div>
 
-                    <div class="d-grid gap-2 d-md-flex justify-content-md-between">
-                        <div>
-                            <a asp-action="Edit" asp-route-id="@Model.MaLinhKien" class="btn btn-warning me-2">
-                                <i class="fas fa-edit me-1"></i>
-                                Sửa Thay Vì Xóa
-                            </a>
-                            <a asp-action="Details" asp-route-id="@Model.MaLinhKien" class="btn btn-info">
-                                <i class="fas fa-eye me-1"></i>
-                                Xem Chi Tiết
-                            </a>
-                        </div>
-                        
-                        <div>
-                            <a asp-action="Index" class="btn btn-secondary btn-lg me-2">
-                                <i class="fas fa-times me-1"></i>
-                                Hủy Bỏ
-                            </a>
-                            <button type="submit" class="btn btn-danger btn-lg" id="deleteBtn" disabled>
-                                <i class="fas fa-trash me-1"></i>
-                                Xác Nhận Xóa
-                            </button>
-                        </div>
+                <hr class="my-4">
+
+                <div class="alert alert-danger" role="alert">
+                    <h6 class="alert-heading">
+                        <i class="fas fa-times-circle me-2"></i>
+                        Hậu Quả Của Việc Xóa
+                    </h6>
+                    <ul class="mb-0">
+                        <li>Linh kiện sẽ bị xóa vĩnh viễn khỏi hệ thống</li>
+                        <li>Tất cả thông tin liên quan sẽ bị mất</li>
+                        <li>Không thể khôi phục lại dữ liệu đã xóa</li>
+                        <li>Có thể ảnh hưởng đến các phiếu sửa chữa đang sử dụng linh kiện này</li>
+                        <li>Giá trị tồn kho hiện tại: <strong>@((Model.GiaNhap * Model.SoLuongTon).ToString("N0")) VNĐ</strong></li>
+                    </ul>
+                </div>
+
+                <form asp-action="Delete" method="post">
+                    <input type="hidden" asp-for="MaLinhKien" />
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a asp-action="Index" class="btn btn-secondary btn-lg me-2">
+                            <i class="fas fa-times me-1"></i>
+                            Hủy Bỏ
+                        </a>
+                        <button type="submit" class="btn btn-danger btn-lg">
+                            <i class="fas fa-trash me-1"></i>
+                            Xác Nhận Xóa
+                        </button>
                     </div>
                 </form>
             </div>
         </div>
-
-        <!-- Alternative Actions -->
-        <div class="card">
-            <div class="card-header">
-                <h6 class="mb-0">
-                    <i class="fas fa-lightbulb me-2"></i>
-                    Thay Vì Xóa, Bạn Có Thể
-                </h6>
-            </div>
-            <div class="card-body">
-                <div class="row">
-                    <div class="col-md-4 text-center mb-3">
-                        <i class="fas fa-pause-circle fa-2x text-warning mb-2"></i>
-                        <h6>Ngừng Bán</h6>
-                        <p class="text-muted small">Tạm ngừng bán mà không mất dữ liệu và tồn kho</p>
-                        <button type="button" class="btn btn-outline-warning btn-sm toggle-status" 
-                                data-id="@Model.MaLinhKien" 
-                                data-status="@Model.TrangThai.ToString().ToLower()">
-                            @(Model.TrangThai ? "Ngừng Bán" : "Bắt Đầu Bán")
-                        </button>
-                    </div>
-                    <div class="col-md-4 text-center mb-3">
-                        <i class="fas fa-edit fa-2x text-info mb-2"></i>
-                        <h6>Chỉnh Sửa</h6>
-                        <p class="text-muted small">Cập nhật thông tin để phù hợp hơn</p>
-                        <a asp-action="Edit" asp-route-id="@Model.MaLinhKien" class="btn btn-outline-info btn-sm">
-                            Chỉnh Sửa
-                        </a>
-                    </div>
-                    <div class="col-md-4 text-center mb-3">
-                        <i class="fas fa-shipping-fast fa-2x text-success mb-2"></i>
-                        <h6>Xuất Kho</h6>
-                        <p class="text-muted small">Xuất hết tồn kho trước khi xóa</p>
-                        @if (Model.SoLuongTon > 0)
-                        {
-                            <button type="button" class="btn btn-outline-success btn-sm" onclick="exportStock()">
-                                Xuất @Model.SoLuongTon Cái
-                            </button>
-                        }
-                        else
-                        {
-                            <button type="button" class="btn btn-outline-secondary btn-sm" disabled>
-                                Đã Hết Hàng
-                            </button>
-                        }
-                    </div>
-                </div>
-            </div>
-        </div>
     </div>
-</div>
-
-@section Scripts {
-    <script>
-        $(document).ready(function() {
-            // Enable/disable delete button based on checkboxes
-            function checkDeleteButton() {
-                const confirmDelete = $('#confirmDelete').is(':checked');
-                const confirmFinancial = $('#confirmFinancialLoss').length === 0 || $('#confirmFinancialLoss').is(':checked');
-                $('#deleteBtn').prop('disabled', !(confirmDelete && confirmFinancial));
-            }
-            
-            $('#confirmDelete, #confirmFinancialLoss').on('change', checkDeleteButton);
-            
-            // Toggle Status AJAX
-            $('.toggle-status').on('click', function() {
-                const btn = $(this);
-                const id = btn.data('id');
-                
-                btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin me-1"></i>Đang xử lý...');
-                
-                $.post('@Url.Action("ToggleStatus")', { id: id })
-                    .done(function(response) {
-                        if (response.success) {
-                            location.reload();
-                        } else {
-                            alert('Có lỗi xảy ra: ' + response.message);
-                            btn.prop('disabled', false);
-                        }
-                    })
-                    .fail(function() {
-                        alert('Không thể kết nối đến server!');
-                        btn.prop('disabled', false);
-                    });
-            });
-            
-            // Warning animation on delete button hover
-            $('#deleteBtn').hover(
-                function() {
-                    if (!$(this).prop('disabled')) {
-                        $(this).addClass('btn-danger-animated');
-                    }
-                },
-                function() {
-                    $(this).removeClass('btn-danger-animated');
-                }
-            );
-            
-            // Double-click confirmation
-            let clickCount = 0;
-            $('#deleteBtn').on('click', function(e) {
-                if (!$(this).prop('disabled')) {
-                    clickCount++;
-                    if (clickCount === 1) {
-                        e.preventDefault();
-                        $(this).html('<i class="fas fa-exclamation-triangle me-1"></i>Nhấp lại để xác nhận');
-                        setTimeout(function() {
-                            clickCount = 0;
-                            $('#deleteBtn').html('<i class="fas fa-trash me-1"></i>Xác Nhận Xóa');
-                        }, 3000);
-                    }
-                    // Second click will submit the form normally
-                }
-            });
-        });
-        
-        // Export Stock function
-        function exportStock() {
-            if (confirm('Bạn có chắc chắn muốn xuất hết @Model.SoLuongTon cái trong kho?')) {
-                $.post('@Url.Action("UpdateStock")', { 
-                    id: @Model.MaLinhKien, 
-                    quantity: @Model.SoLuongTon, 
-                    action: 'subtract' 
-                })
-                .done(function(response) {
-                    if (response.success) {
-                        alert('Đã xuất hết tồn kho. Bây giờ có thể xóa an toàn.');
-                        location.reload();
-                    } else {
-                        alert('Có lỗi xảy ra: ' + response.message);
-                    }
-                })
-                .fail(function() {
-                    alert('Không thể kết nối đến server!');
-                });
-            }
-        }
-    </script>
-    
-    <style>
-        .btn-danger-animated {
-            animation: pulse-danger 1s infinite;
-        }
-        
-        @@keyframes pulse-danger {
-            0% { box-shadow: 0 0 0 0 rgba(220, 53, 69, 0.7); }
-            70% { box-shadow: 0 0 0 10px rgba(220, 53, 69, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(220, 53, 69, 0); }
-        }
-    </style>
-}
+</div> 

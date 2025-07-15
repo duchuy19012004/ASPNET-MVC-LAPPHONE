@@ -130,7 +130,7 @@
                                     }
                                 }
                                 
-                                decimal tongTien = tongTienDichVu + tongTienLinhKien;
+                                decimal tongTien = item.TongTien ?? (tongTienDichVu + tongTienLinhKien);
                             }
                             <div class="text-center">
                                 <div class="fw-bold text-danger fs-6 mb-2">@tongTien.ToString("N0") VNĐ</div>

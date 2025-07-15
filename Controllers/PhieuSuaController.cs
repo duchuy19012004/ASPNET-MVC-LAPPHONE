@@ -37,6 +37,40 @@ namespace phonev2.Controllers
             var huy = await allPhieuSua.CountAsync(p => p.TrangThai == TrangThaiPhieuSua.Huy);
             var moiTrong30Ngay = await allPhieuSua.CountAsync(p => p.NgaySua >= DateTime.Now.AddDays(-30));
 
+            // Tính tổng tiền từ phiếu sửa (chỉ tính khi hoàn thành)
+            var tongTienPhieuSua = await allPhieuSua
+                .Where(p => p.TrangThai == TrangThaiPhieuSua.HoanThanh)
+                .SumAsync(p => p.TongTien ?? 0);
+
+            // Thống kê theo tháng trong 12 tháng gần nhất
+            var thongKeTheoThang = new List<object>();
+            var thongKeTienTheoThang = new List<object>();
+            
+            for (int i = 11; i >= 0; i--)
+            {
+                var thang = DateTime.Now.AddMonths(-i);
+                var startOfMonth = new DateTime(thang.Year, thang.Month, 1);
+                var endOfMonth = startOfMonth.AddMonths(1).AddDays(-1);
+                
+                var soPhieuTrongThang = await allPhieuSua.CountAsync(p => 
+                    p.NgaySua >= startOfMonth && p.NgaySua <= endOfMonth);
+                
+                var tongTienTrongThang = await allPhieuSua
+                    .Where(p => p.TrangThai == TrangThaiPhieuSua.HoanThanh && 
+                               p.NgaySua >= startOfMonth && p.NgaySua <= endOfMonth)
+                    .SumAsync(p => p.TongTien ?? 0);
+                
+                thongKeTheoThang.Add(new { 
+                    thang = thang.ToString("MM/yyyy"), 
+                    soPhieu = soPhieuTrongThang 
+                });
+                
+                thongKeTienTheoThang.Add(new { 
+                    thang = thang.ToString("MM/yyyy"), 
+                    tongTien = tongTienTrongThang 
+                });
+            }
+
             // Set thống kê vào ViewBag
             ViewBag.TotalPhieuSua = totalPhieuSua;
             ViewBag.TiepNhan = tiepNhan;
@@ -44,6 +78,9 @@ namespace phonev2.Controllers
             ViewBag.HoanThanh = hoanThanh;
             ViewBag.Huy = huy;
             ViewBag.MoiTrong30Ngay = moiTrong30Ngay;
+            ViewBag.TongTienPhieuSua = tongTienPhieuSua;
+            ViewBag.ThongKeTheoThang = thongKeTheoThang;
+            ViewBag.ThongKeTienTheoThang = thongKeTienTheoThang;
 
             if (!string.IsNullOrWhiteSpace(search))
             {
@@ -119,6 +156,40 @@ namespace phonev2.Controllers
             var huy = await allPhieuSua.CountAsync(p => p.TrangThai == TrangThaiPhieuSua.Huy);
             var moiTrong30Ngay = await allPhieuSua.CountAsync(p => p.NgaySua >= DateTime.Now.AddDays(-30));
 
+            // Tính tổng tiền từ phiếu sửa (chỉ tính khi hoàn thành)
+            var tongTienPhieuSua = await allPhieuSua
+                .Where(p => p.TrangThai == TrangThaiPhieuSua.HoanThanh)
+                .SumAsync(p => p.TongTien ?? 0);
+
+            // Thống kê theo tháng trong 12 tháng gần nhất
+            var thongKeTheoThang = new List<object>();
+            var thongKeTienTheoThang = new List<object>();
+            
+            for (int i = 11; i >= 0; i--)
+            {
+                var thang = DateTime.Now.AddMonths(-i);
+                var startOfMonth = new DateTime(thang.Year, thang.Month, 1);
+                var endOfMonth = startOfMonth.AddMonths(1).AddDays(-1);
+                
+                var soPhieuTrongThang = await allPhieuSua.CountAsync(p => 
+                    p.NgaySua >= startOfMonth && p.NgaySua <= endOfMonth);
+                
+                var tongTienTrongThang = await allPhieuSua
+                    .Where(p => p.TrangThai == TrangThaiPhieuSua.HoanThanh && 
+                               p.NgaySua >= startOfMonth && p.NgaySua <= endOfMonth)
+                    .SumAsync(p => p.TongTien ?? 0);
+                
+                thongKeTheoThang.Add(new { 
+                    thang = thang.ToString("MM/yyyy"), 
+                    soPhieu = soPhieuTrongThang 
+                });
+                
+                thongKeTienTheoThang.Add(new { 
+                    thang = thang.ToString("MM/yyyy"), 
+                    tongTien = tongTienTrongThang 
+                });
+            }
+
             // Set thống kê vào ViewBag
             ViewBag.TotalPhieuSua = totalPhieuSua;
             ViewBag.TiepNhan = tiepNhan;
@@ -126,6 +197,9 @@ namespace phonev2.Controllers
             ViewBag.HoanThanh = hoanThanh;
             ViewBag.Huy = huy;
             ViewBag.MoiTrong30Ngay = moiTrong30Ngay;
+            ViewBag.TongTienPhieuSua = tongTienPhieuSua;
+            ViewBag.ThongKeTheoThang = thongKeTheoThang;
+            ViewBag.ThongKeTienTheoThang = thongKeTienTheoThang;
 
             // Lấy dữ liệu trước, sau đó sắp xếp trong memory
             int count = await query.CountAsync();
@@ -188,6 +262,12 @@ namespace phonev2.Controllers
         // GET: PhieuSua/Create
         public IActionResult Create()
         {
+            // Kiểm tra xem có khách hàng và nhân viên không
+            var khachHangCount = _context.KhachHang.Where(kh => kh.TrangThai).Count();
+            var nhanVienCount = _context.NhanVien.Where(nv => nv.TrangThai).Count();
+            
+            System.Diagnostics.Debug.WriteLine($"Khách hàng: {khachHangCount}, Nhân viên: {nhanVienCount}");
+            
             var vm = new PhieuSuaCreateViewModel
             {
                 PhieuSua = new PhieuSua
@@ -195,6 +275,8 @@ namespace phonev2.Controllers
                     NgaySua = DateTime.Now,
                     TrangThai = TrangThaiPhieuSua.TiepNhan
                 },
+                DichVus = new List<DichVuChonVM>(),
+                LinhKiens = new List<LinhKienChonVM>(),
                 KhachHangList = _context.KhachHang.Where(kh => kh.TrangThai)
                     .Select(kh => new SelectListItem { Value = kh.MaKhachHang.ToString(), Text = kh.HoTen }).ToList(),
                 NhanVienList = _context.NhanVien.Where(nv => nv.TrangThai)
@@ -212,49 +294,100 @@ namespace phonev2.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(PhieuSuaCreateViewModel vm)
         {
-            if (ModelState.IsValid)
+            try
             {
-                _context.PhieuSua.Add(vm.PhieuSua);
-                await _context.SaveChangesAsync();
-
-                // Thêm dịch vụ
-                if (vm.DichVus != null)
+                if (ModelState.IsValid)
                 {
-                    foreach (var dv in vm.DichVus)
+                    // Đảm bảo ngày sửa được set
+                    if (vm.PhieuSua.NgaySua == default)
                     {
-                        
-                        if (dv.MaDichVu > 0)
+                        vm.PhieuSua.NgaySua = DateTime.Now;
+                    }
+
+                    // Đảm bảo trạng thái được set
+                    vm.PhieuSua.TrangThai = TrangThaiPhieuSua.TiepNhan;
+
+                    _context.PhieuSua.Add(vm.PhieuSua);
+                    await _context.SaveChangesAsync();
+
+                    // Lấy MaPhieuSua sau khi đã lưu
+                    var maPhieuSua = vm.PhieuSua.MaPhieuSua;
+
+                    // Thêm dịch vụ
+                    if (vm.DichVus != null)
+                    {
+                        foreach (var dv in vm.DichVus)
                         {
-                            _context.ChiTietPhieuSua.Add(new ChiTietPhieuSua
+                            if (dv.MaDichVu > 0)
                             {
-                                MaPhieuSua = vm.PhieuSua.MaPhieuSua,
-                                MaDichVu = dv.MaDichVu,
-                                SoLuong = 1 // Mặc định 1, vì không có trường SoLuong
-                            });
+                                _context.ChiTietPhieuSua.Add(new ChiTietPhieuSua
+                                {
+                                    MaPhieuSua = maPhieuSua,
+                                    MaDichVu = dv.MaDichVu,
+                                    SoLuong = 1 // Mặc định 1, vì không có trường SoLuong
+                                });
+                            }
                         }
                     }
-                }
 
-                // Thêm linh kiện
-                if (vm.LinhKiens != null)
-                {
-                    foreach (var lk in vm.LinhKiens)
+                    // Thêm linh kiện
+                    if (vm.LinhKiens != null)
                     {
-                        if (lk.MaLinhKien > 0 && lk.SoLuong > 0)
+                        foreach (var lk in vm.LinhKiens)
                         {
-                            _context.ChiTietLinhKien.Add(new ChiTietLinhKien
+                            if (lk.MaLinhKien > 0 && lk.SoLuong > 0)
                             {
-                                MaPhieuSua = vm.PhieuSua.MaPhieuSua,
-                                MaLinhKien = lk.MaLinhKien,
-                                SoLuong = lk.SoLuong
-                            });
+                                _context.ChiTietLinhKien.Add(new ChiTietLinhKien
+                                {
+                                    MaPhieuSua = maPhieuSua,
+                                    MaLinhKien = lk.MaLinhKien,
+                                    SoLuong = lk.SoLuong
+                                });
+                            }
                         }
                     }
-                }
 
-                await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
+                    await _context.SaveChangesAsync();
+
+                    // Tính toán và cập nhật tổng tiền
+                    var phieuSua = await _context.PhieuSua
+                        .Include(p => p.ChiTietPhieuSuas).ThenInclude(ct => ct.DichVu)
+                        .Include(p => p.ChiTietLinhKiens).ThenInclude(ct => ct.LinhKien)
+                        .FirstOrDefaultAsync(p => p.MaPhieuSua == maPhieuSua);
+
+                    if (phieuSua != null)
+                    {
+                        decimal tongTienDichVu = phieuSua.ChiTietPhieuSuas?.Sum(ct => ct.DichVu?.GiaDichVu ?? 0) ?? 0;
+                        decimal tongTienLinhKien = phieuSua.ChiTietLinhKiens?.Sum(lk => (lk.LinhKien?.GiaBan ?? 0) * lk.SoLuong) ?? 0;
+                        phieuSua.TongTien = tongTienDichVu + tongTienLinhKien;
+                        await _context.SaveChangesAsync();
+                    }
+                    
+                    // Log để debug
+                    System.Diagnostics.Debug.WriteLine($"Đã tạo phiếu sửa thành công: {maPhieuSua}");
+                    
+                    return RedirectToAction(nameof(Index));
+                }
+                else
+                {
+                    // Log lỗi validation
+                    var errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage);
+                    System.Diagnostics.Debug.WriteLine($"Validation errors: {string.Join(", ", errors)}");
+                }
             }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Lỗi khi tạo phiếu sửa: {ex.Message}");
+                ModelState.AddModelError("", $"Có lỗi xảy ra: {ex.Message}");
+            }
+
+            // Debug: Log ModelState errors
+            if (!ModelState.IsValid)
+            {
+                var errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage);
+                System.Diagnostics.Debug.WriteLine($"ModelState errors: {string.Join(", ", errors)}");
+            }
+
             // Nạp lại dropdown nếu lỗi
             vm.KhachHangList = _context.KhachHang.Where(kh => kh.TrangThai)
                 .Select(kh => new SelectListItem { Value = kh.MaKhachHang.ToString(), Text = kh.HoTen }).ToList();
@@ -264,6 +397,11 @@ namespace phonev2.Controllers
                 .Select(dv => new SelectListItem { Value = dv.MaDichVu.ToString(), Text = dv.TenDichVu }).ToList();
             vm.LinhKienList = _context.LinhKien.Where(lk => lk.TrangThai)
                 .Select(lk => new SelectListItem { Value = lk.MaLinhKien.ToString(), Text = lk.TenLinhKien }).ToList();
+            
+            // Đảm bảo lists không null
+            if (vm.DichVus == null) vm.DichVus = new List<DichVuChonVM>();
+            if (vm.LinhKiens == null) vm.LinhKiens = new List<LinhKienChonVM>();
+            
             return View(vm);
         }
 
@@ -295,11 +433,22 @@ namespace phonev2.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, PhieuSua phieuSua)
         {
-            if (id != phieuSua.MaPhieuSua) return NotFound();
+            if (id != phieuSua.MaPhieuSua) 
+            {
+                if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+                {
+                    return Json(new { success = false, message = "ID không hợp lệ!" });
+                }
+                return NotFound();
+            }
+            
             if (ModelState.IsValid)
             {
                 try
                 {
+                    // Clear any existing tracked entities to avoid conflicts
+                    _context.ChangeTracker.Clear();
+                    
                     // Lấy phiếu sửa hiện tại từ DB để so sánh trạng thái
                     var currentPhieuSua = await _context.PhieuSua.AsNoTracking().FirstOrDefaultAsync(p => p.MaPhieuSua == id);
                     if (currentPhieuSua == null)
@@ -327,7 +476,23 @@ namespace phonev2.Controllers
                         phieuSua.NgayTraThucTe = currentPhieuSua.NgayTraThucTe;
                     }
 
-                    _context.Update(phieuSua);
+                    // Tính toán và cập nhật tổng tiền
+                    var phieuSuaWithDetails = await _context.PhieuSua
+                        .Include(p => p.ChiTietPhieuSuas).ThenInclude(ct => ct.DichVu)
+                        .Include(p => p.ChiTietLinhKiens).ThenInclude(ct => ct.LinhKien)
+                        .AsNoTracking()
+                        .FirstOrDefaultAsync(p => p.MaPhieuSua == id);
+
+                    if (phieuSuaWithDetails != null)
+                    {
+                        decimal tongTienDichVu = phieuSuaWithDetails.ChiTietPhieuSuas?.Sum(ct => ct.DichVu?.GiaDichVu ?? 0) ?? 0;
+                        decimal tongTienLinhKien = phieuSuaWithDetails.ChiTietLinhKiens?.Sum(lk => (lk.LinhKien?.GiaBan ?? 0) * lk.SoLuong) ?? 0;
+                        phieuSua.TongTien = tongTienDichVu + tongTienLinhKien;
+                    }
+
+                    // Attach the entity and mark it as modified
+                    _context.Attach(phieuSua);
+                    _context.Entry(phieuSua).State = EntityState.Modified;
                     await _context.SaveChangesAsync();
                     
                     if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
@@ -355,13 +520,30 @@ namespace phonev2.Controllers
                         throw;
                     }
                 }
+                catch (Exception ex)
+                {
+                    if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+                    {
+                        return Json(new { success = false, message = "Có lỗi xảy ra: " + ex.Message });
+                    }
+                    throw;
+                }
             }
+            
+            // Validation errors
+            var errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage);
+            var errorMessage = "Dữ liệu không hợp lệ: " + string.Join(", ", errors);
             
             if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
             {
-                var errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage);
-                return Json(new { success = false, message = "Dữ liệu không hợp lệ: " + string.Join(", ", errors) });
+                return Json(new { success = false, message = errorMessage });
             }
+            
+            // For non-AJAX requests, reload ViewBag and return view
+            ViewBag.KhachHangList = _context.KhachHang.Where(kh => kh.TrangThai)
+                .Select(kh => new SelectListItem { Value = kh.MaKhachHang.ToString(), Text = kh.HoTen }).ToList();
+            ViewBag.NhanVienList = _context.NhanVien.Where(nv => nv.TrangThai)
+                .Select(nv => new SelectListItem { Value = nv.MaNhanVien.ToString(), Text = nv.HoTen }).ToList();
             return View(phieuSua);
         }
 
@@ -436,6 +618,45 @@ namespace phonev2.Controllers
             _context.ChiTietLinhKien.Add(chitiet);
             await _context.SaveChangesAsync();
             return RedirectToAction("Details", new { id });
+        }
+
+        // POST: PhieuSua/UpdateAllTongTien
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> UpdateAllTongTien()
+        {
+            try
+            {
+                var allPhieuSua = await _context.PhieuSua
+                    .Include(p => p.ChiTietPhieuSuas).ThenInclude(ct => ct.DichVu)
+                    .Include(p => p.ChiTietLinhKiens).ThenInclude(ct => ct.LinhKien)
+                    .ToListAsync();
+
+                int updatedCount = 0;
+                foreach (var phieuSua in allPhieuSua)
+                {
+                    decimal tongTienDichVu = phieuSua.ChiTietPhieuSuas?.Sum(ct => ct.DichVu?.GiaDichVu ?? 0) ?? 0;
+                    decimal tongTienLinhKien = phieuSua.ChiTietLinhKiens?.Sum(lk => (lk.LinhKien?.GiaBan ?? 0) * lk.SoLuong) ?? 0;
+                    decimal newTongTien = tongTienDichVu + tongTienLinhKien;
+                    
+                    if (phieuSua.TongTien != newTongTien)
+                    {
+                        phieuSua.TongTien = newTongTien;
+                        updatedCount++;
+                    }
+                }
+
+                if (updatedCount > 0)
+                {
+                    await _context.SaveChangesAsync();
+                }
+
+                return Json(new { success = true, message = $"Đã cập nhật tổng tiền cho {updatedCount} phiếu sửa." });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = $"Lỗi: {ex.Message}" });
+            }
         }
     }
 }
