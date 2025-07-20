@@ -162,6 +162,37 @@ namespace phonev2.Services.PhieuSuaThongKe
                 .ToListAsync();
             return result;
         }
+
+        public async Task<IEnumerable<TopDichVuDto>> GetTopDichVuAsync(int top, string type, int? year, int? month, int? week)
+        {
+            var query = _context.ChiTietPhieuSua
+                .Include(ct => ct.DichVu)
+                .Include(ct => ct.PhieuSua)
+                .AsQueryable();
+            var now = DateTime.Now;
+            year ??= now.Year;
+            query = query.Where(ct => ct.PhieuSua.NgaySua.Year == year);
+            if (type == "month" && month.HasValue)
+                query = query.Where(ct => ct.PhieuSua.NgaySua.Month == month.Value);
+            if (type == "week" && week.HasValue)
+            {
+                var calendar = CultureInfo.CurrentCulture.Calendar;
+                var weekRule = CultureInfo.CurrentCulture.DateTimeFormat.CalendarWeekRule;
+                var firstDayOfWeek = CultureInfo.CurrentCulture.DateTimeFormat.FirstDayOfWeek;
+                query = query.Where(ct => calendar.GetWeekOfYear(ct.PhieuSua.NgaySua, weekRule, firstDayOfWeek) == week.Value);
+            }
+            var result = await query
+                .GroupBy(ct => ct.DichVu.TenDichVu)
+                .Select(g => new TopDichVuDto
+                {
+                    TenDichVu = g.Key,
+                    SoLan = g.Sum(x => x.SoLuong)
+                })
+                .OrderByDescending(x => x.SoLan)
+                .Take(top)
+                .ToListAsync();
+            return result;
+        }
     }
 
     public static class DateTimeExtensions

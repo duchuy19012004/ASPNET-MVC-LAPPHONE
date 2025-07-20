@@ -22,6 +22,7 @@ namespace phonev2.Services.LinhKien
         {
             return await _context.LinhKien
                 .Include(l => l.LoaiLinhKien)
+                .Where(l => !l.DaXoa) // Chỉ lấy linh kiện chưa bị xóa
                 .OrderBy(l => l.TenLinhKien)
                 .ToListAsync();
         }
@@ -33,11 +34,20 @@ namespace phonev2.Services.LinhKien
                 .FirstOrDefaultAsync(l => l.MaLinhKien == id);
         }
 
+        // Thêm phương thức để lấy cả linh kiện đã xóa
+        public async Task<phonev2.Models.LinhKien?> GetByIdIncludeDeletedAsync(int id)
+        {
+            return await _context.LinhKien
+                .Include(l => l.LoaiLinhKien)
+                .FirstOrDefaultAsync(l => l.MaLinhKien == id);
+        }
+
         public async Task<bool> CreateAsync(phonev2.Models.LinhKien linhKien)
         {
             try
             {
                 linhKien.NgayTao = DateTime.Now;
+                linhKien.DaXoa = false; // Đảm bảo linh kiện mới không bị đánh dấu xóa
                 _context.Add(linhKien);
                 await _context.SaveChangesAsync();
                 return true;
@@ -62,7 +72,29 @@ namespace phonev2.Services.LinhKien
             }
         }
 
-        public async Task<bool> DeleteAsync(int id)
+        // Cập nhật phương thức Delete để sử dụng soft delete
+        public async Task<bool> DeleteAsync(int id, string? lyDoXoa = "")
+        {
+            try
+            {
+                var linhKien = await _context.LinhKien.FindAsync(id);
+                if (linhKien != null)
+                {
+                    // Sử dụng soft delete thay vì xóa thực sự
+                    linhKien.SoftDelete(string.IsNullOrEmpty(lyDoXoa) ? "Xóa bởi người dùng" : lyDoXoa);
+                    await _context.SaveChangesAsync();
+                    return true;
+                }
+                return false;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        // Thêm phương thức để xóa thực sự (hard delete) - chỉ dùng khi cần thiết
+        public async Task<bool> HardDeleteAsync(int id)
         {
             try
             {
@@ -81,12 +113,42 @@ namespace phonev2.Services.LinhKien
             }
         }
 
+        // Thêm phương thức để khôi phục linh kiện đã xóa
+        public async Task<bool> RestoreAsync(int id)
+        {
+            try
+            {
+                var linhKien = await _context.LinhKien.FindAsync(id);
+                if (linhKien != null && linhKien.DaXoa)
+                {
+                    linhKien.Restore();
+                    await _context.SaveChangesAsync();
+                    return true;
+                }
+                return false;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        // Lấy danh sách linh kiện đã xóa
+        public async Task<IEnumerable<phonev2.Models.LinhKien>> GetDeletedAsync()
+        {
+            return await _context.LinhKien
+                .Include(l => l.LoaiLinhKien)
+                .Where(l => l.DaXoa)
+                .OrderByDescending(l => l.NgayXoa)
+                .ToListAsync();
+        }
+
         public async Task<bool> ToggleStatusAsync(int id)
         {
             try
             {
                 var linhKien = await _context.LinhKien.FindAsync(id);
-                if (linhKien != null)
+                if (linhKien != null && !linhKien.DaXoa) // Chỉ toggle status cho linh kiện chưa bị xóa
                 {
                     linhKien.TrangThai = !linhKien.TrangThai;
                     await _context.SaveChangesAsync();
@@ -105,7 +167,8 @@ namespace phonev2.Services.LinhKien
         public async Task<(IEnumerable<phonev2.Models.LinhKien> Items, int TotalCount, int TotalPages)> GetPagedAsync(
             string searchString, string categoryFilter, string stockFilter, string sortOrder, int page, int pageSize)
         {
-            var query = _context.LinhKien.Include(l => l.LoaiLinhKien).AsQueryable();
+            var query = _context.LinhKien.Include(l => l.LoaiLinhKien)
+                .Where(l => !l.DaXoa); // Chỉ lấy linh kiện chưa bị xóa
 
             // Tìm kiếm
             if (!String.IsNullOrEmpty(searchString))
@@ -188,7 +251,8 @@ namespace phonev2.Services.LinhKien
         public async Task<bool> IsExistsAsync(string tenLinhKien, int maLoaiLinhKien, string? hangSanXuat, int? excludeId = null)
         {
             var query = _context.LinhKien.Where(l => l.TenLinhKien.ToLower() == tenLinhKien.ToLower() 
-                                                 && l.MaLoaiLinhKien == maLoaiLinhKien);
+                                                 && l.MaLoaiLinhKien == maLoaiLinhKien
+                                                 && !l.DaXoa); // Chỉ kiểm tra linh kiện chưa bị xóa
 
             if (!string.IsNullOrEmpty(hangSanXuat))
             {
@@ -210,7 +274,7 @@ namespace phonev2.Services.LinhKien
             try
             {
                 var linhKien = await _context.LinhKien.FindAsync(id);
-                if (linhKien == null) return false;
+                if (linhKien == null || linhKien.DaXoa) return false; // Không cho phép cập nhật linh kiện đã xóa
 
                 switch (action.ToLower())
                 {
@@ -242,7 +306,7 @@ namespace phonev2.Services.LinhKien
         {
             var query = _context.LinhKien
                 .Include(l => l.LoaiLinhKien)
-                .Where(l => l.TrangThai && l.SoLuongTon > 0);
+                .Where(l => !l.DaXoa && l.TrangThai && l.SoLuongTon > 0); // Chỉ tìm linh kiện chưa xóa, đang bán và còn hàng
 
             if (!string.IsNullOrEmpty(term))
             {
@@ -271,7 +335,7 @@ namespace phonev2.Services.LinhKien
         {
             return await _context.LinhKien
                 .Include(l => l.LoaiLinhKien)
-                .Where(l => l.MaLoaiLinhKien == categoryId && l.TrangThai && l.SoLuongTon > 0)
+                .Where(l => l.MaLoaiLinhKien == categoryId && !l.DaXoa && l.TrangThai && l.SoLuongTon > 0)
                 .Select(l => new { 
                     id = l.MaLinhKien, 
                     name = l.TenLinhKien,

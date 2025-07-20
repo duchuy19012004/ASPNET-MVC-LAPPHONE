@@ -12,8 +12,8 @@ using phonev2.Repository;
 namespace phonev2.Migrations
 {
     [DbContext(typeof(PhoneLapDbContext))]
-    [Migration("20250715022449_db1")]
-    partial class db1
+    [Migration("20250720033518_validate")]
+    partial class validate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -264,6 +264,10 @@ namespace phonev2.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("MaLinhKien"));
 
+                    b.Property<bool>("DaXoa")
+                        .HasColumnType("bit")
+                        .HasColumnName("daxoa");
+
                     b.Property<decimal>("GiaBan")
                         .HasColumnType("decimal(18,2)")
                         .HasColumnName("giaban");
@@ -277,6 +281,11 @@ namespace phonev2.Migrations
                         .HasColumnType("nvarchar(100)")
                         .HasColumnName("hangsanxuat");
 
+                    b.Property<string>("LyDoXoa")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)")
+                        .HasColumnName("lydoxoa");
+
                     b.Property<int>("MaLoaiLinhKien")
                         .HasColumnType("int")
                         .HasColumnName("maloailinhkien");
@@ -286,6 +295,10 @@ namespace phonev2.Migrations
                         .HasColumnType("datetime2")
                         .HasColumnName("ngaytao")
                         .HasDefaultValueSql("GETDATE()");
+
+                    b.Property<DateTime?>("NgayXoa")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("ngayxoa");
 
                     b.Property<int>("SoLuongTon")
                         .HasColumnType("int")
@@ -609,6 +622,13 @@ namespace phonev2.Migrations
                         .HasColumnType("nvarchar(500)")
                         .HasColumnName("ghichu");
 
+                    b.Property<TimeSpan?>("GioHoanThanh")
+                        .HasColumnType("time")
+                        .HasColumnName("giokhoanthanhtacvu");
+
+                    b.Property<int?>("KhachHangMaKhachHang")
+                        .HasColumnType("int");
+
                     b.Property<int?>("MaKhachHang")
                         .IsRequired()
                         .HasColumnType("int")
@@ -618,6 +638,10 @@ namespace phonev2.Migrations
                         .IsRequired()
                         .HasColumnType("int")
                         .HasColumnName("manhanvien");
+
+                    b.Property<DateTime?>("NgayGioHoanThanh")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("ngaygiohoanthanhtacvu");
 
                     b.Property<DateTime?>("NgayHenTra")
                         .HasColumnType("datetime2")
@@ -633,6 +657,9 @@ namespace phonev2.Migrations
                         .HasColumnType("datetime2")
                         .HasColumnName("ngaytrathucte");
 
+                    b.Property<int?>("NhanVienMaNhanVien")
+                        .HasColumnType("int");
+
                     b.Property<decimal?>("TongTien")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("decimal(18,2)")
@@ -647,6 +674,8 @@ namespace phonev2.Migrations
 
                     b.HasKey("MaPhieuSua");
 
+                    b.HasIndex("KhachHangMaKhachHang");
+
                     b.HasIndex("MaKhachHang");
 
                     b.HasIndex("MaNhanVien");
@@ -656,6 +685,8 @@ namespace phonev2.Migrations
                     b.HasIndex("NgaySua");
 
                     b.HasIndex("NgayTraThucTe");
+
+                    b.HasIndex("NhanVienMaNhanVien");
 
                     b.HasIndex("TrangThai");
 
@@ -801,6 +832,10 @@ namespace phonev2.Migrations
 
             modelBuilder.Entity("phonev2.Models.PhieuSua", b =>
                 {
+                    b.HasOne("phonev2.Models.KhachHang", "KhachHang")
+                        .WithMany()
+                        .HasForeignKey("KhachHangMaKhachHang");
+
                     b.HasOne("phonev2.Models.KhachHang", null)
                         .WithMany()
                         .HasForeignKey("MaKhachHang")
@@ -812,6 +847,14 @@ namespace phonev2.Migrations
                         .HasForeignKey("MaNhanVien")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
+
+                    b.HasOne("phonev2.Models.NhanVien", "NhanVien")
+                        .WithMany()
+                        .HasForeignKey("NhanVienMaNhanVien");
+
+                    b.Navigation("KhachHang");
+
+                    b.Navigation("NhanVien");
                 });
 
             modelBuilder.Entity("phonev2.Models.ThietBi", b =>

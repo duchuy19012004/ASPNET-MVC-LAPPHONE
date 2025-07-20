@@ -20,7 +20,7 @@
                 </h5>
             </div>
             <div class="card-body">
-                <form asp-action="Create" method="post" novalidate>
+                <form asp-action="Create" method="post" novalidate id="createForm">
                     <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
                     
                     <!-- Row 1: Tên linh kiện và Loại -->
@@ -105,12 +105,13 @@
                                        placeholder="0" 
                                        type="number" 
                                        step="1000"
-                                       min="0" />
+                                       min="0"
+                                       title="Vui lòng nhập giá trên 1000đ" />
                                 <span class="input-group-text">VNĐ</span>
                             </div>
                             <span asp-validation-for="GiaNhap" class="text-danger"></span>
-                            <div class="mt-1" id="costDisplay" style="display: none;">
-                                <small class="text-warning fw-bold" id="formattedCost">0 VNĐ</small>
+                            <div class="mt-1">
+                                <small class="text-warning fw-bold" id="formattedGiaNhap">0 VNĐ</small>
                             </div>
                         </div>
                         
@@ -125,12 +126,13 @@
                                        placeholder="0" 
                                        type="number" 
                                        step="1000"
-                                       min="0" />
+                                       min="0"
+                                       title="Vui lòng nhập giá trên 1000đ" />
                                 <span class="input-group-text">VNĐ</span>
                             </div>
                             <span asp-validation-for="GiaBan" class="text-danger"></span>
-                            <div class="mt-1" id="priceDisplay" style="display: none;">
-                                <small class="text-success fw-bold" id="formattedPrice">0 VNĐ</small>
+                            <div class="mt-1">
+                                <small class="text-success fw-bold" id="formattedGiaBan">0 VNĐ</small>
                             </div>
                         </div>
                         
@@ -308,7 +310,345 @@
 </div>
 
 
+@section Styles {
+    <style>
+        .vietnamese-error {
+            display: block !important;
+            margin-top: 0.25rem !important;
+            font-size: 0.875rem !important;
+            color: #dc3545 !important;
+            font-weight: 500 !important;
+            position: relative !important;
+            z-index: 1 !important;
+        }
+        
+        /* Đảm bảo thông báo lỗi hiển thị bên dưới input field */
+        .form-control + .vietnamese-error,
+        .form-select + .vietnamese-error,
+        .input-group + .vietnamese-error {
+            margin-top: 0.25rem !important;
+            margin-bottom: 0.5rem !important;
+        }
+        
+        /* Ẩn thông báo lỗi mặc định của ASP.NET Core */
+        .field-validation-error,
+        .field-validation-valid {
+            display: none !important;
+        }
+        
+        /* Đảm bảo input group không bị ảnh hưởng */
+        .input-group {
+            position: relative !important;
+        }
+        
+        .input-group + .vietnamese-error {
+            margin-top: 0.5rem !important;
+        }
+        
+        /* Xử lý trường hợp input group có nhiều thành phần */
+        .input-group .form-control + .vietnamese-error {
+            margin-top: 0.5rem !important;
+        }
+        
+        /* Đảm bảo thông báo lỗi không bị che khuất */
+        .vietnamese-error {
+            clear: both !important;
+            width: 100% !important;
+        }
+    </style>
+}
+
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
     <script src="~/js/linhkien.js"></script>
+    <script>
+    $(document).ready(function() {
+        // Hàm format số tiền
+        function formatCurrency(amount) {
+            if (amount === '' || amount === null || amount === undefined || isNaN(amount)) {
+                return '0 VNĐ';
+            }
+            return new Intl.NumberFormat('vi-VN', {
+                style: 'currency',
+                currency: 'VND'
+            }).format(amount);
+        }
+        
+        // Kiểm tra xem giá trị có hợp lệ không (số và ≥0)
+        function isValidNumber(value) {
+            return !isNaN(parseFloat(value)) && parseFloat(value) >= 0;
+        }
+        
+        // Kiểm tra giá tiền hợp lệ (≥1000 và là bội số của 1000)
+        function isValidPrice(value) {
+            const numValue = parseFloat(value);
+            return numValue >= 1000 && numValue % 1000 === 0;
+        }
+        
+        // Cập nhật hiển thị giá nhập
+        function updateGiaNhapDisplay() {
+            const value = $('#GiaNhap').val();
+            $('#formattedGiaNhap').text(formatCurrency(value));
+        }
+        
+        // Cập nhật hiển thị giá bán
+        function updateGiaBanDisplay() {
+            const value = $('#GiaBan').val();
+            $('#formattedGiaBan').text(formatCurrency(value));
+        }
+        
+        // Cập nhật phân tích lợi nhuận (chỉ khi giá trị hợp lệ)
+        function updateProfitAnalysis() {
+            const giaNhapVal = $('#GiaNhap').val();
+            const giaBanVal = $('#GiaBan').val();
+            const soLuongVal = $('#SoLuongTon').val();
+            
+            // Chỉ cập nhật nếu giá trị hợp lệ
+            if (isValidPrice(giaNhapVal) && isValidPrice(giaBanVal) && isValidNumber(soLuongVal)) {
+                const giaNhap = parseFloat(giaNhapVal);
+                const giaBan = parseFloat(giaBanVal);
+                const soLuong = parseInt(soLuongVal);
+                
+                if (giaBan > giaNhap) {
+                    const profitPerUnit = giaBan - giaNhap;
+                    const profitPercent = ((profitPerUnit / giaNhap) * 100);
+                    const totalProfit = profitPerUnit * soLuong;
+                    
+                    $('#profitAmount').text(formatCurrency(profitPerUnit));
+                    $('#profitPercent').text(profitPercent.toFixed(1) + '%');
+                    $('#totalProfit').text(formatCurrency(totalProfit));
+                    return;
+                }
+            }
+            
+            // Reset nếu không hợp lệ
+            $('#profitAmount').text('0 VNĐ');
+            $('#profitPercent').text('0%');
+            $('#totalProfit').text('0 VNĐ');
+        }
+        
+        // Cập nhật gợi ý giá bán (chỉ khi giá nhập hợp lệ)
+        function updatePriceSuggestions() {
+            const giaNhapVal = $('#GiaNhap').val();
+            
+            if (isValidPrice(giaNhapVal)) {
+                const giaNhap = parseFloat(giaNhapVal);
+                const suggest20 = Math.round(giaNhap * 1.2 / 1000) * 1000;
+                const suggest30 = Math.round(giaNhap * 1.3 / 1000) * 1000;
+                const suggest50 = Math.round(giaNhap * 1.5 / 1000) * 1000;
+                
+                $('#suggest20').text(formatCurrency(suggest20));
+                $('#suggest30').text(formatCurrency(suggest30));
+                $('#suggest50').text(formatCurrency(suggest50));
+            } else {
+                $('#suggest20').text('0 VNĐ');
+                $('#suggest30').text('0 VNĐ');
+                $('#suggest50').text('0 VNĐ');
+            }
+        }
+        
+        // Cập nhật hiển thị giá real-time
+        $('#GiaNhap').on('input', function() {
+            updateGiaNhapDisplay();
+            validateNumberField(this);
+            updatePriceSuggestions();
+            updateProfitAnalysis();
+        });
+        
+        $('#GiaBan').on('input', function() {
+            updateGiaBanDisplay();
+            validateNumberField(this);
+            updateProfitAnalysis();
+        });
+        
+        $('#SoLuongTon').on('input', function() {
+            validateNumberField(this);
+            updateProfitAnalysis();
+        });
+        
+        // Kiểm tra số hợp lệ và hiển thị lỗi
+        function validateNumberField(input) {
+            const $input = $(input);
+            const value = $input.val().trim();
+            const fieldName = $input.attr('id');
+            const isPriceField = (fieldName === 'GiaNhap' || fieldName === 'GiaBan');
+            
+            // Xóa lỗi cũ
+            $input.siblings('.vietnamese-error').remove();
+            $input.siblings(`span[data-valmsg-for="${fieldName}"]`).hide();
+            $input.siblings('.field-validation-error').hide();
+            $input.siblings('.field-validation-valid').hide();
+            
+            // Kiểm tra trường bắt buộc
+            if ($input.prop('required') && (value === '' || value === null)) {
+                showFieldError($input, 'Vui lòng nhập giá trị lớn hơn 0');
+                return false;
+            }
+            
+            // Kiểm tra nếu không có giá trị
+            if (value === '' || value === null) {
+                return true; // Không hiển thị lỗi nếu không bắt buộc
+            }
+            
+            // Kiểm tra giá trị số
+            const numValue = parseFloat(value);
+            if (isNaN(numValue)) {
+                showFieldError($input, 'Vui lòng nhập giá trị lớn hơn 0');
+                return false;
+            }
+            
+            // Kiểm tra giá trị âm
+            if (numValue < 0) {
+                showFieldError($input, 'Vui lòng nhập giá trị lớn hơn 0');
+                return false;
+            }
+            
+            // Kiểm tra giá tiền
+            if (isPriceField) {
+                // Kiểm tra tối thiểu 1000đ
+                if (numValue > 0 && numValue < 1000) {
+                    showFieldError($input, 'Vui lòng nhập giá lớn hơn 0');
+                    return false;
+                }
+                
+                // Kiểm tra bội số của 1000
+                if (numValue % 1000 !== 0) {
+                    showFieldError($input, 'Vui lòng nhập giá lớn hơn 0');
+                    return false;
+                }
+            }
+            
+            return true;
+        }
+        
+        // Hiển thị lỗi cho trường
+        function showFieldError($input, message) {
+            // Xóa lỗi cũ trước khi thêm lỗi mới
+            $input.siblings('.vietnamese-error').remove();
+            
+            // Chèn thông báo lỗi sau input field
+            $input.after(`<div class="text-danger vietnamese-error">${message}</div>`);
+        }
+        
+        // Xóa tất cả lỗi
+        function clearAllErrors() {
+            $('.vietnamese-error').remove();
+            $('span[data-valmsg-for]').hide();
+            $('.field-validation-error').hide();
+            $('.field-validation-valid').hide();
+        }
+        
+        // Kiểm tra form trước khi submit
+        $('#createForm').on('submit', function(e) {
+            let isValid = true;
+            clearAllErrors();
+            
+            // Kiểm tra trường bắt buộc
+            const requiredFields = [
+                '#TenLinhKien',
+                '#MaLoaiLinhKien',
+                '#GiaNhap',
+                '#GiaBan',
+                '#SoLuongTon'
+            ];
+            
+            requiredFields.forEach(selector => {
+                const $field = $(selector);
+                const value = $field.val().trim();
+                
+                if (value === '' || value === null) {
+                    isValid = false;
+                    let fieldName = '';
+                    
+                    switch (selector) {
+                        case '#TenLinhKien': fieldName = 'Tên linh kiện'; break;
+                        case '#MaLoaiLinhKien': fieldName = 'Loại linh kiện'; break;
+                        case '#GiaNhap': fieldName = 'Giá nhập'; break;
+                        case '#GiaBan': fieldName = 'Giá bán'; break;
+                        case '#SoLuongTon': fieldName = 'Số lượng tồn'; break;
+                    }
+                    
+                    showFieldError($field, 'Vui lòng nhập giá trị lớn hơn 0');
+                }
+            });
+            
+            // Kiểm tra các trường số
+            const numberFields = ['#GiaNhap', '#GiaBan', '#SoLuongTon'];
+            numberFields.forEach(selector => {
+                if (!validateNumberField($(selector)[0])) {
+                    isValid = false;
+                }
+            });
+            
+            // Kiểm tra giá bán > giá nhập (chỉ khi cả hai đều hợp lệ)
+            if (isValid) {
+                const giaNhapVal = $('#GiaNhap').val();
+                const giaBanVal = $('#GiaBan').val();
+                
+                if (isValidPrice(giaNhapVal) && isValidPrice(giaBanVal)) {
+                    const giaNhap = parseFloat(giaNhapVal);
+                    const giaBan = parseFloat(giaBanVal);
+                    
+                    if (giaBan <= giaNhap) {
+                        isValid = false;
+                        showFieldError($('#GiaBan'), 'Vui lòng nhập giá trị lớn hơn 0');
+                    }
+                }
+            }
+            
+            if (!isValid) {
+                e.preventDefault();
+                
+                // Cuộn đến lỗi đầu tiên
+                $('html, body').animate({
+                    scrollTop: $('.vietnamese-error').first().offset().top - 100
+                }, 500);
+            }
+        });
+        
+        // Tự động định dạng giá khi rời khỏi trường
+        $('#GiaNhap, #GiaBan').on('blur', function() {
+            const value = $(this).val();
+            if (value && !isNaN(value)) {
+                const numValue = parseInt(value);
+                if (!isNaN(numValue)) {
+                    // Làm tròn về bội số gần nhất của 1000
+                    const roundedValue = Math.round(numValue / 1000) * 1000;
+                    $(this).val(roundedValue);
+                    
+                    if ($(this).attr('id') === 'GiaNhap') {
+                        updateGiaNhapDisplay();
+                        updatePriceSuggestions();
+                        updateProfitAnalysis();
+                    } else {
+                        updateGiaBanDisplay();
+                        updateProfitAnalysis();
+                    }
+                }
+            }
+        });
+        
+        // Áp dụng gợi ý giá
+        $('.apply-suggestion').on('click', function() {
+            const percent = parseInt($(this).data('percent'));
+            const giaNhapVal = $('#GiaNhap').val();
+            
+            if (isValidPrice(giaNhapVal)) {
+                const giaNhap = parseFloat(giaNhapVal);
+                const giaBanSuggestion = Math.round(giaNhap * (1 + percent/100));
+                // Làm tròn về bội số của 1000
+                const roundedGiaBan = Math.round(giaBanSuggestion / 1000) * 1000;
+                $('#GiaBan').val(roundedGiaBan);
+                updateGiaBanDisplay();
+                updateProfitAnalysis();
+            }
+        });
+        
+        // Khởi tạo giá trị
+        updateGiaNhapDisplay();
+        updateGiaBanDisplay();
+        updatePriceSuggestions();
+        updateProfitAnalysis();
+    });
+</script>
 }

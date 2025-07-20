@@ -6,6 +6,8 @@
     var search = ViewBag.Search as string ?? "";
     var pageSize = ViewBag.PageSize ?? 10;
     var errorMessage = ViewBag.ErrorMessage as string;
+    var khachHangList = ViewBag.KhachHangList as IEnumerable<SelectListItem>;
+    var nhanVienList = ViewBag.NhanVienList as IEnumerable<SelectListItem>;
 }
 
 @if (!string.IsNullOrEmpty(errorMessage))
@@ -51,12 +53,16 @@
                     <tr>
                         <td class="text-center fw-bold">@item.MaPhieuSua</td>
                         <td>
-                            @item.NgaySua.ToString("dd/MM/yyyy")
+                            @(item.NgayGioHoanThanh?.ToString("dd/MM/yyyy HH:mm") ?? item.NgaySua.ToString("dd/MM/yyyy HH:mm"))
                         </td>
                         <td>
-                            @if (item.NgayHenTra != null)
+                            @if (item.TrangThai == phonev2.Models.TrangThaiPhieuSua.HoanThanh && item.NgayGioHoanThanh != null)
                             {
-                                @item.NgayHenTra.Value.ToString("dd/MM/yyyy")
+                                @item.NgayGioHoanThanh.Value.ToString("dd/MM/yyyy HH:mm")
+                            }
+                            else if (item.NgayHenTra != null)
+                            {
+                                @item.NgayHenTra.Value.ToString("dd/MM/yyyy HH:mm")
                             }
                             else
                             {
@@ -64,39 +70,25 @@
                             }
                         </td>
                         <td>
-                            @{
-                                var khachHangList = ViewBag.KhachHangList as IEnumerable<SelectListItem>;
-                                var khachHang = khachHangList?.FirstOrDefault(x => x.Value == item.MaKhachHang.ToString());
-                            }
-                            @if (khachHang != null)
+                            @if (!string.IsNullOrEmpty(item.TenKhachHang))
                             {
-                                @khachHang.Text
+                                @item.TenKhachHang
                             }
-                            else if (item.MaKhachHang != null && item.MaKhachHang > 0)
+                            else if (khachHangList != null)
                             {
-                                <span class="text-danger">Lỗi KH: @item.MaKhachHang</span>
-                            }
-                            else
-                            {
-                                <span class="text-muted">Không có</span>
+                                var kh = khachHangList.FirstOrDefault(x => x.Value == item.MaKhachHang?.ToString());
+                                @kh?.Text
                             }
                         </td>
                         <td>
-                            @{
-                                var nhanVienList = ViewBag.NhanVienList as IEnumerable<SelectListItem>;
-                                var nhanVien = nhanVienList?.FirstOrDefault(x => x.Value == item.MaNhanVien.ToString());
-                            }
-                            @if (nhanVien != null)
+                            @if (!string.IsNullOrEmpty(item.TenNhanVien))
                             {
-                                @nhanVien.Text
+                                @item.TenNhanVien
                             }
-                            else if (item.MaNhanVien != null && item.MaNhanVien > 0)
+                            else if (nhanVienList != null)
                             {
-                                <span class="text-danger">Lỗi NV: @item.MaNhanVien</span>
-                            }
-                            else
-                            {
-                                <span class="text-muted">Không có</span>
+                                var nv = nhanVienList.FirstOrDefault(x => x.Value == item.MaNhanVien?.ToString());
+                                @nv?.Text
                             }
                         </td>
                         <td class="text-end">

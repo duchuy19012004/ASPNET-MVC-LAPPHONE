@@ -12,7 +12,15 @@
         <a asp-action="LowStockAlert" class="btn btn-warning">
             <i class="fas fa-exclamation-triangle me-1"></i> Cảnh Báo Tồn Kho
         </a>
-        
+        <a asp-action="StockReport" class="btn btn-info">
+            <i class="fas fa-chart-bar me-1"></i> Báo Cáo Tồn Kho
+        </a>
+        <a asp-action="ProfitReport" class="btn btn-success">
+            <i class="fas fa-chart-line me-1"></i> Báo Cáo Lợi Nhuận
+        </a>
+        <a asp-action="Deleted" class="btn btn-secondary">
+            <i class="fas fa-trash me-1"></i> Linh Kiện Đã Xóa
+        </a>
     </div>
 }
 
@@ -327,19 +335,18 @@
                                 </td>
                                 <td>
                                     <div class="btn-group" role="group">
-                                        <a asp-action="Details" asp-route-id="@item.MaLinhKien" 
-                                           class="btn btn-sm btn-outline-info" title="Xem chi tiết">
+                                        <button type="button" class="btn btn-sm btn-outline-info" 
+                                                onclick="openDetailsModal(@item.MaLinhKien)" title="Xem chi tiết">
                                             <i class="fas fa-eye"></i>
-                                        </a>
-                                        <a asp-action="Edit" asp-route-id="@item.MaLinhKien" 
-                                           class="btn btn-sm btn-outline-warning" title="Chỉnh sửa">
+                                        </button>
+                                        <button type="button" class="btn btn-sm btn-outline-warning" 
+                                                onclick="openEditModal(@item.MaLinhKien)" title="Chỉnh sửa">
                                             <i class="fas fa-edit"></i>
-                                        </a>
-                                        <a asp-action="Delete" asp-route-id="@item.MaLinhKien" 
-                                           class="btn btn-sm btn-outline-danger" title="Xóa">
+                                        </button>
+                                        <button type="button" class="btn btn-sm btn-outline-danger" 
+                                                onclick="openDeleteModal(@item.MaLinhKien)" title="Xóa">
                                             <i class="fas fa-trash"></i>
-                                        </a>
-
+                                        </button>
                                     </div>
                                 </td>
                             </tr>
@@ -420,6 +427,191 @@
 </div>
 
 
+<!-- Modal Containers -->
+<div class="modal fade" id="detailsModal" tabindex="-1" aria-labelledby="detailsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <!-- Content will be loaded here -->
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="editModal" tabindex="-1" aria-labelledby="editModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <!-- Content will be loaded here -->
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <!-- Content will be loaded here -->
+        </div>
+    </div>
+</div>
+
+<!-- Stock Update Modal -->
+<div class="modal fade" id="stockModal" tabindex="-1" aria-labelledby="stockModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title">
+                    <i class="fas fa-boxes me-2"></i>
+                    Cập Nhật Tồn Kho
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label class="form-label">Hành động:</label>
+                    <select class="form-select" id="stockAction">
+                        <option value="add">Cộng thêm</option>
+                        <option value="subtract">Trừ bớt</option>
+                        <option value="set">Đặt lại</option>
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Số lượng:</label>
+                    <input type="number" class="form-control" id="stockQuantity" min="0" value="1">
+                </div>
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle me-2"></i>
+                    <span id="stockPreview">Sẽ cộng thêm 1 cái</span>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times me-1"></i>Hủy
+                </button>
+                <button type="button" class="btn btn-success" onclick="updateStockConfirm()">
+                    <i class="fas fa-save me-1"></i>Cập Nhật
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
 @section Scripts {
     <script src="~/js/linhkien.js"></script>
+    <script>
+        let currentStockId = null;
+        let currentStockValue = 0;
+
+        // Open Details Modal
+        function openDetailsModal(id) {
+            $.ajax({
+                url: '@Url.Action("Details")',
+                type: 'GET',
+                data: { id: parseInt(id) },
+                headers: { 'X-Requested-With': 'XMLHttpRequest' },
+                success: function(response) {
+                    $('#detailsModal .modal-content').html(response);
+                    $('#detailsModal').modal('show');
+                },
+                error: function() {
+                    showToast('Không thể tải thông tin linh kiện!', 'error');
+                }
+            });
+        }
+
+        // Open Edit Modal
+        function openEditModal(id) {
+            $.ajax({
+                url: '@Url.Action("Edit")',
+                type: 'GET',
+                data: { id: parseInt(id) },
+                headers: { 'X-Requested-With': 'XMLHttpRequest' },
+                success: function(response) {
+                    $('#editModal .modal-content').html(response);
+                    $('#editModal').modal('show');
+                },
+                error: function() {
+                    showToast('Không thể tải form chỉnh sửa!', 'error');
+                }
+            });
+        }
+
+        // Open Delete Modal
+        function openDeleteModal(id) {
+            $.ajax({
+                url: '@Url.Action("Delete")',
+                type: 'GET',
+                data: { id: parseInt(id) },
+                headers: { 'X-Requested-With': 'XMLHttpRequest' },
+                success: function(response) {
+                    $('#deleteModal .modal-content').html(response);
+                    $('#deleteModal').modal('show');
+                },
+                error: function() {
+                    showToast('Không thể tải thông tin xóa!', 'error');
+                }
+            });
+        }
+
+        // Update Stock Modal
+        function updateStockModal(id) {
+            currentStockId = parseInt(id);
+            $('#stockModal').modal('show');
+        }
+
+        // Stock action change
+        $('#stockAction').on('change', updateStockPreview);
+        $('#stockQuantity').on('input', updateStockPreview);
+
+        function updateStockPreview() {
+            const action = $('#stockAction').val();
+            const quantity = parseInt($('#stockQuantity').val()) || 0;
+            
+            let preview = '';
+            switch(action) {
+                case 'add':
+                    preview = `Sẽ cộng thêm ${quantity} cái`;
+                    break;
+                case 'subtract':
+                    preview = `Sẽ trừ bớt ${quantity} cái`;
+                    break;
+                case 'set':
+                    preview = `Sẽ đặt lại thành ${quantity} cái`;
+                    break;
+            }
+            $('#stockPreview').text(preview);
+        }
+
+        // Confirm stock update
+        function updateStockConfirm() {
+            const action = $('#stockAction').val();
+            const quantity = parseInt($('#stockQuantity').val()) || 0;
+            
+            if (quantity < 0) {
+                showToast('Số lượng không được âm!', 'error');
+                return;
+            }
+
+            $.post('@Url.Action("UpdateStock")', {
+                id: currentStockId,
+                quantity: quantity,
+                action: action,
+                __RequestVerificationToken: $('input[name="__RequestVerificationToken"]').val()
+            })
+            .done(function(response) {
+                if (response.success) {
+                    showToast(`Đã cập nhật tồn kho thành công! Số lượng mới: ${response.newStock}`, 'success');
+                    $('#stockModal').modal('hide');
+                    setTimeout(() => location.reload(), 1000);
+                } else {
+                    showToast('Có lỗi xảy ra: ' + response.message, 'error');
+                }
+            })
+            .fail(function() {
+                showToast('Không thể kết nối đến server!', 'error');
+            });
+        }
+
+        // Initialize stock preview
+        $(document).ready(function() {
+            updateStockPreview();
+        });
+    </script>
 }

@@ -186,19 +186,21 @@ namespace phonev2.Services.LinhKien
 
         public async Task<(bool CanDelete, string Error)> CanDeleteAsync(int id)
         {
-            // Kiểm tra xem linh kiện có đang được sử dụng trong các giao dịch khác không
-            var hasPhieuNhap = await _context.ChiTietPhieuNhap.AnyAsync(ct => ct.MaLinhKien == id);
-            if (hasPhieuNhap)
+            // Kiểm tra xem linh kiện có tồn tại không
+            var linhKien = await _context.LinhKien.FindAsync(id);
+            if (linhKien == null)
             {
-                return (false, "Không thể xóa linh kiện này vì đang được sử dụng trong phiếu nhập.");
+                return (false, "Không tìm thấy linh kiện.");
             }
 
-            var hasPhieuSua = await _context.ChiTietLinhKien.AnyAsync(ct => ct.MaLinhKien == id);
-            if (hasPhieuSua)
+            // Kiểm tra xem linh kiện đã bị xóa chưa
+            if (linhKien.DaXoa)
             {
-                return (false, "Không thể xóa linh kiện này vì đang được sử dụng trong phiếu sửa.");
+                return (false, "Linh kiện này đã bị xóa trước đó.");
             }
 
+            // Với soft delete, chúng ta cho phép xóa ngay cả khi linh kiện đang được sử dụng
+            // vì thông tin sẽ được giữ lại trong các phiếu sửa
             return (true, "");
         }
     }

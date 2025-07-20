@@ -60,8 +60,27 @@ namespace phonev2.Models
         [Display(Name = "Trạng Thái")]
         public TrangThaiPhieuSua TrangThai { get; set; } = TrangThaiPhieuSua.TiepNhan;
 
+        [Column("giokhoanthanhtacvu")]
+        [Display(Name = "Giờ Hoàn Thành")]
+        public TimeSpan? GioHoanThanh { get; set; }
+
+        // Nếu muốn lưu cả ngày và giờ hoàn thành:
+        [Column("ngaygiohoanthanhtacvu")]
+        [Display(Name = "Ngày Giờ Hoàn Thành")]
+        public DateTime? NgayGioHoanThanh { get; set; }
+
         // Navigation properties
         public virtual ICollection<ChiTietPhieuSua>? ChiTietPhieuSuas { get; set; }
         public virtual ICollection<ChiTietLinhKien>? ChiTietLinhKiens { get; set; }
+        [ForeignKey("MaKhachHang")]
+        public virtual KhachHang? KhachHang { get; set; }
+        [ForeignKey("MaNhanVien")]
+        public virtual NhanVien? NhanVien { get; set; }
+
+        // Hiển thị tên khách hàng và nhân viên từ navigation property
+        [NotMapped]
+        public string TenKhachHang => KhachHang?.HoTen ?? string.Empty;
+        [NotMapped]
+        public string TenNhanVien => NhanVien?.HoTen ?? string.Empty;
     }
 } 

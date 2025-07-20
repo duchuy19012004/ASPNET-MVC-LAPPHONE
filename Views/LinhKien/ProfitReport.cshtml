@@ -1,0 +1,320 @@
+@model IEnumerable<phonev2.Models.LinhKien>
+@{
+    Layout = "_AdminLayout";
+}
+
+@section PageActions {
+    <div class="btn-group">
+        <a asp-action="Index" class="btn btn-secondary">
+            <i class="fas fa-arrow-left me-1"></i> Quay Lại Danh Sách
+        </a>
+        <a asp-action="StockReport" class="btn btn-info">
+            <i class="fas fa-chart-bar me-1"></i> Báo Cáo Tồn Kho
+        </a>
+        <a asp-action="LowStockAlert" class="btn btn-warning">
+            <i class="fas fa-exclamation-triangle me-1"></i> Cảnh Báo Tồn Kho
+        </a>
+    </div>
+}
+
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card bg-success text-white">
+            <div class="card-body text-center">
+                <h3 class="mb-1">@Model.Sum(l => l.LoiNhuan * l.SoLuongTon).ToString("N0")</h3>
+                <p class="mb-0">Tổng Lợi Nhuận (VNĐ)</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-primary text-white">
+            <div class="card-body text-center">
+                <h3 class="mb-1">@Model.Sum(l => l.GiaBan * l.SoLuongTon).ToString("N0")</h3>
+                <p class="mb-0">Tổng Doanh Thu (VNĐ)</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-warning text-white">
+            <div class="card-body text-center">
+                <h3 class="mb-1">@Model.Sum(l => l.GiaNhap * l.SoLuongTon).ToString("N0")</h3>
+                <p class="mb-0">Tổng Chi Phí (VNĐ)</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-info text-white">
+            <div class="card-body text-center">
+                <h3 class="mb-1">@(Model.Any() ? Model.Average(l => l.TyLeLoiNhuan).ToString("F1") : "0")%</h3>
+                <p class="mb-0">Tỷ Lệ Lợi Nhuận TB</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-chart-line me-2"></i>
+                    Top 10 Linh Kiện Có Lợi Nhuận Cao Nhất
+                </h5>
+            </div>
+            <div class="card-body">
+                <canvas id="profitChart" height="300"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="mb-0">
+                    <i class="fas fa-pie-chart me-2"></i>
+                    Phân Bố Lợi Nhuận Theo Loại
+                </h6>
+            </div>
+            <div class="card-body">
+                <canvas id="categoryProfitChart" height="250"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">
+            <i class="fas fa-table me-2"></i>
+            Chi Tiết Lợi Nhuận Theo Linh Kiện
+        </h5>
+        <div class="btn-group btn-group-sm">
+            <button type="button" class="btn btn-outline-info" onclick="exportProfitReport()">
+                <i class="fas fa-download me-1"></i> Xuất Báo Cáo
+            </button>
+            <button type="button" class="btn btn-outline-success" onclick="printProfitReport()">
+                <i class="fas fa-print me-1"></i> In Báo Cáo
+            </button>
+        </div>
+    </div>
+    <div class="card-body p-0">
+        @if (Model.Any())
+        {
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Linh Kiện</th>
+                            <th>Loại</th>
+                            <th>Giá Nhập</th>
+                            <th>Giá Bán</th>
+                            <th>Lợi Nhuận/Đơn Vị</th>
+                            <th>Tỷ Lệ LN</th>
+                            <th>Tồn Kho</th>
+                            <th>Tổng Lợi Nhuận</th>
+                            <th>Trạng Thái</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model.OrderByDescending(l => l.LoiNhuan * l.SoLuongTon))
+                        {
+                            <tr class="@(item.LoiNhuan < 0 ? "table-danger" : item.TyLeLoiNhuan > 50 ? "table-success" : "")">
+                                <td>
+                                    <div>
+                                        <strong>@item.TenLinhKien</strong>
+                                        <br><small class="text-muted">#@item.MaLinhKien</small>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="badge bg-info">@item.LoaiLinhKien?.TenLoaiLinhKien</span>
+                                </td>
+                                <td>
+                                    <strong>@item.GiaNhapText</strong>
+                                </td>
+                                <td>
+                                    <strong>@item.GiaBanText</strong>
+                                </td>
+                                <td>
+                                    <span class="@(item.LoiNhuan >= 0 ? "text-success" : "text-danger")">
+                                        <strong>@item.LoiNhuanText</strong>
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="badge @(item.TyLeLoiNhuan > 50 ? "bg-success" : item.TyLeLoiNhuan > 20 ? "bg-warning" : "bg-danger")">
+                                        @item.TyLeLoiNhuan%
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="@item.TonKhoCssClass">@item.SoLuongTon</span>
+                                </td>
+                                <td>
+                                    <strong class="@(item.LoiNhuan * item.SoLuongTon >= 0 ? "text-success" : "text-danger")">
+                                        @((item.LoiNhuan * item.SoLuongTon).ToString("N0")) VNĐ
+                                    </strong>
+                                </td>
+                                <td>
+                                    <span class="badge @(item.TrangThai ? "bg-success" : "bg-secondary")">
+                                        @item.TrangThaiText
+                                    </span>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+        else
+        {
+            <div class="text-center py-5">
+                <i class="fas fa-chart-line fa-3x text-muted mb-3"></i>
+                <h5 class="text-muted">Chưa Có Dữ Liệu Lợi Nhuận</h5>
+                <p class="text-muted">Hãy thêm linh kiện để xem báo cáo lợi nhuận</p>
+                <a asp-action="Create" class="btn btn-primary">
+                    <i class="fas fa-plus me-1"></i> Thêm Linh Kiện
+                </a>
+            </div>
+        }
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        $(document).ready(function() {
+            const profitData = @Html.Raw(Json.Serialize(Model.OrderByDescending(l => l.LoiNhuan * l.SoLuongTon).Take(10)));
+            
+            if (profitData && profitData.length > 0) {
+                // Create profit chart
+                const ctx = document.getElementById('profitChart').getContext('2d');
+                new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: profitData.map(item => item.tenLinhKien.length > 20 ? item.tenLinhKien.substring(0, 20) + '...' : item.tenLinhKien),
+                        datasets: [{
+                            label: 'Tổng Lợi Nhuận (VNĐ)',
+                            data: profitData.map(item => item.loiNhuan * item.soLuongTon),
+                            backgroundColor: 'rgba(75, 192, 192, 0.8)',
+                            borderColor: 'rgba(75, 192, 192, 1)',
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: {
+                                    callback: function(value) {
+                                        return formatCurrency(value);
+                                    }
+                                }
+                            }
+                        },
+                        plugins: {
+                            legend: {
+                                position: 'top'
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        return 'Lợi nhuận: ' + formatCurrency(context.parsed.y);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+                
+                // Create category profit chart
+                const categoryData = {};
+                profitData.forEach(item => {
+                    const category = item.loaiLinhKien?.tenLoaiLinhKien || 'Không phân loại';
+                    if (!categoryData[category]) {
+                        categoryData[category] = 0;
+                    }
+                    categoryData[category] += item.loiNhuan * item.soLuongTon;
+                });
+                
+                const pieCtx = document.getElementById('categoryProfitChart').getContext('2d');
+                new Chart(pieCtx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: Object.keys(categoryData),
+                        datasets: [{
+                            data: Object.values(categoryData),
+                            backgroundColor: [
+                                'rgba(255, 99, 132, 0.8)',
+                                'rgba(54, 162, 235, 0.8)',
+                                'rgba(255, 205, 86, 0.8)',
+                                'rgba(75, 192, 192, 0.8)',
+                                'rgba(153, 102, 255, 0.8)'
+                            ],
+                            borderWidth: 2
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'bottom'
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                        const percentage = ((context.parsed / total) * 100).toFixed(1);
+                                        return context.label + ': ' + formatCurrency(context.parsed) + ' (' + percentage + '%)';
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+        });
+        
+        function formatCurrency(amount) {
+            return new Intl.NumberFormat('vi-VN', {
+                style: 'currency',
+                currency: 'VND'
+            }).format(amount);
+        }
+        
+        function exportProfitReport() {
+            const data = [];
+            $('.table tbody tr').each(function() {
+                const row = $(this);
+                data.push([
+                    row.find('td:nth-child(1) strong').text(),
+                    row.find('td:nth-child(2) .badge').text(),
+                    row.find('td:nth-child(3) strong').text(),
+                    row.find('td:nth-child(4) strong').text(),
+                    row.find('td:nth-child(5) strong').text(),
+                    row.find('td:nth-child(6) .badge').text(),
+                    row.find('td:nth-child(7) .badge').text(),
+                    row.find('td:nth-child(8) strong').text(),
+                    row.find('td:nth-child(9) .badge').text()
+                ]);
+            });
+            
+            let csvContent = "data:text/csv;charset=utf-8,";
+            csvContent += "Linh Kiện,Loại,Giá Nhập,Giá Bán,Lợi Nhuận/Đơn Vị,Tỷ Lệ LN,Tồn Kho,Tổng Lợi Nhuận,Trạng Thái\n";
+            data.forEach(row => {
+                csvContent += row.join(",") + "\n";
+            });
+            
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", `bao-cao-loi-nhuan-${new Date().toISOString().split('T')[0]}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+        
+        function printProfitReport() {
+            window.print();
+        }
+    </script>
+} 

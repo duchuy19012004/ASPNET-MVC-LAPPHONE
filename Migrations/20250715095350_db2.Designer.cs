@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using phonev2.Repository;
 
@@ -11,9 +12,11 @@ using phonev2.Repository;
 namespace phonev2.Migrations
 {
     [DbContext(typeof(PhoneLapDbContext))]
-    partial class PhoneLapDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250715095350_db2")]
+    partial class db2
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -261,10 +264,6 @@ namespace phonev2.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("MaLinhKien"));
 
-                    b.Property<bool>("DaXoa")
-                        .HasColumnType("bit")
-                        .HasColumnName("daxoa");
-
                     b.Property<decimal>("GiaBan")
                         .HasColumnType("decimal(18,2)")
                         .HasColumnName("giaban");
@@ -278,11 +277,6 @@ namespace phonev2.Migrations
                         .HasColumnType("nvarchar(100)")
                         .HasColumnName("hangsanxuat");
 
-                    b.Property<string>("LyDoXoa")
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)")
-                        .HasColumnName("lydoxoa");
-
                     b.Property<int>("MaLoaiLinhKien")
                         .HasColumnType("int")
                         .HasColumnName("maloailinhkien");
@@ -292,10 +286,6 @@ namespace phonev2.Migrations
                         .HasColumnType("datetime2")
                         .HasColumnName("ngaytao")
                         .HasDefaultValueSql("GETDATE()");
-
-                    b.Property<DateTime?>("NgayXoa")
-                        .HasColumnType("datetime2")
-                        .HasColumnName("ngayxoa");
 
                     b.Property<int>("SoLuongTon")
                         .HasColumnType("int")

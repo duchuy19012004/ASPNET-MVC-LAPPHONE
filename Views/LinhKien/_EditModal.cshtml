@@ -1,0 +1,210 @@
+@model phonev2.Models.LinhKien
+
+<div class="modal-header bg-warning text-dark">
+    <h5 class="modal-title">
+        <i class="fas fa-edit me-2"></i>
+        Chỉnh Sửa Linh Kiện
+    </h5>
+    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+</div>
+<form id="editForm" asp-action="Edit" method="post">
+    <div class="modal-body">
+        <div asp-validation-summary="ModelOnly" class="alert alert-danger alert-sm" role="alert"></div>
+        
+        <!-- Hidden fields -->
+        <input asp-for="MaLinhKien" type="hidden" />
+        <input asp-for="NgayTao" type="hidden" />
+        
+        <!-- Basic Info -->
+        <div class="row mb-3">
+            <div class="col-md-8">
+                <label asp-for="TenLinhKien" class="form-label fw-bold">
+                    <i class="fas fa-microchip me-1 text-primary"></i>Tên Linh Kiện
+                    <span class="text-danger">*</span>
+                </label>
+                <input asp-for="TenLinhKien" class="form-control" placeholder="VD: RAM DDR4 8GB Kingston..." />
+                <span asp-validation-for="TenLinhKien" class="text-danger"></span>
+            </div>
+            <div class="col-md-4">
+                <label asp-for="MaLoaiLinhKien" class="form-label fw-bold">
+                    <i class="fas fa-tags me-1 text-info"></i>Loại Linh Kiện
+                    <span class="text-danger">*</span>
+                </label>
+                <select asp-for="MaLoaiLinhKien" class="form-select" asp-items="ViewBag.LoaiLinhKienList">
+                    <option value="">-- Chọn loại --</option>
+                </select>
+                <span asp-validation-for="MaLoaiLinhKien" class="text-danger"></span>
+            </div>
+        </div>
+
+        <!-- Brand and Specs -->
+        <div class="row mb-3">
+            <div class="col-md-4">
+                <label asp-for="HangSanXuat" class="form-label fw-bold">
+                    <i class="fas fa-industry me-1 text-secondary"></i>Hãng Sản Xuất
+                </label>
+                <input asp-for="HangSanXuat" class="form-control" placeholder="VD: Kingston, Samsung..." />
+                <span asp-validation-for="HangSanXuat" class="text-danger"></span>
+            </div>
+            <div class="col-md-8">
+                <label asp-for="ThongSoKyThuat" class="form-label fw-bold">
+                    <i class="fas fa-cogs me-1 text-info"></i>Thông Số Kỹ Thuật
+                </label>
+                <textarea asp-for="ThongSoKyThuat" class="form-control" rows="2" placeholder="VD: DDR4-3200, CL16..."></textarea>
+                <span asp-validation-for="ThongSoKyThuat" class="text-danger"></span>
+            </div>
+        </div>
+
+        <!-- Prices and Stock -->
+        <div class="row mb-3">
+            <div class="col-md-3">
+                <label asp-for="GiaNhap" class="form-label fw-bold">
+                    <i class="fas fa-file-import me-1 text-warning"></i>Giá Nhập
+                    <span class="text-danger">*</span>
+                </label>
+                <div class="input-group">
+                    <input asp-for="GiaNhap" class="form-control" type="number" min="0" />
+                    <span class="input-group-text">VNĐ</span>
+                </div>
+                <span asp-validation-for="GiaNhap" class="text-danger"></span>
+            </div>
+            <div class="col-md-3">
+                <label asp-for="GiaBan" class="form-label fw-bold">
+                    <i class="fas fa-tag me-1 text-success"></i>Giá Bán
+                    <span class="text-danger">*</span>
+                </label>
+                <div class="input-group">
+                    <input asp-for="GiaBan" class="form-control" type="number" min="0" />
+                    <span class="input-group-text">VNĐ</span>
+                </div>
+                <span asp-validation-for="GiaBan" class="text-danger"></span>
+            </div>
+            <div class="col-md-3">
+                <label asp-for="SoLuongTon" class="form-label fw-bold">
+                    <i class="fas fa-boxes me-1 text-primary"></i>Tồn Kho
+                    <span class="text-danger">*</span>
+                </label>
+                <div class="input-group">
+                    <input asp-for="SoLuongTon" class="form-control" type="number" min="0" />
+                    <span class="input-group-text">cái</span>
+                </div>
+                <span asp-validation-for="SoLuongTon" class="text-danger"></span>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label fw-bold">
+                    <i class="fas fa-dollar-sign me-1 text-info"></i>Lợi Nhuận
+                </label>
+                <div class="p-2 bg-light rounded text-center">
+                    <h6 class="@(Model.LoiNhuan > 0 ? "text-success" : "text-danger") mb-0" id="profitDisplay">
+                        @Model.LoiNhuanText
+                    </h6>
+                    <small class="text-muted" id="profitPercent">@Model.TyLeLoiNhuan%</small>
+                </div>
+            </div>
+        </div>
+
+        <!-- Status -->
+        <div class="row mb-3">
+            <div class="col-12">
+                <label class="form-label fw-bold">
+                    <i class="fas fa-toggle-on me-1 text-primary"></i>Trạng Thái
+                </label>
+                <div class="form-check form-switch">
+                    <input asp-for="TrangThai" class="form-check-input" type="checkbox" />
+                    <label class="form-check-label" asp-for="TrangThai">
+                        Linh kiện đang được bán
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <!-- Price Suggestions -->
+        <div class="row mb-3">
+            <div class="col-12">
+                <label class="form-label fw-bold">
+                    <i class="fas fa-lightbulb me-1 text-warning"></i>Gợi Ý Giá Bán
+                </label>
+                <div class="btn-group w-100">
+                    <button type="button" class="btn btn-outline-success btn-sm apply-suggestion" data-percent="20">
+                        LN 20%: @((Model.GiaNhap * 1.2M).ToString("N0")) VNĐ
+                    </button>
+                    <button type="button" class="btn btn-outline-warning btn-sm apply-suggestion" data-percent="30">
+                        LN 30%: @((Model.GiaNhap * 1.3M).ToString("N0")) VNĐ
+                    </button>
+                    <button type="button" class="btn btn-outline-danger btn-sm apply-suggestion" data-percent="50">
+                        LN 50%: @((Model.GiaNhap * 1.5M).ToString("N0")) VNĐ
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+            <i class="fas fa-times me-1"></i>Hủy
+        </button>
+        <button type="submit" class="btn btn-warning">
+            <i class="fas fa-save me-1"></i>Cập Nhật
+        </button>
+    </div>
+</form>
+
+<script>
+    $(document).ready(function() {
+        // Price calculation
+        function calculateProfit() {
+            const giaNhap = parseFloat($('#GiaNhap').val()) || 0;
+            const giaBan = parseFloat($('#GiaBan').val()) || 0;
+            const soLuong = parseInt($('#SoLuongTon').val()) || 0;
+
+            const loiNhuan = giaBan - giaNhap;
+            const tyLeLoiNhuan = giaNhap > 0 ? (loiNhuan / giaNhap) * 100 : 0;
+
+            $('#profitDisplay').text(formatCurrency(loiNhuan));
+            $('#profitPercent').text(tyLeLoiNhuan.toFixed(1) + '%');
+            
+            $('#profitDisplay').removeClass('text-success text-danger').addClass(loiNhuan >= 0 ? 'text-success' : 'text-danger');
+        }
+
+        // Apply price suggestions
+        $('.apply-suggestion').on('click', function() {
+            const percent = parseFloat($(this).data('percent'));
+            const giaNhap = parseFloat($('#GiaNhap').val()) || 0;
+            const suggestedPrice = giaNhap * (1 + percent / 100);
+            $('#GiaBan').val(Math.round(suggestedPrice));
+            calculateProfit();
+        });
+
+        // Bind events
+        $('#GiaNhap, #GiaBan, #SoLuongTon').on('input', calculateProfit);
+        
+        // Form submission
+        $('#editForm').on('submit', function(e) {
+            e.preventDefault();
+            
+            $.ajax({
+                url: $(this).attr('action'),
+                type: 'POST',
+                data: $(this).serialize(),
+                success: function(response) {
+                    if (response.success) {
+                        showToast(response.message, 'success');
+                        $('#editModal').modal('hide');
+                        setTimeout(() => location.reload(), 1000);
+                    } else {
+                        showToast(response.message, 'error');
+                    }
+                },
+                error: function() {
+                    showToast('Có lỗi xảy ra khi cập nhật!', 'error');
+                }
+            });
+        });
+    });
+
+    function formatCurrency(amount) {
+        return new Intl.NumberFormat('vi-VN', {
+            style: 'currency',
+            currency: 'VND'
+        }).format(amount);
+    }
+</script> 

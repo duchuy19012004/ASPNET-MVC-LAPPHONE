@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace phonev2.Migrations
 {
     /// <inheritdoc />
-    public partial class db1 : Migration
+    public partial class db : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -208,17 +208,31 @@ namespace phonev2.Migrations
                     ghichu = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
                     ngayhentra = table.Column<DateTime>(type: "datetime2", nullable: true),
                     ngaytrathucte = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    trangthai = table.Column<int>(type: "int", nullable: false, defaultValue: 0)
+                    trangthai = table.Column<int>(type: "int", nullable: false, defaultValue: 0),
+                    giokhoanthanhtacvu = table.Column<TimeSpan>(type: "time", nullable: true),
+                    ngaygiohoanthanhtacvu = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    KhachHangMaKhachHang = table.Column<int>(type: "int", nullable: true),
+                    NhanVienMaNhanVien = table.Column<int>(type: "int", nullable: true)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_PhieuSua", x => x.maphieusua);
+                    table.ForeignKey(
+                        name: "FK_PhieuSua_KhachHang_KhachHangMaKhachHang",
+                        column: x => x.KhachHangMaKhachHang,
+                        principalTable: "KhachHang",
+                        principalColumn: "makhachhang");
                     table.ForeignKey(
                         name: "FK_PhieuSua_KhachHang_makhachhang",
                         column: x => x.makhachhang,
                         principalTable: "KhachHang",
                         principalColumn: "makhachhang",
                         onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_PhieuSua_NhanVien_NhanVienMaNhanVien",
+                        column: x => x.NhanVienMaNhanVien,
+                        principalTable: "NhanVien",
+                        principalColumn: "manhanvien");
                     table.ForeignKey(
                         name: "FK_PhieuSua_NhanVien_manhanvien",
                         column: x => x.manhanvien,
@@ -513,6 +527,11 @@ namespace phonev2.Migrations
                 column: "trangthai");
 
             migrationBuilder.CreateIndex(
+                name: "IX_PhieuSua_KhachHangMaKhachHang",
+                table: "PhieuSua",
+                column: "KhachHangMaKhachHang");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_PhieuSua_makhachhang",
                 table: "PhieuSua",
                 column: "makhachhang");
@@ -536,6 +555,11 @@ namespace phonev2.Migrations
                 name: "IX_PhieuSua_ngaytrathucte",
                 table: "PhieuSua",
                 column: "ngaytrathucte");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_PhieuSua_NhanVienMaNhanVien",
+                table: "PhieuSua",
+                column: "NhanVienMaNhanVien");
 
             migrationBuilder.CreateIndex(
                 name: "IX_PhieuSua_trangthai",

@@ -11,7 +11,7 @@ namespace phonev2.Services.LinhKien
         // === PHƯƠNG THỨC CRUD CƠ BẢN ===
         
         /// <summary>
-        /// Lấy tất cả linh kiện với thông tin loại linh kiện
+        /// Lấy tất cả linh kiện với thông tin loại linh kiện (chưa bị xóa)
         /// </summary>
         Task<IEnumerable<phonev2.Models.LinhKien>> GetAllAsync();
         
@@ -19,6 +19,11 @@ namespace phonev2.Services.LinhKien
         /// Lấy linh kiện theo ID với thông tin loại linh kiện
         /// </summary>
         Task<phonev2.Models.LinhKien?> GetByIdAsync(int id);
+        
+        /// <summary>
+        /// Lấy linh kiện theo ID bao gồm cả đã xóa
+        /// </summary>
+        Task<phonev2.Models.LinhKien?> GetByIdIncludeDeletedAsync(int id);
         
         /// <summary>
         /// Tạo mới linh kiện
@@ -31,9 +36,24 @@ namespace phonev2.Services.LinhKien
         Task<bool> UpdateAsync(phonev2.Models.LinhKien linhKien);
         
         /// <summary>
-        /// Xóa linh kiện
+        /// Xóa linh kiện (soft delete)
         /// </summary>
-        Task<bool> DeleteAsync(int id);
+        Task<bool> DeleteAsync(int id, string? lyDoXoa = "");
+        
+        /// <summary>
+        /// Xóa thực sự linh kiện (hard delete)
+        /// </summary>
+        Task<bool> HardDeleteAsync(int id);
+        
+        /// <summary>
+        /// Khôi phục linh kiện đã xóa
+        /// </summary>
+        Task<bool> RestoreAsync(int id);
+        
+        /// <summary>
+        /// Lấy danh sách linh kiện đã xóa
+        /// </summary>
+        Task<IEnumerable<phonev2.Models.LinhKien>> GetDeletedAsync();
         
         /// <summary>
         /// Bật/tắt trạng thái hoạt động của linh kiện

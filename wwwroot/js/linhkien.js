@@ -34,65 +34,77 @@ $(document).ready(function () {
       });
   });
 
-  // Stock Update AJAX
+  // Stock Update AJAX - Updated for modal support
   $(".stock-btn").on("click", function () {
     const btn = $(this);
     const id = btn.data("id");
     const action = btn.data("action");
 
-    let actionText = "";
-    switch (action) {
-      case "add":
-        actionText = "cộng";
-        break;
-      case "subtract":
-        actionText = "trừ";
-        break;
-      case "set":
-        actionText = "đặt";
-        break;
-    }
+    // Use modal instead of prompt
+    if (typeof updateStockModal === "function") {
+      updateStockModal(id);
+      // Set the action and quantity based on button clicked
+      setTimeout(() => {
+        $("#stockAction").val(action);
+        $("#stockQuantity").val(1);
+        updateStockPreview();
+      }, 100);
+    } else {
+      // Fallback to prompt for backward compatibility
+      let actionText = "";
+      switch (action) {
+        case "add":
+          actionText = "cộng";
+          break;
+        case "subtract":
+          actionText = "trừ";
+          break;
+        case "set":
+          actionText = "đặt";
+          break;
+      }
 
-    const quantity = prompt(`Nhập số lượng muốn ${actionText}:`, "1");
-    if (!quantity || isNaN(quantity) || parseInt(quantity) <= 0) return;
+      const quantity = prompt(`Nhập số lượng muốn ${actionText}:`, "1");
+      if (!quantity || isNaN(quantity) || parseInt(quantity) <= 0) return;
 
-    btn.prop("disabled", true);
+      btn.prop("disabled", true);
 
-    $.post("/LinhKien/UpdateStock", {
-      id: id,
-      quantity: parseInt(quantity),
-      action: action,
-    })
-      .done(function (response) {
-        if (response.success) {
-          // Update stock display
-          const row = btn.closest("tr");
-          const stockBadge = row.find(".badge");
-          stockBadge.text(response.newStock);
-          stockBadge.attr("class", response.stockClass);
+      $.post("/LinhKien/UpdateStock", {
+        id: id,
+        quantity: parseInt(quantity),
+        action: action,
+      })
+        .done(function (response) {
+          if (response.success) {
+            // Update stock display
+            const row = btn.closest("tr");
+            const stockBadge = row.find(".badge");
+            stockBadge.text(response.newStock);
+            stockBadge.attr("class", response.stockClass);
 
-          // Update row color based on stock
-          row.removeClass("table-danger table-warning");
-          if (response.newStock === 0) {
-            row.addClass("table-danger");
-          } else if (response.newStock <= 5) {
-            row.addClass("table-warning");
+            // Update row color based on stock
+            row.removeClass("table-danger table-warning");
+            if (response.newStock === 0) {
+              row.addClass("table-danger");
+            } else if (response.newStock <= 5) {
+              row.addClass("table-warning");
+            }
+
+            showToast(
+              `Đã cập nhật tồn kho thành công! Số lượng mới: ${response.newStock}`,
+              "success"
+            );
+          } else {
+            showToast("Có lỗi xảy ra: " + response.message, "error");
           }
-
-          showToast(
-            `Đã cập nhật tồn kho thành công! Số lượng mới: ${response.newStock}`,
-            "success"
-          );
-        } else {
-          showToast("Có lỗi xảy ra: " + response.message, "error");
-        }
-      })
-      .fail(function () {
-        showToast("Không thể kết nối đến server!", "error");
-      })
-      .always(function () {
-        btn.prop("disabled", false);
-      });
+        })
+        .fail(function () {
+          showToast("Không thể kết nối đến server!", "error");
+        })
+        .always(function () {
+          btn.prop("disabled", false);
+        });
+    }
   });
 
   // Price calculation for Create/Edit forms

@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 using phonev2.Models;
 using phonev2.Services.LinhKien;
 
@@ -52,25 +53,35 @@ namespace phonev2.Controllers
             return View(items);
         }
 
+        // GET: LinhKien/Deleted - Danh sách linh kiện đã xóa
+        public async Task<IActionResult> Deleted()
+        {
+            ViewData["Title"] = "Linh Kiện Đã Xóa";
+            var deletedItems = await _linhKienService.GetDeletedAsync();
+            return View(deletedItems);
+        }
+
         // GET: LinhKien/Details/5
         public async Task<IActionResult> Details(int? id)
         {
-            ViewData["Title"] = "Chi Tiết Linh Kiện";
-
             if (id == null)
             {
-                TempData["ErrorMessage"] = "Không tìm thấy linh kiện.";
-                return RedirectToAction(nameof(Index));
+                return Json(new { success = false, message = "Không tìm thấy linh kiện." });
             }
 
             var linhKien = await _linhKienService.GetByIdAsync(id.Value);
             
             if (linhKien == null)
             {
-                TempData["ErrorMessage"] = "Không tìm thấy linh kiện.";
-                return RedirectToAction(nameof(Index));
+                return Json(new { success = false, message = "Không tìm thấy linh kiện." });
             }
 
+            if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+            {
+                return PartialView("_DetailsModal", linhKien);
+            }
+
+            ViewData["Title"] = "Chi Tiết Linh Kiện";
             return View(linhKien);
         }
 
@@ -88,6 +99,8 @@ namespace phonev2.Controllers
         public async Task<IActionResult> Create([Bind("TenLinhKien,MaLoaiLinhKien,HangSanXuat,GiaNhap,GiaBan,SoLuongTon,ThongSoKyThuat,TrangThai")] LinhKien linhKien)
         {
             ViewData["Title"] = "Thêm Linh Kiện Mới";
+
+
 
             // Validation
             var (isValid, errors) = await _validationService.ValidateForCreateAsync(linhKien);
@@ -122,22 +135,25 @@ namespace phonev2.Controllers
         // GET: LinhKien/Edit/5
         public async Task<IActionResult> Edit(int? id)
         {
-            ViewData["Title"] = "Sửa Thông Tin Linh Kiện";
-
             if (id == null)
             {
-                TempData["ErrorMessage"] = "Không tìm thấy linh kiện.";
-                return RedirectToAction(nameof(Index));
+                return Json(new { success = false, message = "Không tìm thấy linh kiện." });
             }
 
             var linhKien = await _linhKienService.GetByIdAsync(id.Value);
             if (linhKien == null)
             {
-                TempData["ErrorMessage"] = "Không tìm thấy linh kiện.";
-                return RedirectToAction(nameof(Index));
+                return Json(new { success = false, message = "Không tìm thấy linh kiện." });
             }
             
             await LoadDropdownData();
+            
+            if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+            {
+                return PartialView("_EditModal", linhKien);
+            }
+
+            ViewData["Title"] = "Sửa Thông Tin Linh Kiện";
             return View(linhKien);
         }
 
@@ -146,24 +162,16 @@ namespace phonev2.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, [Bind("MaLinhKien,TenLinhKien,MaLoaiLinhKien,HangSanXuat,GiaNhap,GiaBan,SoLuongTon,ThongSoKyThuat,NgayTao,TrangThai")] LinhKien linhKien)
         {
-            ViewData["Title"] = "Sửa Thông Tin Linh Kiện";
-
             if (id != linhKien.MaLinhKien)
             {
-                TempData["ErrorMessage"] = "Dữ liệu không hợp lệ.";
-                return RedirectToAction(nameof(Index));
+                return Json(new { success = false, message = "Dữ liệu không hợp lệ." });
             }
 
             // Validation
             var (isValid, errors) = await _validationService.ValidateForUpdateAsync(linhKien);
             if (!isValid)
             {
-                foreach (var error in errors)
-                {
-                    ModelState.AddModelError("", error);
-                }
-                await LoadDropdownData();
-                return View(linhKien);
+                return Json(new { success = false, message = string.Join(", ", errors) });
             }
 
             if (ModelState.IsValid)
@@ -171,45 +179,50 @@ namespace phonev2.Controllers
                 var success = await _linhKienService.UpdateAsync(linhKien);
                 if (success)
                 {
-                    TempData["SuccessMessage"] = $"Đã cập nhật thành công linh kiện '{linhKien.TenLinhKien}'.";
-                    return RedirectToAction(nameof(Index));
+                    return Json(new { success = true, message = $"Đã cập nhật thành công linh kiện '{linhKien.TenLinhKien}'." });
                 }
                 else
                 {
-                    ModelState.AddModelError("", "Có lỗi xảy ra khi cập nhật.");
+                    return Json(new { success = false, message = "Có lỗi xảy ra khi cập nhật." });
                 }
             }
             
-            await LoadDropdownData();
-            return View(linhKien);
+            var modelErrors = ModelState.Values
+                .SelectMany(v => v.Errors)
+                .Select(e => e.ErrorMessage)
+                .ToList();
+            
+            return Json(new { success = false, message = string.Join(", ", modelErrors) });
         }
 
         // GET: LinhKien/Delete/5
         public async Task<IActionResult> Delete(int? id)
         {
-            ViewData["Title"] = "Xóa Linh Kiện";
-
             if (id == null)
             {
-                TempData["ErrorMessage"] = "Không tìm thấy linh kiện.";
-                return RedirectToAction(nameof(Index));
+                return Json(new { success = false, message = "Không tìm thấy linh kiện." });
             }
 
             var linhKien = await _linhKienService.GetByIdAsync(id.Value);
                 
             if (linhKien == null)
             {
-                TempData["ErrorMessage"] = "Không tìm thấy linh kiện.";
-                return RedirectToAction(nameof(Index));
+                return Json(new { success = false, message = "Không tìm thấy linh kiện." });
             }
 
+            if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+            {
+                return PartialView("_DeleteModal", linhKien);
+            }
+
+            ViewData["Title"] = "Xóa Linh Kiện";
             return View(linhKien);
         }
 
         // POST: LinhKien/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteConfirmed(int id)
+        public async Task<IActionResult> DeleteConfirmed(int id, string? lyDoXoa = "")
         {
             try
             {
@@ -217,27 +230,63 @@ namespace phonev2.Controllers
                 var (canDelete, error) = await _validationService.CanDeleteAsync(id);
                 if (!canDelete)
                 {
-                    TempData["ErrorMessage"] = error;
-                    return RedirectToAction(nameof(Index));
+                    return Json(new { success = false, message = error });
                 }
 
-                var success = await _linhKienService.DeleteAsync(id);
+                var success = await _linhKienService.DeleteAsync(id, lyDoXoa);
                 if (success)
                 {
-                    var linhKien = await _linhKienService.GetByIdAsync(id);
-                    TempData["SuccessMessage"] = $"Đã xóa thành công linh kiện '{linhKien?.TenLinhKien}'.";
+                    var linhKien = await _linhKienService.GetByIdIncludeDeletedAsync(id);
+                    return Json(new { success = true, message = $"Đã xóa thành công linh kiện '{linhKien?.TenLinhKien}'. Linh kiện vẫn được giữ lại trong các phiếu sửa để đảm bảo tính toàn vẹn dữ liệu." });
                 }
                 else
                 {
-                    TempData["ErrorMessage"] = "Có lỗi xảy ra khi xóa linh kiện.";
+                    return Json(new { success = false, message = "Có lỗi xảy ra khi xóa linh kiện." });
                 }
             }
             catch (Exception ex)
             {
-                TempData["ErrorMessage"] = "Có lỗi xảy ra khi xóa: " + ex.Message;
+                return Json(new { success = false, message = "Có lỗi xảy ra khi xóa: " + ex.Message });
             }
+        }
 
-            return RedirectToAction(nameof(Index));
+        // POST: Khôi phục linh kiện đã xóa
+        [HttpPost]
+        public async Task<IActionResult> Restore(int id)
+        {
+            try
+            {
+                var success = await _linhKienService.RestoreAsync(id);
+                if (success)
+                {
+                    var linhKien = await _linhKienService.GetByIdAsync(id);
+                    return Json(new { success = true, message = $"Đã khôi phục thành công linh kiện '{linhKien?.TenLinhKien}'." });
+                }
+                return Json(new { success = false, message = "Không thể khôi phục linh kiện này" });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = ex.Message });
+            }
+        }
+
+        // POST: Xóa thực sự linh kiện
+        [HttpPost]
+        public async Task<IActionResult> HardDelete(int id)
+        {
+            try
+            {
+                var success = await _linhKienService.HardDeleteAsync(id);
+                if (success)
+                {
+                    return Json(new { success = true, message = "Đã xóa vĩnh viễn linh kiện khỏi hệ thống." });
+                }
+                return Json(new { success = false, message = "Không thể xóa linh kiện này" });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = ex.Message });
+            }
         }
 
         // POST: Toggle trạng thái

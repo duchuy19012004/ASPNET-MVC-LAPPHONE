@@ -50,6 +50,10 @@ namespace phonev2.Controllers
             ViewBag.ThongKeTheoThang = thongKeTheoThang;
             ViewBag.ThongKeTienTheoThang = thongKeTienTheoThang;
 
+            // Lấy SelectList khách hàng và nhân viên để map mã sang tên ở view
+            ViewBag.KhachHangList = new SelectList(_context.KhachHang.ToList(), "MaKhachHang", "HoTen");
+            ViewBag.NhanVienList = new SelectList(_context.NhanVien.ToList(), "MaNhanVien", "HoTen");
+
             ViewBag.KhachHangList = _phieuSuaService.GetKhachHangList();
             ViewBag.NhanVienList = _phieuSuaService.GetNhanVienList();
             ViewBag.CurrentPage = page;
@@ -237,6 +241,12 @@ namespace phonev2.Controllers
             
             if (ModelState.IsValid)
             {
+                // Nếu trạng thái chuyển sang Hoàn thành, lưu giờ hoàn thành
+                if (phieuSua.TrangThai == phonev2.Models.TrangThaiPhieuSua.HoanThanh)
+                {
+                    phieuSua.GioHoanThanh = DateTime.Now.TimeOfDay;
+                    phieuSua.NgayGioHoanThanh = DateTime.Now;
+                }
                 var success = await _phieuSuaService.UpdatePhieuSuaAsync(phieuSua);
                 if (success)
                 {

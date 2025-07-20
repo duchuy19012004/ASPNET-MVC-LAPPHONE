@@ -4,6 +4,8 @@
     ViewData["Title"] = "Danh sách Phiếu Sửa";
     Layout = "~/Views/Shared/_AdminLayout.cshtml";
     var sortValue = ViewBag.Sort as string ?? "";
+    var khachHangList = ViewBag.KhachHangList as IEnumerable<SelectListItem>;
+    var nhanVienList = ViewBag.NhanVienList as IEnumerable<SelectListItem>;
 }
 
 <div class="container-fluid">

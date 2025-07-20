@@ -24,6 +24,11 @@ namespace phonev2.Services.PhieuSuaThongKe
         /// Thống kê số lượng sử dụng theo loại linh kiện
         /// </summary>
         Task<IEnumerable<TopLoaiLinhKienDto>> GetThongKeLoaiLinhKienAsync(string type, int? year, int? month, int? week);
+
+        /// <summary>
+        /// Lấy top N dịch vụ được sử dụng nhiều nhất trong phiếu sửa
+        /// </summary>
+        Task<IEnumerable<TopDichVuDto>> GetTopDichVuAsync(int top, string type, int? year, int? month, int? week);
     }
 
     public class ThongKePhieuSuaDto
@@ -41,6 +46,12 @@ namespace phonev2.Services.PhieuSuaThongKe
     public class TopLoaiLinhKienDto
     {
         public string TenLoaiLinhKien { get; set; } = string.Empty;
+        public int SoLan { get; set; }
+    }
+
+    public class TopDichVuDto
+    {
+        public string TenDichVu { get; set; } = string.Empty;
         public int SoLan { get; set; }
     }
 } 

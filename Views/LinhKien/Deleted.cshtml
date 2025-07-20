@@ -1,0 +1,134 @@
+@model IEnumerable<phonev2.Models.LinhKien>
+@{
+    Layout = "_AdminLayout";
+    ViewData["Title"] = "Linh Kiện Đã Xóa";
+}
+
+@section PageActions {
+    <div class="btn-group">
+        <a asp-action="Index" class="btn btn-primary">
+            <i class="fas fa-arrow-left me-1"></i> Quay Lại Danh Sách
+        </a>
+    </div>
+}
+
+<div class="card shadow">
+    <div class="card-header bg-secondary text-white">
+        <h4 class="mb-0">
+            <i class="fas fa-trash me-2"></i>
+            Linh Kiện Đã Xóa
+        </h4>
+    </div>
+    <div class="card-body">
+        @if (!Model.Any())
+        {
+            <div class="text-center py-5">
+                <i class="fas fa-trash fa-3x text-muted mb-3"></i>
+                <h5 class="text-muted">Không có linh kiện nào đã bị xóa</h5>
+                <p class="text-muted">Tất cả linh kiện đều đang hoạt động bình thường.</p>
+            </div>
+        }
+        else
+        {
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead class="table-secondary">
+                        <tr>
+                            <th>Mã</th>
+                            <th>Tên Linh Kiện</th>
+                            <th>Loại</th>
+                            <th>Hãng SX</th>
+                            <th>Giá Bán</th>
+                            <th>Tồn Kho</th>
+                            <th>Ngày Xóa</th>
+                            <th>Lý Do</th>
+                            <th>Thao Tác</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model)
+                        {
+                            <tr class="@(item.DaXoa ? "table-secondary" : "")">
+                                <td>
+                                    <span class="badge bg-secondary">#@item.MaLinhKien</span>
+                                </td>
+                                <td>
+                                    <strong>@item.TenLinhKien</strong>
+                                    @if (item.DaXoa)
+                                    {
+                                        <span class="badge bg-danger ms-1">Đã xóa</span>
+                                    }
+                                </td>
+                                <td>
+                                    @if (item.LoaiLinhKien != null)
+                                    {
+                                        <span class="badge bg-info">@item.LoaiLinhKien.TenLoaiLinhKien</span>
+                                    }
+                                </td>
+                                <td>
+                                    @if (!string.IsNullOrEmpty(item.HangSanXuat))
+                                    {
+                                        <span class="badge bg-secondary">@item.HangSanXuat</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">-</span>
+                                    }
+                                </td>
+                                <td>
+                                    <span class="text-success fw-bold">@item.GiaBanText</span>
+                                </td>
+                                <td>
+                                    <span class="@item.TonKhoCssClass">@item.SoLuongTon cái</span>
+                                </td>
+                                <td>
+                                    <small class="text-muted">@item.NgayXoaText</small>
+                                </td>
+                                <td>
+                                    @if (!string.IsNullOrEmpty(item.LyDoXoa))
+                                    {
+                                        <small class="text-muted">@item.LyDoXoa</small>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">-</span>
+                                    }
+                                </td>
+                                <td>
+                                    <div class="btn-group btn-group-sm">
+                                        <button type="button" class="btn btn-outline-success" 
+                                                onclick="restoreLinhKien(@item.MaLinhKien, '@item.TenLinhKien')">
+                                            <i class="fas fa-undo"></i>
+                                        </button>
+                                        <button type="button" class="btn btn-outline-danger" 
+                                                onclick="hardDeleteLinhKien(@item.MaLinhKien, '@item.TenLinhKien')">
+                                            <i class="fas fa-trash-alt"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="alert alert-info mt-3">
+                <i class="fas fa-info-circle me-2"></i>
+                <strong>Lưu ý:</strong> Linh kiện đã xóa vẫn được giữ lại trong các phiếu sửa để đảm bảo tính toàn vẹn dữ liệu và báo cáo thống kê chính xác.
+            </div>
+        }
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/linhkien-softdelete.js"></script>
+    <script>
+        function restoreLinhKien(id, tenLinhKien) {
+            LinhKienSoftDelete.restore(id, tenLinhKien);
+        }
+
+        function hardDeleteLinhKien(id, tenLinhKien) {
+            LinhKienSoftDelete.hardDelete(id, tenLinhKien);
+        }
+    </script>
+} 

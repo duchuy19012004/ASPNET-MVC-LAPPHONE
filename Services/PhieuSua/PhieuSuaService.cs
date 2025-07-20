@@ -2,6 +2,7 @@ using phonev2.Models;
 using phonev2.Models.ViewModels;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
+using System.Linq;
 
 namespace phonev2.Services.PhieuSua
 {
@@ -19,6 +20,8 @@ namespace phonev2.Services.PhieuSua
             var query = _context.PhieuSua
                 .Include(p => p.ChiTietPhieuSuas).ThenInclude(ct => ct.DichVu)
                 .Include(p => p.ChiTietLinhKiens).ThenInclude(ct => ct.LinhKien)
+                .Include(p => p.KhachHang)
+                .Include(p => p.NhanVien)
                 .AsQueryable();
 
             if (!string.IsNullOrWhiteSpace(search))
@@ -54,6 +57,12 @@ namespace phonev2.Services.PhieuSua
             int totalCount = await query.CountAsync();
             int totalPages = (int)Math.Ceiling(totalCount / (double)pageSize);
             var list = await query.Skip((page - 1) * pageSize).Take(pageSize).ToListAsync();
+
+            // Sau khi lấy danh sách phiếu sửa, log ra để kiểm tra property KhachHang và NhanVien
+            foreach (var p in list)
+            {
+                System.Diagnostics.Debug.WriteLine($"PhieuSua: {p.MaPhieuSua}, MaKhachHang: {p.MaKhachHang}, TenKhachHang: {p.KhachHang?.HoTen}, MaNhanVien: {p.MaNhanVien}, TenNhanVien: {p.NhanVien?.HoTen}");
+            }
 
             return (list, totalCount, totalPages);
         }

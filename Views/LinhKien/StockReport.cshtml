@@ -1,0 +1,387 @@
+@model IEnumerable<object>
+@{
+    Layout = "_AdminLayout";
+}
+
+@section PageActions {
+    <div class="btn-group">
+        <a asp-action="Index" class="btn btn-secondary">
+            <i class="fas fa-arrow-left me-1"></i> Quay Lại Danh Sách
+        </a>
+        <a asp-action="LowStockAlert" class="btn btn-warning">
+            <i class="fas fa-exclamation-triangle me-1"></i> Cảnh Báo Tồn Kho
+        </a>
+        <a asp-action="ProfitReport" class="btn btn-success">
+            <i class="fas fa-chart-line me-1"></i> Báo Cáo Lợi Nhuận
+        </a>
+    </div>
+}
+
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-chart-bar me-2"></i>
+                    Báo Cáo Tồn Kho Theo Loại
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-8">
+                        <canvas id="stockChart" height="300"></canvas>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="row">
+                            <div class="col-12 mb-3">
+                                <div class="card bg-primary text-white">
+                                    <div class="card-body text-center">
+                                        <h4 class="mb-1" id="totalItems">0</h4>
+                                        <p class="mb-0">Tổng Mặt Hàng</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-12 mb-3">
+                                <div class="card bg-danger text-white">
+                                    <div class="card-body text-center">
+                                        <h4 class="mb-1" id="outOfStock">0</h4>
+                                        <p class="mb-0">Hết Hàng</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-12 mb-3">
+                                <div class="card bg-warning text-white">
+                                    <div class="card-body text-center">
+                                        <h4 class="mb-1" id="lowStock">0</h4>
+                                        <p class="mb-0">Tồn Kho Thấp</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-12">
+                                <div class="card bg-success text-white">
+                                    <div class="card-body text-center">
+                                        <h4 class="mb-1" id="totalValue">0</h4>
+                                        <p class="mb-0">Tổng Giá Trị (VNĐ)</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="mb-0">
+                    <i class="fas fa-pie-chart me-2"></i>
+                    Phân Bố Tồn Kho
+                </h6>
+            </div>
+            <div class="card-body">
+                <canvas id="pieChart" height="250"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="mb-0">
+                    <i class="fas fa-list me-2"></i>
+                    Top 5 Loại Có Nhiều Hàng Nhất
+                </h6>
+            </div>
+            <div class="card-body">
+                <div id="topCategories">
+                    <!-- Sẽ được populate bằng JavaScript -->
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">
+            <i class="fas fa-table me-2"></i>
+            Chi Tiết Tồn Kho Theo Loại
+        </h5>
+        <div class="btn-group btn-group-sm">
+            <button type="button" class="btn btn-outline-info" onclick="exportReport()">
+                <i class="fas fa-download me-1"></i> Xuất Báo Cáo
+            </button>
+            <button type="button" class="btn btn-outline-success" onclick="printReport()">
+                <i class="fas fa-print me-1"></i> In Báo Cáo
+            </button>
+        </div>
+    </div>
+    <div class="card-body p-0">
+        @if (Model.Any())
+        {
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Loại Linh Kiện</th>
+                            <th>Tổng Mặt Hàng</th>
+                            <th>Hết Hàng</th>
+                            <th>Tồn Kho Thấp</th>
+                            <th>Tồn Kho Bình Thường</th>
+                            <th>Tồn Kho Tốt</th>
+                            <th>Tổng Giá Trị (VNĐ)</th>
+                            <th>Thao Tác</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (dynamic item in Model)
+                        {
+                            <tr>
+                                <td>
+                                    <strong>@item.Category</strong>
+                                </td>
+                                <td>
+                                    <span class="badge bg-primary">@item.TotalItems</span>
+                                </td>
+                                <td>
+                                    @if (item.OutOfStock > 0)
+                                    {
+                                        <span class="badge bg-danger">@item.OutOfStock</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-secondary">0</span>
+                                    }
+                                </td>
+                                <td>
+                                    @if (item.LowStock > 0)
+                                    {
+                                        <span class="badge bg-warning">@item.LowStock</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-secondary">0</span>
+                                    }
+                                </td>
+                                <td>
+                                    @if (item.NormalStock > 0)
+                                    {
+                                        <span class="badge bg-info">@item.NormalStock</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-secondary">0</span>
+                                    }
+                                </td>
+                                <td>
+                                    @if (item.GoodStock > 0)
+                                    {
+                                        <span class="badge bg-success">@item.GoodStock</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-secondary">0</span>
+                                    }
+                                </td>
+                                <td>
+                                    <strong>@(((decimal)item.TotalValue).ToString("N0"))</strong>
+                                </td>
+                                <td>
+                                    <div class="btn-group btn-group-sm">
+                                        <a href="@Url.Action("Index", new { categoryFilter = item.Category })" 
+                                           class="btn btn-outline-primary" title="Xem chi tiết">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        @if (item.OutOfStock > 0 || item.LowStock > 0)
+                                        {
+                                            <a href="@Url.Action("LowStockAlert", new { threshold = 5 })" 
+                                               class="btn btn-outline-warning" title="Cảnh báo tồn kho">
+                                                <i class="fas fa-exclamation-triangle"></i>
+                                            </a>
+                                        }
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+        else
+        {
+            <div class="text-center py-5">
+                <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+                <h5 class="text-muted">Chưa Có Dữ Liệu Tồn Kho</h5>
+                <p class="text-muted">Hãy thêm linh kiện để xem báo cáo tồn kho</p>
+                <a asp-action="Create" class="btn btn-primary">
+                    <i class="fas fa-plus me-1"></i> Thêm Linh Kiện
+                </a>
+            </div>
+        }
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        $(document).ready(function() {
+            // Parse model data
+            const stockData = @Html.Raw(Json.Serialize(Model));
+            
+            if (stockData && stockData.length > 0) {
+                // Update summary cards
+                const totalItems = stockData.reduce((sum, item) => sum + item.totalItems, 0);
+                const outOfStock = stockData.reduce((sum, item) => sum + item.outOfStock, 0);
+                const lowStock = stockData.reduce((sum, item) => sum + item.lowStock, 0);
+                const totalValue = stockData.reduce((sum, item) => sum + parseFloat(item.totalValue), 0);
+                
+                $('#totalItems').text(totalItems);
+                $('#outOfStock').text(outOfStock);
+                $('#lowStock').text(lowStock);
+                $('#totalValue').text(formatCurrency(totalValue));
+                
+                // Create bar chart
+                const ctx = document.getElementById('stockChart').getContext('2d');
+                new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: stockData.map(item => item.category),
+                        datasets: [{
+                            label: 'Tổng Mặt Hàng',
+                            data: stockData.map(item => item.totalItems),
+                            backgroundColor: 'rgba(54, 162, 235, 0.8)',
+                            borderColor: 'rgba(54, 162, 235, 1)',
+                            borderWidth: 1
+                        }, {
+                            label: 'Hết Hàng',
+                            data: stockData.map(item => item.outOfStock),
+                            backgroundColor: 'rgba(255, 99, 132, 0.8)',
+                            borderColor: 'rgba(255, 99, 132, 1)',
+                            borderWidth: 1
+                        }, {
+                            label: 'Tồn Kho Thấp',
+                            data: stockData.map(item => item.lowStock),
+                            backgroundColor: 'rgba(255, 205, 86, 0.8)',
+                            borderColor: 'rgba(255, 205, 86, 1)',
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            y: {
+                                beginAtZero: true
+                            }
+                        },
+                        plugins: {
+                            legend: {
+                                position: 'top'
+                            }
+                        }
+                    }
+                });
+                
+                // Create pie chart
+                const pieCtx = document.getElementById('pieChart').getContext('2d');
+                new Chart(pieCtx, {
+                    type: 'pie',
+                    data: {
+                        labels: ['Hết Hàng', 'Tồn Kho Thấp', 'Tồn Kho Bình Thường', 'Tồn Kho Tốt'],
+                        datasets: [{
+                            data: [outOfStock, lowStock, 
+                                   stockData.reduce((sum, item) => sum + item.normalStock, 0),
+                                   stockData.reduce((sum, item) => sum + item.goodStock, 0)],
+                            backgroundColor: [
+                                'rgba(255, 99, 132, 0.8)',
+                                'rgba(255, 205, 86, 0.8)',
+                                'rgba(54, 162, 235, 0.8)',
+                                'rgba(75, 192, 192, 0.8)'
+                            ],
+                            borderWidth: 2
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'bottom'
+                            }
+                        }
+                    }
+                });
+                
+                // Populate top categories
+                const topCategories = stockData
+                    .sort((a, b) => b.totalItems - a.totalItems)
+                    .slice(0, 5);
+                
+                let topHtml = '';
+                topCategories.forEach((item, index) => {
+                    const percentage = ((item.totalItems / totalItems) * 100).toFixed(1);
+                    topHtml += `
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <div>
+                                <strong>${index + 1}. ${item.category}</strong>
+                                <br><small class="text-muted">${item.totalItems} mặt hàng</small>
+                            </div>
+                            <div class="text-end">
+                                <span class="badge bg-primary">${percentage}%</span>
+                                <br><small class="text-muted">${formatCurrency(item.totalValue)}</small>
+                            </div>
+                        </div>
+                        <div class="progress mb-3" style="height: 6px;">
+                            <div class="progress-bar" style="width: ${percentage}%"></div>
+                        </div>
+                    `;
+                });
+                $('#topCategories').html(topHtml);
+            }
+        });
+        
+        function formatCurrency(amount) {
+            return new Intl.NumberFormat('vi-VN', {
+                style: 'currency',
+                currency: 'VND'
+            }).format(amount);
+        }
+        
+        function exportReport() {
+            const data = [];
+            $('.table tbody tr').each(function() {
+                const row = $(this);
+                data.push([
+                    row.find('td:nth-child(1) strong').text(),
+                    row.find('td:nth-child(2) .badge').text(),
+                    row.find('td:nth-child(3) .badge').text(),
+                    row.find('td:nth-child(4) .badge').text(),
+                    row.find('td:nth-child(5) .badge').text(),
+                    row.find('td:nth-child(6) .badge').text(),
+                    row.find('td:nth-child(7) strong').text()
+                ]);
+            });
+            
+            let csvContent = "data:text/csv;charset=utf-8,";
+            csvContent += "Loại Linh Kiện,Tổng Mặt Hàng,Hết Hàng,Tồn Kho Thấp,Tồn Kho Bình Thường,Tồn Kho Tốt,Tổng Giá Trị\n";
+            data.forEach(row => {
+                csvContent += row.join(",") + "\n";
+            });
+            
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", `bao-cao-ton-kho-${new Date().toISOString().split('T')[0]}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+        
+        function printReport() {
+            window.print();
+        }
+    </script>
+} 
