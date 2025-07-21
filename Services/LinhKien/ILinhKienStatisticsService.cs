@@ -24,6 +24,13 @@ namespace phonev2.Services.LinhKien
         /// </summary>
         Task<object> GetStockOverviewAsync();
 
+        /// <summary>
+        /// Lấy dữ liệu báo cáo tồn kho cho các biểu đồ chart (category, totalStock, stockHistory, totalImported, totalUsed)
+        /// </summary>
+        Task<IEnumerable<object>> GetStockReportForChartsAsync(
+            string? search = null, string? category = null, string? brand = null,
+            DateTime? from = null, DateTime? to = null, string? stock = null);
+
         // === BÁO CÁO LỢI NHUẬN ===
         
         /// <summary>

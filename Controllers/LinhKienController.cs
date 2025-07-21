@@ -355,11 +355,54 @@ namespace phonev2.Controllers
         }
 
         // GET: Báo cáo tồn kho
-        public async Task<IActionResult> StockReport()
+        public async Task<IActionResult> StockReport(string search, string category, string brand, string from, string to, string stock)
         {
             ViewData["Title"] = "Báo Cáo Tồn Kho";
 
-            var stockData = await _statisticsService.GetStockReportByCategoryAsync();
+            // Lấy danh sách loại linh kiện cho dropdown
+            var loaiLinhKienList = await _linhKienService.GetLoaiLinhKienForDropdownAsync();
+            ViewBag.LoaiLinhKienList = loaiLinhKienList.Select(l => new SelectListItem { Text = l.TenLoaiLinhKien, Value = l.MaLoaiLinhKien.ToString() }).ToList();
+
+            // Lấy danh sách hãng sản xuất (distinct)
+            var allLinhKien = await _linhKienService.GetAllAsync();
+            ViewBag.BrandList = allLinhKien
+                .Where(lk => !string.IsNullOrEmpty(lk.HangSanXuat))
+                .Select(lk => lk.HangSanXuat)
+                .Distinct()
+                .OrderBy(x => x)
+                .ToList();
+
+            // Lấy danh sách tên linh kiện (distinct)
+            ViewBag.NameList = allLinhKien
+                .Select(lk => lk.TenLinhKien)
+                .Distinct()
+                .OrderBy(x => x)
+                .ToList();
+
+            DateTime? fromDate = null, toDate = null;
+            if (DateTime.TryParse(from, out var f)) fromDate = f;
+            if (DateTime.TryParse(to, out var t)) toDate = t;
+
+            // Lấy dữ liệu báo cáo tồn kho cho chart
+            var stockData = await _statisticsService.GetStockReportForChartsAsync(
+                search, category, brand, fromDate, toDate, stock);
+
+            // Nếu không có dữ liệu, trả về bản ghi mẫu để chart không lỗi
+            if (stockData == null || !stockData.Any())
+            {
+                stockData = new List<object>
+                {
+                    new {
+                        name = "Không có dữ liệu",
+                        category = "Không có dữ liệu",
+                        totalStock = 0,
+                        stockHistory = new List<int> { 0, 0, 0, 0, 0, 0 },
+                        totalImported = 0,
+                        totalUsed = 0
+                    }
+                };
+            }
+
             return View(stockData);
         }
 

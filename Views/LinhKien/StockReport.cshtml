@@ -1,384 +1,359 @@
 @model IEnumerable<object>
 @{
     Layout = "_AdminLayout";
+    var dataList = Model?.ToList() ?? new List<object>();
+    bool hasData = dataList.Count > 0;
+    // Kiểm tra nếu chỉ có 1 bản ghi mẫu 'Không có dữ liệu'
+    if (hasData && dataList.Count == 1)
+    {
+        var first = dataList[0];
+        var nameProp = first.GetType().GetProperty("name");
+        if (nameProp != null && nameProp.GetValue(first)?.ToString() == "Không có dữ liệu")
+        {
+            hasData = false;
+        }
+    }
+    var selectedNameQuery = Context.Request.Query["name"].ToString();
+    bool showBarChartByName = !string.IsNullOrEmpty(selectedNameQuery);
 }
 @section PageActions {
     <div class="btn-group">
         <a asp-action="Index" class="btn btn-secondary">
             <i class="fas fa-arrow-left me-1"></i> Quay Lại Danh Sách
         </a>
-        
-        <a asp-action="ProfitReport" class="btn btn-success">
-            <i class="fas fa-chart-line me-1"></i> Báo Cáo Lợi Nhuận
-        </a>
     </div>
 }
 
-<div class="row mb-4">
-    <div class="col-12">
-        <div class="card">
-            <div class="card-header">
-                <h5 class="mb-0">
-                    <i class="fas fa-chart-bar me-2"></i>
-                    Báo Cáo Tồn Kho Theo Loại
-                </h5>
-            </div>
-            <div class="card-body">
-                <div class="row">
-                    <div class="col-md-8">
-                        <canvas id="stockChart" height="300"></canvas>
-                    </div>
-                    <div class="col-md-4">
-                        <div class="row">
-                            <div class="col-12 mb-3">
-                                <div class="card bg-primary text-white">
-                                    <div class="card-body text-center">
-                                        <h4 class="mb-1" id="totalItems">0</h4>
-                                        <p class="mb-0">Tổng Mặt Hàng</p>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-12 mb-3">
-                                <div class="card bg-danger text-white">
-                                    <div class="card-body text-center">
-                                        <h4 class="mb-1" id="outOfStock">0</h4>
-                                        <p class="mb-0">Hết Hàng</p>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-12 mb-3">
-                                <div class="card bg-warning text-white">
-                                    <div class="card-body text-center">
-                                        <h4 class="mb-1" id="lowStock">0</h4>
-                                        <p class="mb-0">Tồn Kho Thấp</p>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-12">
-                                <div class="card bg-success text-white">
-                                    <div class="card-body text-center">
-                                        <h4 class="mb-1" id="totalValue">0</h4>
-                                        <p class="mb-0">Tổng Giá Trị (VNĐ)</p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
+<!-- Bộ lọc báo cáo tồn kho -->
+<form method="get" class="row g-3 mb-4 align-items-end" id="stockFilterForm">
+    <div class="col-md-3">
+        <label class="form-label">Tên linh kiện</label>
+        <select name="name" class="form-select">
+            <option value="">Tất cả</option>
+            @{
+                if (ViewBag.NameList != null)
+                {
+                    foreach (var item in ViewBag.NameList)
+                    {
+                        var isSelected = Context.Request.Query["name"] == item;
+                        @:<option value="@item"@(isSelected ? " selected=\"selected\"" : "")>@item</option>
+                    }
+                }
+            }
+        </select>
     </div>
-</div>
+    <div class="col-md-2">
+        <label class="form-label">Loại linh kiện</label>
+        <select name="category" class="form-select">
+            <option value="">Tất cả</option>
+            @{
+                if (ViewBag.LoaiLinhKienList != null)
+                {
+                    foreach (var item in ViewBag.LoaiLinhKienList)
+                    {
+                        var isSelected = Context.Request.Query["category"] == item.Text;
+                        @:<option value="@item.Text"@(isSelected ? " selected=\"selected\"" : "")>@item.Text</option>
+                    }
+                }
+            }
+        </select>
+    </div>
+    <div class="col-md-2">
+        <label class="form-label">Hãng sản xuất</label>
+        <select name="brand" class="form-select">
+            <option value="">Tất cả</option>
+            @{
+                if (ViewBag.BrandList != null)
+                {
+                    foreach (var item in ViewBag.BrandList)
+                    {
+                        var isSelected = Context.Request.Query["brand"] == item;
+                        @:<option value="@item"@(isSelected ? " selected=\"selected\"" : "")>@item</option>
+                    }
+                }
+            }
+        </select>
+    </div>
+    <div class="col-md-2">
+        <label class="form-label">Từ ngày</label>
+        <input type="date" name="from" class="form-control" value="@Context.Request.Query["from"]" />
+    </div>
+    <div class="col-md-2">
+        <label class="form-label">Đến ngày</label>
+        <input type="date" name="to" class="form-control" value="@Context.Request.Query["to"]" />
+    </div>
+    <div class="col-md-1">
+        <label class="form-label">Tồn kho</label>
+        <select name="stock" class="form-select">
+            <option value="">Tất cả</option>
+            @{
+                var stockVal = Context.Request.Query["stock"];
+                @:<option value=">50"@(stockVal == ">50" ? " selected=\"selected\"" : "")>&gt; 50</option>
+                @:<option value="<5"@(stockVal == "<5" ? " selected=\"selected\"" : "")>&lt; 5</option>
+                @:<option value="0"@(stockVal == "0" ? " selected=\"selected\"" : "")>Hết hàng</option>
+            }
+        </select>
+    </div>
+    <div class="col-md-12 text-end">
+        <button type="submit" class="btn btn-primary"><i class="fas fa-filter me-1"></i> Lọc</button>
+        <a href="@Url.Action("StockReport")" class="btn btn-outline-secondary ms-2">Xóa lọc</a>
+    </div>
+</form>
 
-<div class="row mb-4">
-    <div class="col-md-6">
-        <div class="card">
-            <div class="card-header">
-                <h6 class="mb-0">
-                    <i class="fas fa-pie-chart me-2"></i>
-                    Phân Bố Tồn Kho
-                </h6>
-            </div>
-            <div class="card-body">
-                <canvas id="pieChart" height="250"></canvas>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-6">
-        <div class="card">
-            <div class="card-header">
-                <h6 class="mb-0">
-                    <i class="fas fa-list me-2"></i>
-                    Top 5 Loại Có Nhiều Hàng Nhất
-                </h6>
-            </div>
-            <div class="card-body">
-                <div id="topCategories">
-                    <!-- Sẽ được populate bằng JavaScript -->
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<div class="card">
-    <div class="card-header d-flex justify-content-between align-items-center">
-        <h5 class="mb-0">
-            <i class="fas fa-table me-2"></i>
-            Chi Tiết Tồn Kho Theo Loại
-        </h5>
-        <div class="btn-group btn-group-sm">
-            <button type="button" class="btn btn-outline-info" onclick="exportReport()">
-                <i class="fas fa-download me-1"></i> Xuất Báo Cáo
-            </button>
-            <button type="button" class="btn btn-outline-success" onclick="printReport()">
-                <i class="fas fa-print me-1"></i> In Báo Cáo
-            </button>
-        </div>
-    </div>
-    <div class="card-body p-0">
-        @if (Model.Any())
-        {
-            <div class="table-responsive">
-                <table class="table table-hover mb-0">
-                    <thead class="table-light">
-                        <tr>
-                            <th>Loại Linh Kiện</th>
-                            <th>Tổng Mặt Hàng</th>
-                            <th>Hết Hàng</th>
-                            <th>Tồn Kho Thấp</th>
-                            <th>Tồn Kho Bình Thường</th>
-                            <th>Tồn Kho Tốt</th>
-                            <th>Tổng Giá Trị (VNĐ)</th>
-                            <th>Thao Tác</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach (dynamic item in Model)
+@if (!hasData)
+{
+    <div class="alert alert-warning text-center">Không có dữ liệu để hiển thị biểu đồ.</div>
+}
+else
+{
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-chart-bar me-2"></i>Biểu đồ cột – Số lượng tồn kho</h5>
+                    <small class="text-muted">
+                        @if (showBarChartByName)
                         {
-                            <tr>
-                                <td>
-                                    <strong>@item.Category</strong>
-                                </td>
-                                <td>
-                                    <span class="badge bg-primary">@item.TotalItems</span>
-                                </td>
-                                <td>
-                                    @if (item.OutOfStock > 0)
-                                    {
-                                        <span class="badge bg-danger">@item.OutOfStock</span>
-                                    }
-                                    else
-                                    {
-                                        <span class="badge bg-secondary">0</span>
-                                    }
-                                </td>
-                                <td>
-                                    @if (item.LowStock > 0)
-                                    {
-                                        <span class="badge bg-warning">@item.LowStock</span>
-                                    }
-                                    else
-                                    {
-                                        <span class="badge bg-secondary">0</span>
-                                    }
-                                </td>
-                                <td>
-                                    @if (item.NormalStock > 0)
-                                    {
-                                        <span class="badge bg-info">@item.NormalStock</span>
-                                    }
-                                    else
-                                    {
-                                        <span class="badge bg-secondary">0</span>
-                                    }
-                                </td>
-                                <td>
-                                    @if (item.GoodStock > 0)
-                                    {
-                                        <span class="badge bg-success">@item.GoodStock</span>
-                                    }
-                                    else
-                                    {
-                                        <span class="badge bg-secondary">0</span>
-                                    }
-                                </td>
-                                <td>
-                                    <strong>@(((decimal)item.TotalValue).ToString("N0"))</strong>
-                                </td>
-                                <td>
-                                    <div class="btn-group btn-group-sm">
-                                        <a href="@Url.Action("Index", new { categoryFilter = item.Category })" 
-                                           class="btn btn-outline-primary" title="Xem chi tiết">
-                                            <i class="fas fa-eye"></i>
-                                        </a>
-                                        @if (item.OutOfStock > 0 || item.LowStock > 0)
-                                        {
-                                            <a href="@Url.Action("LowStockAlert", new { threshold = 5 })" 
-                                               class="btn btn-outline-warning" title="Cảnh báo tồn kho">
-                                                <i class="fas fa-exclamation-triangle"></i>
-                                            </a>
-                                        }
-                                    </div>
-                                </td>
-                            </tr>
+                            <span>Đang hiển thị cho: @selectedNameQuery</span>
                         }
-                    </tbody>
-                </table>
+                        else
+                        {
+                            <span>Tổng hợp theo loại linh kiện</span>
+                        }
+                    </small>
+                </div>
+                <div class="card-body">
+                    <canvas id="barChart" height="300"></canvas>
+                </div>
             </div>
-        }
-        else
-        {
-            <div class="text-center py-5">
-                <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
-                <h5 class="text-muted">Chưa Có Dữ Liệu Tồn Kho</h5>
-                <p class="text-muted">Hãy thêm linh kiện để xem báo cáo tồn kho</p>
-                <a asp-action="Create" class="btn btn-primary">
-                    <i class="fas fa-plus me-1"></i> Thêm Linh Kiện
-                </a>
-            </div>
-        }
+        </div>
     </div>
-</div>
+
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-pie-chart me-2"></i>Biểu đồ tròn – Tỷ lệ tồn kho theo nhóm linh kiện</h5>
+                    <small class="text-muted">Ví dụ: màn hình chiếm 40%, pin 30%, mainboard 10%, ...</small>
+                </div>
+                <div class="card-body">
+                    <canvas id="pieChart" height="300"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-chart-line me-2"></i>Biểu đồ đường – Xu hướng tồn kho theo thời gian</h5>
+                    <small class="text-muted">Theo tuần/tháng, giúp dự báo tồn kho tăng hay giảm</small>
+                </div>
+                <div class="card-body">
+                    <canvas id="lineChart" height="300"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-chart-bar me-2"></i>Biểu đồ thanh – So sánh số lượng tồn theo từng tên linh kiện</h5>
+                    <small class="text-muted">Mỗi cột là số lượng còn tồn của một tên linh kiện</small>
+                </div>
+                <div class="card-body">
+                    <canvas id="compareBarChart" height="300"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+}
 
 @section Scripts {
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
         $(document).ready(function() {
-            // Parse model data
             const stockData = @Html.Raw(Json.Serialize(Model));
-            
-            if (stockData && stockData.length > 0) {
-                // Update summary cards
-                const totalItems = stockData.reduce((sum, item) => sum + item.totalItems, 0);
-                const outOfStock = stockData.reduce((sum, item) => sum + item.outOfStock, 0);
-                const lowStock = stockData.reduce((sum, item) => sum + item.lowStock, 0);
-                const totalValue = stockData.reduce((sum, item) => sum + parseFloat(item.totalValue), 0);
-                
-                $('#totalItems').text(totalItems);
-                $('#outOfStock').text(outOfStock);
-                $('#lowStock').text(lowStock);
-                $('#totalValue').text(formatCurrency(totalValue));
-                
-                // Create bar chart
-                const ctx = document.getElementById('stockChart').getContext('2d');
-                new Chart(ctx, {
-                    type: 'bar',
-                    data: {
-                        labels: stockData.map(item => item.category),
-                        datasets: [{
-                            label: 'Tổng Mặt Hàng',
-                            data: stockData.map(item => item.totalItems),
-                            backgroundColor: 'rgba(54, 162, 235, 0.8)',
-                            borderColor: 'rgba(54, 162, 235, 1)',
-                            borderWidth: 1
-                        }, {
-                            label: 'Hết Hàng',
-                            data: stockData.map(item => item.outOfStock),
-                            backgroundColor: 'rgba(255, 99, 132, 0.8)',
-                            borderColor: 'rgba(255, 99, 132, 1)',
-                            borderWidth: 1
-                        }, {
-                            label: 'Tồn Kho Thấp',
-                            data: stockData.map(item => item.lowStock),
-                            backgroundColor: 'rgba(255, 205, 86, 0.8)',
-                            borderColor: 'rgba(255, 205, 86, 1)',
-                            borderWidth: 1
-                        }]
+            console.log("Stock Data:", stockData);
+
+            if (!stockData || stockData.length === 0 || (stockData.length === 1 && stockData[0].name === "Không có dữ liệu")) {
+                console.log("No data to display charts.");
+                return;
+            }
+
+            const selectedName = '@Context.Request.Query["name"]';
+
+            // === Biểu đồ cột: Tồn kho ===
+            const barCtx = document.getElementById('barChart').getContext('2d');
+            let barLabels, barData;
+            if (selectedName && selectedName !== "") {
+                // Chế độ xem chi tiết cho 1 linh kiện
+                const filtered = stockData.filter(x => x.name === selectedName);
+                barLabels = filtered.map(x => x.category);
+                barData = filtered.map(x => x.totalStock);
+            } else {
+                // Chế độ tổng hợp theo loại linh kiện
+                const categoryMap = {};
+                stockData.forEach(item => {
+                    const cat = item.category;
+                    if (!categoryMap[cat]) categoryMap[cat] = 0;
+                    categoryMap[cat] += item.totalStock;
+                });
+                barLabels = Object.keys(categoryMap);
+                barData = Object.values(categoryMap);
+            }
+            new Chart(barCtx, {
+                type: 'bar',
+                data: {
+                    labels: barLabels,
+                    datasets: [{
+                        label: 'Số lượng tồn',
+                        data: barData,
+                        backgroundColor: selectedName ? 'rgba(255, 159, 64, 0.8)' : 'rgba(54, 162, 235, 0.8)',
+                        borderColor: selectedName ? 'rgba(255, 159, 64, 1)' : 'rgba(54, 162, 235, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: { enabled: true }
                     },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        scales: {
-                            y: {
-                                beginAtZero: true
+                    scales: {
+                        x: {
+                            title: {
+                                display: true,
+                                text: selectedName ? 'Loại linh kiện' : 'Tên loại linh kiện'
                             }
                         },
-                        plugins: {
-                            legend: {
-                                position: 'top'
-                            }
+                        y: {
+                            title: {
+                                display: true,
+                                text: 'Số lượng tồn'
+                            },
+                            beginAtZero: true
                         }
                     }
-                });
-                
-                // Create pie chart
+                }
+            });
+
+            // === 2. Biểu đồ tròn: Tỷ lệ tồn kho theo nhóm ===
+            const categoryMap = {};
+            stockData.forEach(item => {
+                const cat = item.category;
+                if (!categoryMap[cat]) {
+                    categoryMap[cat] = 0;
+                }
+                categoryMap[cat] += item.totalStock;
+            });
+
+            const pieLabels = Object.keys(categoryMap);
+            const pieData = Object.values(categoryMap);
+
+            if (pieLabels.length > 0) {
                 const pieCtx = document.getElementById('pieChart').getContext('2d');
                 new Chart(pieCtx, {
                     type: 'pie',
                     data: {
-                        labels: ['Hết Hàng', 'Tồn Kho Thấp', 'Tồn Kho Bình Thường', 'Tồn Kho Tốt'],
+                        labels: pieLabels,
                         datasets: [{
-                            data: [outOfStock, lowStock, 
-                                   stockData.reduce((sum, item) => sum + item.normalStock, 0),
-                                   stockData.reduce((sum, item) => sum + item.goodStock, 0)],
+                            data: pieData,
                             backgroundColor: [
+                                'rgba(54, 162, 235, 0.8)',
                                 'rgba(255, 99, 132, 0.8)',
                                 'rgba(255, 205, 86, 0.8)',
-                                'rgba(54, 162, 235, 0.8)',
-                                'rgba(75, 192, 192, 0.8)'
-                            ],
-                            borderWidth: 2
+                                'rgba(75, 192, 192, 0.8)',
+                                'rgba(153, 102, 255, 0.8)',
+                                'rgba(255, 159, 64, 0.8)'
+                            ]
                         }]
                     },
                     options: {
                         responsive: true,
-                        maintainAspectRatio: false,
                         plugins: {
-                            legend: {
-                                position: 'bottom'
+                            legend: { position: 'bottom' },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        const label = context.label || '';
+                                        const value = context.parsed;
+                                        const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                        const percent = ((value / total) * 100).toFixed(1);
+                                        return `${label}: ${value} (${percent}%)`;
+                                    }
+                                }
                             }
                         }
                     }
                 });
-                
-                // Populate top categories
-                const topCategories = stockData
-                    .sort((a, b) => b.totalItems - a.totalItems)
-                    .slice(0, 5);
-                
-                let topHtml = '';
-                topCategories.forEach((item, index) => {
-                    const percentage = ((item.totalItems / totalItems) * 100).toFixed(1);
-                    topHtml += `
-                        <div class="d-flex justify-content-between align-items-center mb-2">
-                            <div>
-                                <strong>${index + 1}. ${item.category}</strong>
-                                <br><small class="text-muted">${item.totalItems} mặt hàng</small>
-                            </div>
-                            <div class="text-end">
-                                <span class="badge bg-primary">${percentage}%</span>
-                                <br><small class="text-muted">${formatCurrency(item.totalValue)}</small>
-                            </div>
-                        </div>
-                        <div class="progress mb-3" style="height: 6px;">
-                            <div class="progress-bar" style="width: ${percentage}%"></div>
-                        </div>
-                    `;
-                });
-                $('#topCategories').html(topHtml);
             }
+
+            // === 3. Biểu đồ đường: Xu hướng tồn kho ===
+            const weeks = 6;
+            const totalStockHistory = Array(weeks).fill(0);
+            stockData.forEach(item => {
+                if (item.stockHistory && item.stockHistory.length === weeks) {
+                    for (let i = 0; i < weeks; i++) {
+                        totalStockHistory[i] += item.stockHistory[i];
+                    }
+                }
+            });
+
+            const lineLabels = Array.from({length: weeks}, (_, i) => `Tuần ${i+1}`);
+            const lineCtx = document.getElementById('lineChart').getContext('2d');
+            new Chart(lineCtx, {
+                type: 'line',
+                data: {
+                    labels: lineLabels,
+                    datasets: [{
+                        label: 'Tổng tồn kho',
+                        data: totalStockHistory,
+                        borderColor: 'rgba(54, 162, 235, 1)',
+                        backgroundColor: 'rgba(0,0,0,0)',
+                        tension: 0.3
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: { position: 'top' },
+                        tooltip: { enabled: true }
+                    },
+                    scales: {
+                        x: { title: { display: true, text: 'Thời gian' } },
+                        y: { title: { display: true, text: 'Số lượng tồn' }, beginAtZero: true }
+                    }
+                }
+            });
+
+            // === 4. Biểu đồ thanh: So sánh số lượng tồn theo từng tên linh kiện ===
+            const compareCtx = document.getElementById('compareBarChart').getContext('2d');
+            const topItems = stockData.slice(0, 20); // Giới hạn 20 tên linh kiện
+            new Chart(compareCtx, {
+                type: 'bar',
+                data: {
+                    labels: topItems.map(x => x.name),
+                    datasets: [
+                        {
+                            label: 'Số lượng tồn',
+                            data: topItems.map(x => x.totalStock),
+                            backgroundColor: 'rgba(54, 162, 235, 0.8)'
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: { enabled: true }
+                    },
+                    scales: {
+                        x: { title: { display: true, text: 'Tên linh kiện' } },
+                        y: { title: { display: true, text: 'Số lượng tồn' }, beginAtZero: true }
+                    }
+                }
+            });
         });
-        
-        function formatCurrency(amount) {
-            return new Intl.NumberFormat('vi-VN', {
-                style: 'currency',
-                currency: 'VND'
-            }).format(amount);
-        }
-        
-        function exportReport() {
-            const data = [];
-            $('.table tbody tr').each(function() {
-                const row = $(this);
-                data.push([
-                    row.find('td:nth-child(1) strong').text(),
-                    row.find('td:nth-child(2) .badge').text(),
-                    row.find('td:nth-child(3) .badge').text(),
-                    row.find('td:nth-child(4) .badge').text(),
-                    row.find('td:nth-child(5) .badge').text(),
-                    row.find('td:nth-child(6) .badge').text(),
-                    row.find('td:nth-child(7) strong').text()
-                ]);
-            });
-            
-            let csvContent = "data:text/csv;charset=utf-8,";
-            csvContent += "Loại Linh Kiện,Tổng Mặt Hàng,Hết Hàng,Tồn Kho Thấp,Tồn Kho Bình Thường,Tồn Kho Tốt,Tổng Giá Trị\n";
-            data.forEach(row => {
-                csvContent += row.join(",") + "\n";
-            });
-            
-            const encodedUri = encodeURI(csvContent);
-            const link = document.createElement("a");
-            link.setAttribute("href", encodedUri);
-            link.setAttribute("download", `bao-cao-ton-kho-${new Date().toISOString().split('T')[0]}.csv`);
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-        }
-        
-        function printReport() {
-            window.print();
-        }
     </script>
 } 
