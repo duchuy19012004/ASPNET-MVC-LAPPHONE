@@ -36,20 +36,24 @@ build_metadata.AdditionalFiles.CssScope =
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcRGljaFZ1XENyZWF0ZS5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[c:/Users/juven/Desktop/phonev2/Views/DichVu/Delete.cshtml]
-build_metadata.AdditionalFiles.TargetPath = Vmlld3NcRGljaFZ1XERlbGV0ZS5jc2h0bWw=
-build_metadata.AdditionalFiles.CssScope = 
-
-[c:/Users/juven/Desktop/phonev2/Views/DichVu/Details.cshtml]
-build_metadata.AdditionalFiles.TargetPath = Vmlld3NcRGljaFZ1XERldGFpbHMuY3NodG1s
-build_metadata.AdditionalFiles.CssScope = 
-
-[c:/Users/juven/Desktop/phonev2/Views/DichVu/Edit.cshtml]
-build_metadata.AdditionalFiles.TargetPath = Vmlld3NcRGljaFZ1XEVkaXQuY3NodG1s
+[c:/Users/juven/Desktop/phonev2/Views/DichVu/Deleted.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcRGljaFZ1XERlbGV0ZWQuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
 [c:/Users/juven/Desktop/phonev2/Views/DichVu/Index.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcRGljaFZ1XEluZGV4LmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[c:/Users/juven/Desktop/phonev2/Views/DichVu/_DeleteModal.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcRGljaFZ1XF9EZWxldGVNb2RhbC5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[c:/Users/juven/Desktop/phonev2/Views/DichVu/_DetailsModal.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcRGljaFZ1XF9EZXRhaWxzTW9kYWwuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[c:/Users/juven/Desktop/phonev2/Views/DichVu/_EditModal.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcRGljaFZ1XF9FZGl0TW9kYWwuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
 [c:/Users/juven/Desktop/phonev2/Views/Home/Index.cshtml]

@@ -1,0 +1,178 @@
+@model phonev2.Models.DichVu
+
+@{
+    var selectedLoai = "";
+    var selectedIds = new List<int>();
+    if (ViewBag.SelectedLinhKienIds != null)
+    {
+        // Nếu là List<int> hoặc IEnumerable<int>
+        if (ViewBag.SelectedLinhKienIds is IEnumerable<int> ids)
+        {
+            selectedIds = ids.ToList();
+        }
+        // Nếu là chuỗi (phòng trường hợp bị truyền nhầm)
+        else if (ViewBag.SelectedLinhKienIds is string idsStr && !string.IsNullOrEmpty(idsStr))
+        {
+            selectedIds = idsStr.Split(',').Select(x => int.TryParse(x, out var v) ? v : 0).Where(x => x > 0).ToList();
+        }
+    }
+    if (selectedIds.Any() && ViewBag.LinhKienList != null)
+    {
+        var firstLk = ((IEnumerable<phonev2.Models.LinhKien>)ViewBag.LinhKienList).FirstOrDefault(lk => selectedIds.Contains(lk.MaLinhKien));
+        if (firstLk != null)
+        {
+            selectedLoai = firstLk.MaLoaiLinhKien.ToString();
+        }
+    }
+    // Tạo danh sách đơn giản chỉ gồm các trường cần thiết để serialize sang JS
+    var simpleLinhKienList = ((IEnumerable<phonev2.Models.LinhKien>)ViewBag.LinhKienList)
+        .Select(lk => new {
+            MaLinhKien = lk.MaLinhKien,
+            MaLoaiLinhKien = lk.MaLoaiLinhKien,
+            TenLinhKien = lk.TenLinhKien,
+            GiaBan = lk.GiaBan
+        }).ToList();
+}
+
+<div class="modal-header bg-warning text-dark">
+    <h5 class="modal-title">
+        <i class="fas fa-edit me-2"></i>
+        Chỉnh Sửa Dịch Vụ
+    </h5>
+    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+</div>
+<form id="editDichVuForm" asp-action="Edit" asp-route-id="@Model.MaDichVu" method="post">
+    @Html.AntiForgeryToken()
+    <div class="modal-body">
+        <div asp-validation-summary="ModelOnly" class="alert alert-danger alert-sm" role="alert"></div>
+        <input asp-for="MaDichVu" type="hidden" />
+        <input asp-for="NgayTao" type="hidden" />
+        <div class="row mb-3">
+            <div class="col-md-12">
+                <label asp-for="TenDichVu" class="form-label fw-bold">
+                    <i class="fas fa-tag me-1 text-primary"></i>Tên Dịch Vụ <span class="text-danger">*</span>
+                </label>
+                <input asp-for="TenDichVu" class="form-control" placeholder="VD: Thay màn hình iPhone 13" />
+                <span asp-validation-for="TenDichVu" class="text-danger"></span>
+            </div>
+        </div>
+        <div class="row mb-3">
+            <div class="col-md-6">
+                <label asp-for="GiaDichVu" class="form-label fw-bold">
+                    <i class="fas fa-money-bill-wave me-1 text-success"></i>Giá Dịch Vụ <span class="text-danger">*</span>
+                </label>
+                <div class="input-group">
+                    <input asp-for="GiaDichVu" class="form-control" type="number" min="0" id="GiaDichVu" />
+                    <span class="input-group-text">VNĐ</span>
+                </div>
+                <span asp-validation-for="GiaDichVu" class="text-danger"></span>
+                <div class="form-text text-primary fw-bold" id="formattedGiaDichVu" style="display:none;"></div>
+            </div>
+            <div class="col-md-6">
+                <label asp-for="ThoiGianSua" class="form-label fw-bold">
+                    <i class="fas fa-clock me-1 text-warning"></i>Thời Gian Sửa
+                </label>
+                <div class="input-group">
+                    <input asp-for="ThoiGianSua" class="form-control" type="number" min="1" />
+                    <span class="input-group-text">phút</span>
+                </div>
+                <span asp-validation-for="ThoiGianSua" class="text-danger"></span>
+            </div>
+        </div>
+        <div class="row mb-3">
+            <div class="col-md-12">
+                <label asp-for="MoTa" class="form-label fw-bold">
+                    <i class="fas fa-align-left me-1 text-info"></i>Mô Tả
+                </label>
+                <textarea asp-for="MoTa" class="form-control" rows="3" placeholder="Mô tả chi tiết về dịch vụ..."></textarea>
+                <span asp-validation-for="MoTa" class="text-danger"></span>
+            </div>
+        </div>
+        <div class="row mb-3">
+            <div class="col-12">
+                <label class="form-label fw-bold">
+                    <i class="fas fa-toggle-on me-1 text-primary"></i>Trạng Thái
+                </label>
+                <div class="form-check form-switch">
+                    <input asp-for="TrangThai" class="form-check-input" type="checkbox" value="true" />
+                    <input type="hidden" name="TrangThai" value="false" />
+                    <label class="form-check-label" asp-for="TrangThai">
+                        Dịch vụ đang hoạt động
+                    </label>
+                </div>
+            </div>
+        </div>
+        <!-- Chọn loại linh kiện cho dịch vụ -->
+        <div class="row mb-3">
+            <div class="col-md-12">
+                <label class="form-label fw-bold">
+                    <i class="fas fa-tags me-1 text-info"></i>Chọn Loại Linh Kiện
+                    <span class="text-danger">*</span>
+                </label>
+                <select id="LoaiLinhKienSelectEdit" name="selectedLoaiLinhKienId" class="form-select">
+                    <option value="">-- Chọn loại linh kiện --</option>
+                    @foreach (var loai in (IEnumerable<SelectListItem>)ViewBag.LoaiLinhKienList)
+                    {
+                        <option value="@loai.Value">@loai.Text</option>
+                    }
+                </select>
+                <input type="hidden" id="SelectedLinhKienIdsEdit" name="selectedLinhKienIds" value="@string.Join(",", selectedIds)" />
+                <div class="form-text">Khi chọn loại linh kiện, tất cả linh kiện thuộc loại đó sẽ được gán cho dịch vụ.</div>
+                @if (ViewData.ModelState["selectedLinhKienIds"]?.Errors.Count > 0)
+                {
+                    <div class="alert alert-danger">
+                        @Html.ValidationMessage("selectedLinhKienIds")
+                    </div>
+                }
+                @if (ViewData.ModelState["selectedLoaiLinhKienId"]?.Errors.Count > 0)
+                {
+                    <div class="alert alert-danger">
+                        @Html.ValidationMessage("selectedLoaiLinhKienId")
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+    <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+            <i class="fas fa-times me-1"></i>Hủy
+        </button>
+        <button type="submit" class="btn btn-warning">
+            <i class="fas fa-save me-1"></i>Cập Nhật
+        </button>
+    </div>
+</form>
+<script>
+    $(document).ready(function() {
+        const allLinhKien = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(simpleLinhKienList));
+        var selectedLoai = '@selectedLoai';
+        if (selectedLoai) {
+            $('#LoaiLinhKienSelectEdit').val(selectedLoai).trigger('change');
+        }
+        $('#LoaiLinhKienSelectEdit').on('change', function() {
+            const selectedLoai = parseInt($(this).val());
+            if (selectedLoai) {
+                const ids = allLinhKien.filter(lk => lk.MaLoaiLinhKien === selectedLoai).map(lk => lk.MaLinhKien);
+                $('#SelectedLinhKienIdsEdit').val(ids.join(','));
+            } else {
+                // Nếu không chọn loại mới, giữ nguyên danh sách cũ
+                $('#SelectedLinhKienIdsEdit').val('@string.Join(",", selectedIds)');
+            }
+        });
+        // Không kiểm tra bắt buộc phải chọn loại linh kiện khi submit
+        function formatCurrency(num) {
+            if (!num || num == 0) return '0 VNĐ';
+            return parseInt(num).toLocaleString('vi-VN') + ' VNĐ';
+        }
+        function updateFormattedGia() {
+            const val = $('#GiaDichVu').val();
+            if (val && parseInt(val) > 0) {
+                $('#formattedGiaDichVu').text(formatCurrency(val)).show();
+            } else {
+                $('#formattedGiaDichVu').hide();
+            }
+        }
+        $('#GiaDichVu').on('input keyup blur', updateFormattedGia);
+        updateFormattedGia();
+    });
+</script> 

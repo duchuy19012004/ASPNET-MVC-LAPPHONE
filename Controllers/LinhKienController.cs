@@ -11,15 +11,18 @@ namespace phonev2.Controllers
         private readonly ILinhKienService _linhKienService;
         private readonly ILinhKienValidationService _validationService;
         private readonly ILinhKienStatisticsService _statisticsService;
+        private readonly phonev2.Repository.PhoneLapDbContext _context;
 
         public LinhKienController(
             ILinhKienService linhKienService,
             ILinhKienValidationService validationService,
-            ILinhKienStatisticsService statisticsService)
+            ILinhKienStatisticsService statisticsService,
+            phonev2.Repository.PhoneLapDbContext context)
         {
             _linhKienService = linhKienService;
             _validationService = validationService;
             _statisticsService = statisticsService;
+            _context = context;
         }
 
         // GET: LinhKien
@@ -119,6 +122,28 @@ namespace phonev2.Controllers
                 var success = await _linhKienService.CreateAsync(linhKien);
                 if (success)
                 {
+                    // Tự động gán linh kiện mới vào các dịch vụ đã gán linh kiện cùng loại
+                    var maLoaiLinhKien = linhKien.MaLoaiLinhKien;
+                    var maLinhKienMoi = linhKien.MaLinhKien;
+                    var dichVuIds = _context.DichVuLinhKien
+                        .Where(x => _context.LinhKien.Any(lk => lk.MaLinhKien == x.MaLinhKien && lk.MaLoaiLinhKien == maLoaiLinhKien))
+                        .Select(x => x.MaDichVu)
+                        .Distinct()
+                        .ToList();
+                    foreach (var maDichVu in dichVuIds)
+                    {
+                        bool exists = _context.DichVuLinhKien.Any(x => x.MaDichVu == maDichVu && x.MaLinhKien == maLinhKienMoi);
+                        if (!exists)
+                        {
+                            _context.DichVuLinhKien.Add(new DichVuLinhKien
+                            {
+                                MaDichVu = maDichVu,
+                                MaLinhKien = maLinhKienMoi,
+                                SoLuong = 1
+                            });
+                        }
+                    }
+                    _context.SaveChanges();
                     TempData["SuccessMessage"] = $"Đã thêm thành công linh kiện '{linhKien.TenLinhKien}'.";
                     return RedirectToAction(nameof(Index));
                 }

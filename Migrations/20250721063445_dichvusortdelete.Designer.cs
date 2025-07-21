@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using phonev2.Repository;
 
@@ -11,9 +12,11 @@ using phonev2.Repository;
 namespace phonev2.Migrations
 {
     [DbContext(typeof(PhoneLapDbContext))]
-    partial class PhoneLapDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250721063445_dichvusortdelete")]
+    partial class dichvusortdelete
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -197,26 +200,6 @@ namespace phonev2.Migrations
                     b.HasIndex("TrangThai");
 
                     b.ToTable("DichVu");
-                });
-
-            modelBuilder.Entity("phonev2.Models.DichVuLinhKien", b =>
-                {
-                    b.Property<int>("MaDichVu")
-                        .HasColumnType("int")
-                        .HasColumnOrder(0);
-
-                    b.Property<int>("MaLinhKien")
-                        .HasColumnType("int")
-                        .HasColumnOrder(1);
-
-                    b.Property<int>("SoLuong")
-                        .HasColumnType("int");
-
-                    b.HasKey("MaDichVu", "MaLinhKien");
-
-                    b.HasIndex("MaLinhKien");
-
-                    b.ToTable("DichVuLinhKien");
                 });
 
             modelBuilder.Entity("phonev2.Models.KhachHang", b =>
@@ -830,25 +813,6 @@ namespace phonev2.Migrations
                     b.Navigation("PhieuSua");
                 });
 
-            modelBuilder.Entity("phonev2.Models.DichVuLinhKien", b =>
-                {
-                    b.HasOne("phonev2.Models.DichVu", "DichVu")
-                        .WithMany("DichVuLinhKiens")
-                        .HasForeignKey("MaDichVu")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("phonev2.Models.LinhKien", "LinhKien")
-                        .WithMany("DichVuLinhKiens")
-                        .HasForeignKey("MaLinhKien")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("DichVu");
-
-                    b.Navigation("LinhKien");
-                });
-
             modelBuilder.Entity("phonev2.Models.LinhKien", b =>
                 {
                     b.HasOne("phonev2.Models.LoaiLinhKien", "LoaiLinhKien")
@@ -915,16 +879,6 @@ namespace phonev2.Migrations
                         .IsRequired();
 
                     b.Navigation("KhachHang");
-                });
-
-            modelBuilder.Entity("phonev2.Models.DichVu", b =>
-                {
-                    b.Navigation("DichVuLinhKiens");
-                });
-
-            modelBuilder.Entity("phonev2.Models.LinhKien", b =>
-                {
-                    b.Navigation("DichVuLinhKiens");
                 });
 
             modelBuilder.Entity("phonev2.Models.PhieuNhap", b =>

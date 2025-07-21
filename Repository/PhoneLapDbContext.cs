@@ -22,6 +22,7 @@ namespace phonev2.Repository
         public DbSet<PhieuSua> PhieuSua { get; set; }
         public DbSet<ChiTietPhieuSua> ChiTietPhieuSua { get; set; }
         public DbSet<ChiTietLinhKien> ChiTietLinhKien { get; set; }
+        public DbSet<DichVuLinhKien> DichVuLinhKien { get; set; }
 
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -272,6 +273,20 @@ namespace phonev2.Repository
                       .OnDelete(DeleteBehavior.Restrict);
                 entity.HasIndex(e => e.MaPhieuSua);
                 entity.HasIndex(e => e.MaLinhKien);
+            });
+
+            // Cấu hình bảng liên kết DịchVuLinhKien
+            modelBuilder.Entity<DichVuLinhKien>(entity =>
+            {
+                entity.HasKey(e => new { e.MaDichVu, e.MaLinhKien });
+                entity.HasOne(e => e.DichVu)
+                      .WithMany(dv => dv.DichVuLinhKiens)
+                      .HasForeignKey(e => e.MaDichVu)
+                      .OnDelete(DeleteBehavior.Cascade);
+                entity.HasOne(e => e.LinhKien)
+                      .WithMany(lk => lk.DichVuLinhKiens)
+                      .HasForeignKey(e => e.MaLinhKien)
+                      .OnDelete(DeleteBehavior.Restrict);
             });
 
         }

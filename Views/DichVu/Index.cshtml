@@ -7,8 +7,10 @@
     <a asp-action="Create" class="btn btn-primary">
         <i class="fas fa-plus me-1"></i> Thêm Dịch Vụ Mới
     </a>
+    <a asp-action="Deleted" class="btn btn-outline-danger ms-2">
+        <i class="fas fa-trash-restore me-1"></i> Dịch Vụ Đã Ẩn
+    </a>
 }
-
 <!-- Search & Filter Section -->
 <div class="card mb-4">
     <div class="card-body">
@@ -242,19 +244,15 @@
                                 </td>
                                 <td>
                                     <div class="btn-group" role="group">
-                                        <a asp-action="Details" asp-route-id="@item.MaDichVu" 
-                                           class="btn btn-sm btn-outline-info" title="Xem chi tiết">
+                                        <button type="button" class="btn btn-sm btn-outline-info" title="Xem chi tiết" onclick="openDichVuModal('details', @item.MaDichVu)">
                                             <i class="fas fa-eye"></i>
-                                        </a>
-                                        <a asp-action="Edit" asp-route-id="@item.MaDichVu" 
-                                           class="btn btn-sm btn-outline-warning" title="Chỉnh sửa">
+                                        </button>
+                                        <button type="button" class="btn btn-sm btn-outline-warning" title="Chỉnh sửa" onclick="openDichVuModal('edit', @item.MaDichVu)">
                                             <i class="fas fa-edit"></i>
-                                        </a>
-                                        <a asp-action="Delete" asp-route-id="@item.MaDichVu" 
-                                           class="btn btn-sm btn-outline-danger" title="Xóa">
+                                        </button>
+                                        <button type="button" class="btn btn-sm btn-outline-danger" title="Xóa" onclick="openDichVuModal('delete', @item.MaDichVu)">
                                             <i class="fas fa-trash"></i>
-                                        </a>
-
+                                        </button>
                                     </div>
                                 </td>
                             </tr>
@@ -326,8 +324,35 @@
         }
     </div>
 </div>
+<!-- Chart giá dịch vụ -->
+<div class="row mt-4">
+    <div class="col-md-6">
+        <div class="card h-100">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0"><i class="fas fa-chart-bar me-2"></i>Biểu Đồ Giá Dịch Vụ</h5>
+            </div>
+            <div class="card-body d-flex align-items-center justify-content-center">
+                <canvas id="dichVuGiaBarChart" height="300"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card h-100">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0"><i class="fas fa-trophy me-2"></i>Top 5 Dịch Vụ Được Sử Dụng</h5>
+            </div>
+            <div class="card-body d-flex align-items-center justify-content-center">
+                <canvas id="top5DichVuBarChart" height="300"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal container for AJAX -->
+<div id="dichVuModalContainer"></div>
 
 @section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
         // Toggle Status AJAX
         $('.toggle-status').on('click', function() {
@@ -383,5 +408,167 @@
             
             setTimeout(() => $('#' + toastId).remove(), 4000);
         }
+
+        function openDichVuModal(type, id) {
+            let url = '';
+            let modalId = '';
+            if (type === 'edit') {
+                url = '/DichVu/Edit/' + id + '?modal=1';
+                modalId = 'editDichVuModal';
+            } else if (type === 'details') {
+                url = '/DichVu/Details/' + id + '?modal=1';
+                modalId = 'detailsDichVuModal';
+            } else if (type === 'delete') {
+                url = '/DichVu/Delete/' + id + '?modal=1';
+                modalId = 'deleteDichVuModal';
+            }
+            $('#dichVuModalContainer').html('<div class="modal fade" id="' + modalId + '" tabindex="-1"><div class="modal-dialog modal-lg"><div class="modal-content"><div class="modal-body text-center py-5"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div></div></div></div></div>');
+            $('#' + modalId).modal('show');
+            $.get(url, function(html) {
+                $('#' + modalId + ' .modal-content').html($(html).find('.modal-content').length ? $(html).find('.modal-content').html() : html);
+            });
+        }
+
+        let dichVuChart;
+        function loadDichVuChart() {
+            const type = $('#dichVuChartType').val();
+            const year = $('#dichVuChartYear').val();
+            $.get('/PhieuSuaThongKe/GetTopDichVu', { type, year }, function(data) {
+                const labels = data.map(x => x.tenDichVu);
+                const values = data.map(x => x.soLan);
+                const ctx = document.getElementById('dichVuLineChart').getContext('2d');
+                if (dichVuChart) dichVuChart.destroy();
+                dichVuChart = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: '',
+                            data: values,
+                            borderColor: 'rgba(54, 162, 235, 1)',
+                            backgroundColor: 'rgba(54, 162, 235, 0.1)',
+                            fill: true,
+                            tension: 0.3,
+                            pointRadius: 3
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            legend: { display: false },
+                            tooltip: { enabled: true }
+                        },
+                        scales: {
+                            x: { title: { display: false }, ticks: { font: { size: 11 } } },
+                            y: { title: { display: false }, beginAtZero: true, ticks: { stepSize: 1, font: { size: 11 } } }
+                        },
+                        elements: {
+                            line: { borderWidth: 2 },
+                            point: { radius: 3 }
+                        }
+                    }
+                });
+            });
+        }
+        $(document).ready(function() {
+            loadDichVuChart();
+            $('#dichVuChartType, #dichVuChartYear').on('change', loadDichVuChart);
+            // Biểu đồ giá dịch vụ
+            @{
+                var dichVuLabels = Model.Select(dv => dv.TenDichVu).ToList();
+                var dichVuPrices = Model.Select(dv => dv.GiaDichVu).ToList();
+            }
+            const labels = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(dichVuLabels));
+            const data = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(dichVuPrices));
+            const ctx = document.getElementById('dichVuGiaBarChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Giá Dịch Vụ (VNĐ)',
+                        data: data,
+                        backgroundColor: 'rgba(54, 162, 235, 0.7)',
+                        borderColor: 'rgba(54, 162, 235, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    indexAxis: 'x',
+                    responsive: true,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return context.parsed.y.toLocaleString('vi-VN') + ' VNĐ';
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            title: { display: true, text: 'Tên Dịch Vụ' },
+                            ticks: { autoSkip: false, maxRotation: 45, minRotation: 20 }
+                        },
+                        y: {
+                            title: { display: true, text: 'Giá Dịch Vụ (VNĐ)' },
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return value.toLocaleString('vi-VN');
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+            // Biểu đồ Top 5 Dịch Vụ Được Sử Dụng (bar chart)
+            const top5Labels = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(ViewBag.Top5DichVuLabels ?? new List<string>()));
+            const top5Counts = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(ViewBag.Top5DichVuCounts ?? new List<int>()));
+            const ctx2 = document.getElementById('top5DichVuBarChart').getContext('2d');
+            new Chart(ctx2, {
+                type: 'bar',
+                data: {
+                    labels: top5Labels,
+                    datasets: [{
+                        label: 'Số Lần Sử Dụng',
+                        data: top5Counts,
+                        backgroundColor: 'rgba(40, 167, 69, 0.7)',
+                        borderColor: 'rgba(40, 167, 69, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return context.parsed.y.toLocaleString('vi-VN') + ' lần';
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            title: { display: true, text: 'Tên Dịch Vụ' },
+                            ticks: { autoSkip: false, maxRotation: 45, minRotation: 20 }
+                        },
+                        y: {
+                            title: { display: true, text: 'Số Lần Sử Dụng' },
+                            beginAtZero: true,
+                            ticks: {
+                                stepSize: 1,
+                                callback: function(value) {
+                                    return value.toLocaleString('vi-VN');
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        });
     </script>
 }

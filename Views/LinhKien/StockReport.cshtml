@@ -162,6 +162,34 @@ else
                     <small class="text-muted">Mỗi cột là số lượng còn tồn của một tên linh kiện</small>
                 </div>
                 <div class="card-body">
+                    <div class="row mb-2">
+                        <div class="col-md-3">
+                            <select id="barFilterCategory" class="form-select">
+                                <option value="">Tất cả loại linh kiện</option>
+                                @foreach (var cat in ViewBag.LoaiLinhKienList ?? new List<SelectListItem>())
+                                {
+                                    <option value="@cat.Text">@cat.Text</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <select id="barFilterBrand" class="form-select">
+                                <option value="">Tất cả hãng</option>
+                                @foreach (var brand in ViewBag.BrandList ?? new List<string>())
+                                {
+                                    <option value="@brand">@brand</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <select id="barFilterStock" class="form-select">
+                                <option value="">Tất cả tồn kho</option>
+                                <option value="low">Sắp hết (≤ 5)</option>
+                                <option value="medium">Ít hàng (6 - 20)</option>
+                                <option value="high">Còn nhiều (> 20)</option>
+                            </select>
+                        </div>
+                    </div>
                     <canvas id="compareBarChart" height="300"></canvas>
                 </div>
             </div>
@@ -172,6 +200,48 @@ else
 @section Scripts {
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
+        let compareChart;
+        function renderCompareBarChart(data) {
+            const topItems = data.slice(0, 20);
+            const ctx = document.getElementById('compareBarChart').getContext('2d');
+            if (compareChart) compareChart.destroy();
+            compareChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: topItems.map(x => x.name),
+                    datasets: [{
+                        label: 'Số lượng tồn',
+                        data: topItems.map(x => x.totalStock),
+                        backgroundColor: 'rgba(54, 162, 235, 0.8)'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: { enabled: true }
+                    },
+                    scales: {
+                        x: { title: { display: true, text: 'Tên linh kiện' } },
+                        y: { title: { display: true, text: 'Số lượng tồn' }, beginAtZero: true }
+                    }
+                }
+            });
+        }
+        function filterBarData(stockData) {
+            const cat = $('#barFilterCategory').val();
+            const brand = $('#barFilterBrand').val();
+            const stock = $('#barFilterStock').val();
+            return stockData.filter(x => {
+                let ok = true;
+                if (cat && x.category !== cat) ok = false;
+                if (brand && x.name && !x.name.toLowerCase().includes(brand.toLowerCase())) ok = false;
+                if (stock === 'low' && !(x.totalStock > 0 && x.totalStock <= 5)) ok = false;
+                if (stock === 'medium' && !(x.totalStock >= 6 && x.totalStock <= 20)) ok = false;
+                if (stock === 'high' && !(x.totalStock > 20)) ok = false;
+                return ok;
+            });
+        }
         $(document).ready(function() {
             const stockData = @Html.Raw(Json.Serialize(Model));
             console.log("Stock Data:", stockData);
@@ -328,31 +398,10 @@ else
             });
 
             // === 4. Biểu đồ thanh: So sánh số lượng tồn theo từng tên linh kiện ===
-            const compareCtx = document.getElementById('compareBarChart').getContext('2d');
-            const topItems = stockData.slice(0, 20); // Giới hạn 20 tên linh kiện
-            new Chart(compareCtx, {
-                type: 'bar',
-                data: {
-                    labels: topItems.map(x => x.name),
-                    datasets: [
-                        {
-                            label: 'Số lượng tồn',
-                            data: topItems.map(x => x.totalStock),
-                            backgroundColor: 'rgba(54, 162, 235, 0.8)'
-                        }
-                    ]
-                },
-                options: {
-                    responsive: true,
-                    plugins: {
-                        legend: { display: false },
-                        tooltip: { enabled: true }
-                    },
-                    scales: {
-                        x: { title: { display: true, text: 'Tên linh kiện' } },
-                        y: { title: { display: true, text: 'Số lượng tồn' }, beginAtZero: true }
-                    }
-                }
+            renderCompareBarChart(stockData);
+            $('#barFilterCategory, #barFilterBrand, #barFilterStock').on('change', function() {
+                const filtered = filterBarData(stockData);
+                renderCompareBarChart(filtered);
             });
         });
     </script>

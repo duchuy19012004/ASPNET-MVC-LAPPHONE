@@ -80,6 +80,9 @@ namespace phonev2.Models
         [ForeignKey("MaLoaiLinhKien")]
         public virtual LoaiLinhKien? LoaiLinhKien { get; set; }
 
+        // Navigation: Linh kiện có thể thuộc nhiều dịch vụ
+        public virtual ICollection<DichVuLinhKien>? DichVuLinhKiens { get; set; }
+
         // Display Properties
         [Display(Name = "Trạng Thái")]
         public string TrangThaiText 

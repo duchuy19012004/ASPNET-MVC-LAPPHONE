@@ -42,11 +42,48 @@ namespace phonev2.Models
         [Display(Name = "Trạng Thái")]
         public bool TrangThai { get; set; } = true;
 
+        [Column("daxoa")]
+        [Display(Name = "Đã Xóa")]
+        public bool DaXoa { get; set; } = false;
+
+        [Column("ngayxoa")]
+        [Display(Name = "Ngày Xóa")]
+        public DateTime? NgayXoa { get; set; }
+
+        [Column("lydoxoa")]
+        [Display(Name = "Lý Do Xóa")]
+        [StringLength(500, ErrorMessage = "Lý do xóa không được vượt quá 500 ký tự")]
+        public string? LyDoXoa { get; set; }
+
+        // Navigation: Dịch vụ có nhiều linh kiện
+        public virtual ICollection<DichVuLinhKien>? DichVuLinhKiens { get; set; }
+
         // Display properties
         [Display(Name = "Trạng Thái")]
-        public string TrangThaiText => TrangThai ? "Hoạt động" : "Ngừng hoạt động";
+        public string TrangThaiText => DaXoa ? "Đã xóa" : (TrangThai ? "Hoạt động" : "Ngừng hoạt động");
         
         [Display(Name = "Giá Dịch Vụ")]
         public string GiaDichVuText => GiaDichVu.ToString("N0") + " VNĐ";
+        [NotMapped]
+        public string NgayXoaText => NgayXoa?.ToString("dd/MM/yyyy HH:mm") ?? "";
+        [NotMapped]
+        public bool IsDeleted => DaXoa;
+        [NotMapped]
+        public bool IsActive => !DaXoa && TrangThai;
+
+        public void SoftDelete(string lyDoXoa = "")
+        {
+            DaXoa = true;
+            NgayXoa = DateTime.Now;
+            LyDoXoa = lyDoXoa;
+            TrangThai = false;
+        }
+        public void Restore()
+        {
+            DaXoa = false;
+            NgayXoa = null;
+            LyDoXoa = null;
+            TrangThai = true;
+        }
     }
 }
