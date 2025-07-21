@@ -330,6 +330,12 @@
             margin-bottom: 0.5rem !important;
         }
         
+        /* Đảm bảo input group giữ nguyên layout */
+        .input-group {
+            display: flex !important;
+            flex-wrap: nowrap !important;
+        }
+        
         /* Ẩn thông báo lỗi mặc định của ASP.NET Core */
         .field-validation-error,
         .field-validation-valid {
@@ -479,6 +485,9 @@
             $input.siblings('.field-validation-error').hide();
             $input.siblings('.field-validation-valid').hide();
             
+            // Xóa lỗi trong column chứa input
+            $input.closest('.col-md-4, .col-md-6, .col-md-8').find('.vietnamese-error').remove();
+            
             // Kiểm tra trường bắt buộc
             if ($input.prop('required') && (value === '' || value === null)) {
                 showFieldError($input, 'Vui lòng nhập giá trị lớn hơn 0');
@@ -525,9 +534,16 @@
         function showFieldError($input, message) {
             // Xóa lỗi cũ trước khi thêm lỗi mới
             $input.siblings('.vietnamese-error').remove();
+            $input.closest('.col-md-4').find('.vietnamese-error').remove();
             
-            // Chèn thông báo lỗi sau input field
-            $input.after(`<div class="text-danger vietnamese-error">${message}</div>`);
+            // Nếu input nằm trong input-group, chèn lỗi sau input-group
+            const $inputGroup = $input.closest('.input-group');
+            if ($inputGroup.length > 0) {
+                $inputGroup.after(`<div class="text-danger vietnamese-error">${message}</div>`);
+            } else {
+                // Chèn thông báo lỗi sau input field
+                $input.after(`<div class="text-danger vietnamese-error">${message}</div>`);
+            }
         }
         
         // Xóa tất cả lỗi
@@ -536,6 +552,11 @@
             $('span[data-valmsg-for]').hide();
             $('.field-validation-error').hide();
             $('.field-validation-valid').hide();
+            
+            // Xóa lỗi trong tất cả các column
+            $('.col-md-4').find('.vietnamese-error').remove();
+            $('.col-md-6').find('.vietnamese-error').remove();
+            $('.col-md-8').find('.vietnamese-error').remove();
         }
         
         // Kiểm tra form trước khi submit

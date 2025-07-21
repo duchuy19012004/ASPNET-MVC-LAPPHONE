@@ -162,37 +162,44 @@ namespace phonev2.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, [Bind("MaLinhKien,TenLinhKien,MaLoaiLinhKien,HangSanXuat,GiaNhap,GiaBan,SoLuongTon,ThongSoKyThuat,NgayTao,TrangThai")] LinhKien linhKien)
         {
-            if (id != linhKien.MaLinhKien)
+            try
             {
-                return Json(new { success = false, message = "Dữ liệu không hợp lệ." });
-            }
-
-            // Validation
-            var (isValid, errors) = await _validationService.ValidateForUpdateAsync(linhKien);
-            if (!isValid)
-            {
-                return Json(new { success = false, message = string.Join(", ", errors) });
-            }
-
-            if (ModelState.IsValid)
-            {
-                var success = await _linhKienService.UpdateAsync(linhKien);
-                if (success)
+                if (id != linhKien.MaLinhKien)
                 {
-                    return Json(new { success = true, message = $"Đã cập nhật thành công linh kiện '{linhKien.TenLinhKien}'." });
+                    return Json(new { success = false, message = "Dữ liệu không hợp lệ." });
                 }
-                else
+
+                // Validation
+                var (isValid, errors) = await _validationService.ValidateForUpdateAsync(linhKien);
+                if (!isValid)
                 {
-                    return Json(new { success = false, message = "Có lỗi xảy ra khi cập nhật." });
+                    return Json(new { success = false, message = string.Join(", ", errors) });
                 }
+
+                if (ModelState.IsValid)
+                {
+                    var success = await _linhKienService.UpdateAsync(linhKien);
+                    if (success)
+                    {
+                        return Json(new { success = true, message = $"Đã cập nhật thành công linh kiện '{linhKien.TenLinhKien}'." });
+                    }
+                    else
+                    {
+                        return Json(new { success = false, message = "Có lỗi xảy ra khi cập nhật." });
+                    }
+                }
+                
+                var modelErrors = ModelState.Values
+                    .SelectMany(v => v.Errors)
+                    .Select(e => e.ErrorMessage)
+                    .ToList();
+                
+                return Json(new { success = false, message = string.Join(", ", modelErrors) });
             }
-            
-            var modelErrors = ModelState.Values
-                .SelectMany(v => v.Errors)
-                .Select(e => e.ErrorMessage)
-                .ToList();
-            
-            return Json(new { success = false, message = string.Join(", ", modelErrors) });
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = "Có lỗi xảy ra: " + ex.Message });
+            }
         }
 
         // GET: LinhKien/Delete/5

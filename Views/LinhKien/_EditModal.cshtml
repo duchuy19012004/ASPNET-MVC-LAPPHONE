@@ -7,7 +7,8 @@
     </h5>
     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
 </div>
-<form id="editForm" asp-action="Edit" method="post">
+<form id="editForm" asp-action="Edit" asp-route-id="@Model.MaLinhKien" method="post">
+    @Html.AntiForgeryToken()
     <div class="modal-body">
         <div asp-validation-summary="ModelOnly" class="alert alert-danger alert-sm" role="alert"></div>
         
@@ -66,6 +67,7 @@
                     <input asp-for="GiaNhap" class="form-control" type="number" min="0" />
                     <span class="input-group-text">VNĐ</span>
                 </div>
+                <div class="form-text text-success" id="giaNhapFormatted"></div>
                 <span asp-validation-for="GiaNhap" class="text-danger"></span>
             </div>
             <div class="col-md-3">
@@ -77,6 +79,7 @@
                     <input asp-for="GiaBan" class="form-control" type="number" min="0" />
                     <span class="input-group-text">VNĐ</span>
                 </div>
+                <div class="form-text text-success" id="giaBanFormatted"></div>
                 <span asp-validation-for="GiaBan" class="text-danger"></span>
             </div>
             <div class="col-md-3">
@@ -110,7 +113,8 @@
                     <i class="fas fa-toggle-on me-1 text-primary"></i>Trạng Thái
                 </label>
                 <div class="form-check form-switch">
-                    <input asp-for="TrangThai" class="form-check-input" type="checkbox" />
+                    <input asp-for="TrangThai" class="form-check-input" type="checkbox" value="true" />
+                    <input type="hidden" name="TrangThai" value="false" />
                     <label class="form-check-label" asp-for="TrangThai">
                         Linh kiện đang được bán
                     </label>
@@ -177,14 +181,39 @@
         // Bind events
         $('#GiaNhap, #GiaBan, #SoLuongTon').on('input', calculateProfit);
         
+        function updateFormattedPrices() {
+            const giaNhap = parseFloat($('#GiaNhap').val()) || 0;
+            const giaBan = parseFloat($('#GiaBan').val()) || 0;
+            $('#giaNhapFormatted').text(giaNhap > 0 ? formatCurrency(giaNhap) : '');
+            $('#giaBanFormatted').text(giaBan > 0 ? formatCurrency(giaBan) : '');
+        }
+        $('#GiaNhap, #GiaBan').on('input', function() {
+            calculateProfit();
+            updateFormattedPrices();
+        });
+        // Gọi khi load modal
+        updateFormattedPrices();
+        
         // Form submission
         $('#editForm').on('submit', function(e) {
             e.preventDefault();
-            
+
+            var form = this;
+            var formData = new FormData(form);
+
+            // Đảm bảo giá trị TrangThai đúng
+            if (!$('#TrangThai').is(':checked')) {
+                formData.set('TrangThai', 'false');
+            } else {
+                formData.set('TrangThai', 'true');
+            }
+
             $.ajax({
-                url: $(this).attr('action'),
+                url: $(form).attr('action'),
                 type: 'POST',
-                data: $(this).serialize(),
+                data: formData,
+                processData: false,
+                contentType: false,
                 success: function(response) {
                     if (response.success) {
                         showToast(response.message, 'success');
@@ -194,7 +223,7 @@
                         showToast(response.message, 'error');
                     }
                 },
-                error: function() {
+                error: function(xhr, status, error) {
                     showToast('Có lỗi xảy ra khi cập nhật!', 'error');
                 }
             });
