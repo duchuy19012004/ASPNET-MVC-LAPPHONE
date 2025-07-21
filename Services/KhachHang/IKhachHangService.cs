@@ -23,5 +23,6 @@ namespace phonev2.Services.KhachHang
 
         // Dropdown data
         Task<IEnumerable<SelectListItem>> GetActiveCustomersForDropdownAsync();
+        Task<phonev2.Models.KhachHang?> SearchByPhoneAsync(string phone);
     }
 } 

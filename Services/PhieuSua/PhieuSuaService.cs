@@ -220,6 +220,14 @@ namespace phonev2.Services.PhieuSua
                 return false;
             }
         }
+        public async Task<bool> UpdateTrangThaiAsync(int id, int trangThai)
+        {
+            var phieu = await _context.PhieuSua.FindAsync(id);
+            if (phieu == null) return false;
+            phieu.TrangThai = (phonev2.Models.TrangThaiPhieuSua)trangThai;
+            await _context.SaveChangesAsync();
+            return true;
+        }
         public Task<bool> AddDichVuToPhieuSuaAsync(int maPhieuSua, int maDichVu, int soLuong)
         {
             throw new NotImplementedException();
@@ -277,7 +285,7 @@ namespace phonev2.Services.PhieuSua
                 LinhKiens = new List<Models.ViewModels.LinhKienChonVM>(),
                 KhachHangList = GetKhachHangList(),
                 NhanVienList = GetNhanVienList(),
-                DichVuList = GetDichVuList(),
+                DichVuList = GetDichVuOptionList(),
                 LinhKienList = GetLinhKienList()
             };
             return vm;
@@ -305,7 +313,7 @@ namespace phonev2.Services.PhieuSua
                 }).ToList() ?? new List<Models.ViewModels.LinhKienChonVM>(),
                 KhachHangList = GetKhachHangList(),
                 NhanVienList = GetNhanVienList(),
-                DichVuList = GetDichVuList(),
+                DichVuList = GetDichVuOptionList(),
                 LinhKienList = GetLinhKienList()
             };
             return vm;
@@ -334,6 +342,16 @@ namespace phonev2.Services.PhieuSua
         {
             return _context.LinhKien.Where(lk => lk.TrangThai)
                 .Select(lk => new SelectListItem { Value = lk.MaLinhKien.ToString(), Text = lk.TenLinhKien }).ToList();
+        }
+        public List<phonev2.Models.ViewModels.DichVuOptionVM> GetDichVuOptionList()
+        {
+            return _context.DichVu.Where(dv => dv.TrangThai)
+                .Select(dv => new phonev2.Models.ViewModels.DichVuOptionVM
+                {
+                    Value = dv.MaDichVu.ToString(),
+                    Text = dv.TenDichVu,
+                    GiaDichVu = dv.GiaDichVu
+                }).ToList();
         }
     }
 } 

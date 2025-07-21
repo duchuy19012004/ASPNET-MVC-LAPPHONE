@@ -385,5 +385,15 @@ namespace phonev2.Controllers
                 return Json(new { success = false, message = $"Lỗi: {ex.Message}" });
             }
         }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> UpdateTrangThai(int id, int trangThai)
+        {
+            var success = await _phieuSuaService.UpdateTrangThaiAsync(id, trangThai);
+            if (success)
+                return Json(new { success = true });
+            return Json(new { success = false, message = "Cập nhật trạng thái thất bại!" });
+        }
     }
 }

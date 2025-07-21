@@ -19,7 +19,7 @@
 
 <div id="phieusua-table-wrapper">
 <div class="table-responsive">
-    <table class="table table-bordered table-hover align-middle">
+    <table class="table table-bordered table-hover align-middle table-phieusua">
         <thead class="table-primary text-center align-middle">
             <tr>
                 <th class="text-center">Mã Phiếu</th>
@@ -154,28 +154,31 @@
                             </div>
                         </td>
                         <td class="text-center">
-                            @if (item.TrangThai == phonev2.Models.TrangThaiPhieuSua.TiepNhan)
-                            {
-                                <span class="badge bg-primary px-3 py-2"><i class="fas fa-clipboard-list"></i> Tiếp nhận</span>
+                            @{
+                                var isTiepNhan = item.TrangThai == phonev2.Models.TrangThaiPhieuSua.TiepNhan;
+                                var isDangSua = item.TrangThai == phonev2.Models.TrangThaiPhieuSua.DangSua;
+                                var isHoanThanh = item.TrangThai == phonev2.Models.TrangThaiPhieuSua.HoanThanh;
+                                var isHuy = item.TrangThai == phonev2.Models.TrangThaiPhieuSua.Huy;
                             }
-                            else if (item.TrangThai == phonev2.Models.TrangThaiPhieuSua.DangSua)
-                            {
-                                <span class="badge bg-warning text-dark px-3 py-2"><i class="fas fa-tools"></i> Đang sửa</span>
-                            }
-                            else if (item.TrangThai == phonev2.Models.TrangThaiPhieuSua.HoanThanh)
-                            {
-                                <span class="badge bg-success px-3 py-2"><i class="fas fa-check-circle"></i> Hoàn thành</span>
-                            }
-                            else if (item.TrangThai == phonev2.Models.TrangThaiPhieuSua.Huy)
-                            {
-                                <span class="badge bg-danger px-3 py-2"><i class="fas fa-times-circle"></i> Hủy</span>
-                            }
-                            else
-                            {
-                                <span class="badge bg-secondary px-3 py-2"><i class="fas fa-question-circle"></i> Không xác định</span>
-                            }
+                            <span class="badge px-3 py-2 @(
+                                isTiepNhan ? "bg-primary" :
+                                isDangSua ? "bg-warning text-dark" :
+                                isHoanThanh ? "bg-success" :
+                                isHuy ? "bg-danger" : "bg-secondary")">
+                                @if (isTiepNhan)
+                                { <text><i class="fas fa-clipboard-list"></i> Tiếp nhận</text> }
+                                else if (isDangSua)
+                                { <text><i class="fas fa-tools"></i> Đang sửa</text> }
+                                else if (isHoanThanh)
+                                { <text><i class="fas fa-check-circle"></i> Hoàn thành</text> }
+                                else if (isHuy)
+                                { <text><i class="fas fa-times-circle"></i> Hủy</text> }
+                                else
+                                { <text><i class="fas fa-question-circle"></i> Không xác định</text> }
+                            </span>
                         </td>
                         <td class="text-center">
+                            <div class="badges-wrap">
                             @if (item.ChiTietPhieuSuas != null && item.ChiTietPhieuSuas.Any())
                             {
                                 foreach (var dv in item.ChiTietPhieuSuas)
@@ -194,8 +197,10 @@
                             {
                                 <span class="text-muted">Không có</span>
                             }
+                            </div>
                         </td>
                         <td class="text-center">
+                            <div class="badges-wrap">
                             @if (item.ChiTietLinhKiens != null && item.ChiTietLinhKiens.Any())
                             {
                                 foreach (var lk in item.ChiTietLinhKiens)
@@ -214,6 +219,7 @@
                             {
                                 <span class="text-muted">Không có</span>
                             }
+                            </div>
                         </td>
                         <td class="text-center">
                             <button type="button" class="btn btn-sm btn-info btn-details-modal mx-1" title="Xem" data-url="@Url.Action("Details", new { id = item.MaPhieuSua })"><i class="fas fa-eye"></i></button>

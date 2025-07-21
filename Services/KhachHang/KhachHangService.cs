@@ -132,5 +132,9 @@ namespace phonev2.Services.KhachHang
                 .Select(kh => new SelectListItem { Value = kh.MaKhachHang.ToString(), Text = kh.HoTen })
                 .ToListAsync();
         }
+        public async Task<phonev2.Models.KhachHang?> SearchByPhoneAsync(string phone)
+        {
+            return await _context.KhachHang.FirstOrDefaultAsync(kh => kh.SoDienThoai == phone);
+        }
     }
 } 

@@ -181,6 +181,15 @@ namespace phonev2.Controllers
         }
 
         [HttpGet]
+        public async Task<IActionResult> SearchByPhone(string phone)
+        {
+            var kh = await _khachHangService.SearchByPhoneAsync(phone);
+            if (kh != null)
+                return Json(new { found = true, id = kh.MaKhachHang, ten = kh.HoTen, sdt = kh.SoDienThoai });
+            return Json(new { found = false });
+        }
+
+        [HttpGet]
         public IActionResult CreateQuick()
         {
             return PartialView("_CreateQuick", new phonev2.Models.KhachHang());
@@ -196,6 +205,27 @@ namespace phonev2.Controllers
                 return Json(new { success = true, id = model.MaKhachHang, ten = model.HoTen });
             }
             return PartialView("_CreateQuick", model);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> EditQuick(int id)
+        {
+            var kh = await _khachHangService.GetByIdAsync(id);
+            if (kh == null) return NotFound();
+            return PartialView("_EditQuick", kh);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> EditQuick(phonev2.Models.KhachHang model)
+        {
+            if (ModelState.IsValid)
+            {
+                var success = await _khachHangService.UpdateAsync(model);
+                if (success)
+                    return Json(new { success = true, id = model.MaKhachHang, ten = model.HoTen, sdt = model.SoDienThoai });
+                ModelState.AddModelError("SoDienThoai", "Số điện thoại này đã được sử dụng bởi khách hàng khác.");
+            }
+            return PartialView("_EditQuick", model);
         }
 
         // Helper để render view thành HTML string cho AJAX

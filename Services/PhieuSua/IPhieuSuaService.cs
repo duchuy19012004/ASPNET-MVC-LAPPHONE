@@ -21,5 +21,6 @@ namespace phonev2.Services.PhieuSua
         List<SelectListItem> GetLinhKienList();
         Task<Models.ViewModels.PhieuSuaEditViewModel> GetPhieuSuaEditViewModelAsync(int id);
         Task<Models.ViewModels.PhieuSuaEditViewModel> GetPhieuSuaDetailsViewModelAsync(int id);
+        Task<bool> UpdateTrangThaiAsync(int id, int trangThai);
     }
 } 

@@ -17,6 +17,12 @@ namespace phonev2.Models.ViewModels
         public string TenLinhKien { get; set; } = string.Empty;
         public int SoLuong { get; set; } = 1;
     }
+    public class DichVuOptionVM
+    {
+        public string Value { get; set; }
+        public string Text { get; set; }
+        public decimal GiaDichVu { get; set; }
+    }
     public class PhieuSuaCreateViewModel
     {
         public PhieuSua PhieuSua { get; set; } = new PhieuSua();
@@ -24,7 +30,7 @@ namespace phonev2.Models.ViewModels
         public List<LinhKienChonVM> LinhKiens { get; set; } = new List<LinhKienChonVM>();
         public IEnumerable<SelectListItem> KhachHangList { get; set; } = new List<SelectListItem>();
         public IEnumerable<SelectListItem> NhanVienList { get; set; } = new List<SelectListItem>();
-        public IEnumerable<SelectListItem> DichVuList { get; set; } = new List<SelectListItem>();
+        public List<DichVuOptionVM> DichVuList { get; set; } = new List<DichVuOptionVM>();
         public IEnumerable<SelectListItem> LinhKienList { get; set; } = new List<SelectListItem>();
     }
 } 

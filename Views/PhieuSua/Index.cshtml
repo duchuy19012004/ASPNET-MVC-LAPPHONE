@@ -204,5 +204,24 @@
                 $('#phieusua-delete-modal .modal-content').html(data);
             });
         });
+        $(document).on('change', '.phieusua-trangthai-dropdown', function() {
+            var id = $(this).data('id');
+            var trangThai = $(this).val();
+            var $badge = $('#badge-trangthai-' + id);
+            $.post('/PhieuSua/UpdateTrangThai', { id: id, trangThai: trangThai, __RequestVerificationToken: $('input[name="__RequestVerificationToken"]').val() }, function(res) {
+                if (res.success) {
+                    var badgeHtml = '';
+                    switch (parseInt(trangThai)) {
+                        case 0: badgeHtml = '<span class="badge bg-primary">Tiếp nhận</span>'; break;
+                        case 1: badgeHtml = '<span class="badge bg-warning text-dark">Đang sửa</span>'; break;
+                        case 2: badgeHtml = '<span class="badge bg-success">Hoàn thành</span>'; break;
+                        case 3: badgeHtml = '<span class="badge bg-danger">Hủy</span>'; break;
+                    }
+                    $badge.html(badgeHtml);
+                } else {
+                    alert(res.message || 'Cập nhật trạng thái thất bại!');
+                }
+            });
+        });
     </script>
 } 

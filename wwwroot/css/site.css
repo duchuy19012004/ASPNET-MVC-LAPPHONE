@@ -8,7 +8,11 @@ html {
   }
 }
 
-.btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
+.btn:focus,
+.btn:active:focus,
+.btn-link.nav-link:focus,
+.form-control:focus,
+.form-check-input:focus {
   box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
 }
 
@@ -19,4 +23,136 @@ html {
 
 body {
   margin-bottom: 60px;
+}
+
+.table-phieusua th,
+.table-phieusua td {
+  vertical-align: middle !important;
+  text-align: center;
+  padding: 0.5rem 0.4rem;
+  font-size: 15px;
+}
+.table-phieusua th {
+  background: #f8f9fa;
+  font-weight: 600;
+  color: #333;
+}
+.table-phieusua .fw-bold {
+  font-weight: 600 !important;
+}
+.table-phieusua .badge {
+  font-size: 12px;
+  padding: 0.2em 0.6em;
+  border-radius: 10px;
+  margin-bottom: 1px;
+  display: inline-flex;
+  align-items: center;
+  line-height: 1.2;
+}
+.table-phieusua .badge i {
+  margin-right: 4px;
+  font-size: 13px;
+  vertical-align: middle;
+}
+.table-phieusua td {
+  white-space: normal;
+}
+.table-phieusua .text-center .badge {
+  margin-bottom: 1px;
+  margin-right: 2px;
+}
+.table-phieusua .badge.bg-primary,
+.table-phieusua .badge.bg-success,
+.table-phieusua .badge.bg-warning,
+.table-phieusua .badge.bg-danger {
+  color: #fff !important;
+}
+.table-phieusua .btn {
+  padding: 0.25rem 0.5rem;
+  font-size: 15px;
+  border-radius: 8px;
+  margin: 0 2px;
+}
+.table-phieusua .btn-info,
+.table-phieusua .btn-warning,
+.table-phieusua .btn-danger {
+  color: #fff;
+}
+.table-phieusua .btn-info {
+  background: #17a2b8;
+  border: none;
+}
+.table-phieusua .btn-warning {
+  background: #ffc107;
+  border: none;
+}
+.table-phieusua .btn-danger {
+  background: #dc3545;
+  border: none;
+}
+.table-phieusua .btn-info:hover,
+.table-phieusua .btn-warning:hover,
+.table-phieusua .btn-danger:hover {
+  opacity: 0.85;
+}
+.table-phieusua .badge.bg-secondary {
+  background: #6c757d !important;
+}
+.table-phieusua .badge.bg-secondary i {
+  margin-right: 2px;
+}
+.table-phieusua .badge.bg-info {
+  background: #0dcaf0 !important;
+  color: #fff !important;
+}
+.table-phieusua .badge.bg-info i {
+  margin-right: 2px;
+}
+.table-phieusua .text-danger {
+  color: #dc3545 !important;
+}
+.table-phieusua .text-success {
+  color: #28a745 !important;
+}
+.table-phieusua .text-muted {
+  color: #6c757d !important;
+}
+.table-phieusua .btn-sm {
+  font-size: 13px;
+  padding: 0.2rem 0.5rem;
+}
+.table-phieusua .badge + .badge {
+  margin-left: 2px;
+}
+.table-phieusua .badges-wrap {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px;
+  align-items: center;
+  justify-content: flex-start;
+}
+.table-phieusua .badge {
+  font-size: 11px;
+  padding: 0.12em 0.5em;
+  border-radius: 8px;
+  margin: 0;
+  display: inline-flex;
+  align-items: center;
+  line-height: 1.1;
+}
+.table-phieusua .badge i {
+  margin-right: 3px;
+  font-size: 12px;
+  vertical-align: middle;
+}
+@media (max-width: 900px) {
+  .table-phieusua th,
+  .table-phieusua td {
+    font-size: 13px;
+    padding: 0.3rem 0.2rem;
+  }
+  .table-phieusua .badge {
+    font-size: 11px;
+    padding: 0.2em 0.5em;
+  }
 }
