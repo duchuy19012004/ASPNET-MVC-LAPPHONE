@@ -17,6 +17,7 @@
     </div>
 }
 
+<div id="phieusua-table-wrapper">
 <div class="table-responsive">
     <table class="table table-bordered table-hover align-middle">
         <thead class="table-primary text-center align-middle">
@@ -70,14 +71,16 @@
                             }
                         </td>
                         <td>
-                            @if (!string.IsNullOrEmpty(item.TenKhachHang))
-                            {
-                                @item.TenKhachHang
+                            @{
+                                string tenKh = !string.IsNullOrEmpty(item.TenKhachHang)
+                                    ? item.TenKhachHang
+                                    : (khachHangList?.FirstOrDefault(x => x.Value == item.MaKhachHang?.ToString())?.Text ?? "");
+                                string sdtKh = item.KhachHang?.SoDienThoai ?? "";
                             }
-                            else if (khachHangList != null)
+                            <div>@tenKh</div>
+                            @if (!string.IsNullOrEmpty(sdtKh))
                             {
-                                var kh = khachHangList.FirstOrDefault(x => x.Value == item.MaKhachHang?.ToString());
-                                @kh?.Text
+                                <div class="text-muted small"><i class="fas fa-phone"></i> @sdtKh</div>
                             }
                         </td>
                         <td>
@@ -255,3 +258,4 @@
         </li>
     </ul>
 </nav>
+</div>

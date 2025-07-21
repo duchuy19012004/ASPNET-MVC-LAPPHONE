@@ -403,10 +403,10 @@ ReturnView:
 
         // API: Lấy danh sách linh kiện gắn với dịch vụ
         [HttpGet]
-        public async Task<IActionResult> GetLinhKienByDichVu(int dichVuId)
+        public async Task<IActionResult> GetLinhKienByDichVu(int maDichVu)
         {
             var linhKiens = await _context.DichVuLinhKien
-                .Where(x => x.MaDichVu == dichVuId)
+                .Where(x => x.MaDichVu == maDichVu)
                 .Include(x => x.LinhKien)
                 .Select(x => new {
                     maLinhKien = x.MaLinhKien,

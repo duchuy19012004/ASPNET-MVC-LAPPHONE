@@ -180,6 +180,24 @@ namespace phonev2.Controllers
             return Json(khs);
         }
 
+        [HttpGet]
+        public IActionResult CreateQuick()
+        {
+            return PartialView("_CreateQuick", new phonev2.Models.KhachHang());
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> CreateQuick(phonev2.Models.KhachHang model)
+        {
+            if (ModelState.IsValid)
+            {
+                // Bỏ kiểm tra trùng số điện thoại, luôn cho phép thêm mới
+                await _khachHangService.CreateAsync(model);
+                return Json(new { success = true, id = model.MaKhachHang, ten = model.HoTen });
+            }
+            return PartialView("_CreateQuick", model);
+        }
+
         // Helper để render view thành HTML string cho AJAX
         private async Task<string> RenderViewAsync(string viewName, object model, bool partial = false)
         {

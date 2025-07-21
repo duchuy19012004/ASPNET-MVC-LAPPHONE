@@ -29,10 +29,17 @@ namespace phonev2.Controllers
         }
 
         // GET: PhieuSua
-        public async Task<IActionResult> Index(string search = "", int page = 1, int pageSize = 10, string sort = "")
+        public async Task<IActionResult> Index(string search = "", int page = 1, int pageSize = 10, string sort = "", int? status = null)
         {
             // Lấy danh sách phiếu sửa và phân trang qua service
             var (list, totalCount, totalPages) = await _phieuSuaService.GetPhieuSuasAsync(search, page, pageSize, sort);
+            if (status.HasValue)
+            {
+                list = list.Where(p => (int)p.TrangThai == status.Value).ToList();
+                totalCount = list.Count;
+                totalPages = (int)Math.Ceiling(totalCount / (double)pageSize);
+            }
+            ViewBag.Status = status?.ToString() ?? "";
 
             // Lấy thống kê qua service
             var statistics = await _phieuSuaStatisticsService.GetStatisticsAsync();

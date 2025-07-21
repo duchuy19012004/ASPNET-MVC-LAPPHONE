@@ -12,7 +12,7 @@
     @Html.AntiForgeryToken()
     <!-- Stats Cards -->
     <div class="row mb-4">
-        <div class="col-xl-2 col-md-6 mb-3">
+        <div class="col-md-4 mb-3">
             <div class="stats-card" style="background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);">
                 <div class="d-flex align-items-center">
                     <div class="flex-grow-1">
@@ -25,7 +25,7 @@
                 </div>
             </div>
         </div>
-        <div class="col-xl-2 col-md-6 mb-3">
+        <div class="col-md-4 mb-3">
             <div class="stats-card warning">
                 <div class="d-flex align-items-center">
                     <div class="flex-grow-1">
@@ -38,7 +38,7 @@
                 </div>
             </div>
         </div>
-        <div class="col-xl-2 col-md-6 mb-3">
+        <div class="col-md-4 mb-3">
             <div class="stats-card success">
                 <div class="d-flex align-items-center">
                     <div class="flex-grow-1">
@@ -51,7 +51,9 @@
                 </div>
             </div>
         </div>
-        <div class="col-xl-2 col-md-6 mb-3">
+    </div>
+    <div class="row mb-4">
+        <div class="col-md-4 mb-3">
             <div class="stats-card" style="background: linear-gradient(135deg, #dc3545 0%, #b02a37 100%);">
                 <div class="d-flex align-items-center">
                     <div class="flex-grow-1">
@@ -64,7 +66,7 @@
                 </div>
             </div>
         </div>
-        <div class="col-xl-2 col-md-6 mb-3">
+        <div class="col-md-4 mb-3">
             <div class="stats-card" style="background: linear-gradient(135deg, #28a745 0%, #1e7e34 100%);">
                 <div class="d-flex align-items-center">
                     <div class="flex-grow-1">
@@ -77,7 +79,7 @@
                 </div>
             </div>
         </div>
-        <div class="col-xl-2 col-md-6 mb-3">
+        <div class="col-md-4 mb-3">
             <div class="stats-card" style="background: linear-gradient(135deg, #ffc107 0%, #e0a800 100%);">
                 <div class="d-flex align-items-center">
                     <div class="flex-grow-1">
@@ -114,8 +116,41 @@
                 </select>
             </form>
         </div>
+        <div class="col-md-3 col-lg-3">
+            <form method="get" class="d-inline-block" style="min-width:180px;">
+                <input type="hidden" name="search" value="@ViewBag.Search" />
+                <input type="hidden" name="sort" value="@ViewBag.Sort" />
+                <select name="status" class="form-select" onchange="this.form.submit()">
+                    @if ((ViewBag.Status as string ?? "") == "") {
+                        <option value="" selected>Tất cả trạng thái</option>
+                    } else {
+                        <option value="">Tất cả trạng thái</option>
+                    }
+                    @if ((ViewBag.Status as string ?? "") == "0") {
+                        <option value="0" selected>Tiếp nhận</option>
+                    } else {
+                        <option value="0">Tiếp nhận</option>
+                    }
+                    @if ((ViewBag.Status as string ?? "") == "1") {
+                        <option value="1" selected>Đang sửa</option>
+                    } else {
+                        <option value="1">Đang sửa</option>
+                    }
+                    @if ((ViewBag.Status as string ?? "") == "2") {
+                        <option value="2" selected>Hoàn thành</option>
+                    } else {
+                        <option value="2">Hoàn thành</option>
+                    }
+                    @if ((ViewBag.Status as string ?? "") == "3") {
+                        <option value="3" selected>Hủy</option>
+                    } else {
+                        <option value="3">Hủy</option>
+                    }
+                </select>
+            </form>
+        </div>
         <div class="col text-end">
-            <a class="btn btn-primary rounded-pill px-4 py-2" asp-action="Create"><i class="fas fa-plus"></i> Thêm Phiếu Sửa</a>
+            <a class="btn btn-primary btn-sm rounded-pill px-3 py-1" asp-action="Create"><i class="fas fa-plus"></i> Thêm Phiếu Sửa</a>
         </div>
     </div>
     <div id="phieusua-table-wrapper">

@@ -28,7 +28,7 @@ namespace phonev2.Services.PhieuSua
             {
                 string s = search.ToLower();
                 query = query.Where(p =>
-                    _context.KhachHang.Any(kh => kh.MaKhachHang == p.MaKhachHang && kh.HoTen.ToLower().Contains(s))
+                    _context.KhachHang.Any(kh => kh.MaKhachHang == p.MaKhachHang && (kh.HoTen.ToLower().Contains(s) || kh.SoDienThoai.Contains(s)))
                     || _context.NhanVien.Any(nv => nv.MaNhanVien == p.MaNhanVien && nv.HoTen.ToLower().Contains(s))
                     || p.ChiTietPhieuSuas.Any(ct => ct.DichVu != null && ct.DichVu.TenDichVu.ToLower().Contains(s))
                 );
