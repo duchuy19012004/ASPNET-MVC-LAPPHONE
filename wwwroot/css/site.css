@@ -1,3 +1,4 @@
+/* Base styles */
 html {
   font-size: 14px;
 }
@@ -8,6 +9,7 @@ html {
   }
 }
 
+/* Focus states */
 .btn:focus,
 .btn:active:focus,
 .btn-link.nav-link:focus,
@@ -25,134 +27,528 @@ body {
   margin-bottom: 60px;
 }
 
-.table-phieusua th,
-.table-phieusua td {
-  vertical-align: middle !important;
-  text-align: center;
-  padding: 0.5rem 0.4rem;
-  font-size: 15px;
+/* PhieuSua Table Styles */
+.table-phieusua {
+  background: #fff;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  border: none;
+  margin-bottom: 2rem;
 }
+
 .table-phieusua th {
-  background: #f8f9fa;
+  background: linear-gradient(135deg, #f8f9ff 0%, #e8ecff 100%);
   font-weight: 600;
-  color: #333;
+  color: #2c3e50;
+  text-align: center;
+  vertical-align: middle;
+  padding: 1rem 0.75rem;
+  font-size: 14px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border: none;
+  border-bottom: 2px solid #e3f2fd;
+  position: sticky;
+  top: 0;
+  z-index: 10;
 }
+
+.table-phieusua td {
+  vertical-align: middle;
+  text-align: center;
+  padding: 0.875rem 0.75rem;
+  font-size: 14px;
+  border: none;
+  border-bottom: 1px solid #f0f4f8;
+  white-space: nowrap;
+  transition: all 0.2s ease;
+}
+
+/* Row hover effects */
+.table-phieusua tbody tr {
+  transition: all 0.3s ease;
+}
+
+.table-phieusua tbody tr:hover {
+  background: linear-gradient(135deg, #f8fbff 0%, #f0f7ff 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 123, 255, 0.1);
+}
+
+.table-phieusua tbody tr:nth-child(even) {
+  background-color: #fafbfc;
+}
+
+.table-phieusua tbody tr:nth-child(even):hover {
+  background: linear-gradient(135deg, #f8fbff 0%, #f0f7ff 100%);
+}
+
+/* Text styles */
 .table-phieusua .fw-bold {
   font-weight: 600 !important;
+  color: #2c3e50;
 }
+
+.table-phieusua .text-danger {
+  color: #e74c3c !important;
+  font-weight: 600;
+}
+
+.table-phieusua .text-success {
+  color: #27ae60 !important;
+  font-weight: 600;
+}
+
+.table-phieusua .text-muted {
+  color: #7f8c8d !important;
+}
+
+/* Badge styles */
 .table-phieusua .badge {
   font-size: 12px;
-  padding: 0.2em 0.6em;
-  border-radius: 10px;
-  margin-bottom: 1px;
+  font-weight: 500;
+  padding: 0.4em 0.8em;
+  border-radius: 20px;
+  margin: 0 2px 2px 0;
   display: inline-flex;
   align-items: center;
-  line-height: 1.2;
+  line-height: 1;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: all 0.2s ease;
 }
+
+.table-phieusua .badge:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
 .table-phieusua .badge i {
   margin-right: 4px;
-  font-size: 13px;
-  vertical-align: middle;
+  font-size: 11px;
 }
-.table-phieusua td {
-  white-space: normal;
-}
-.table-phieusua .text-center .badge {
-  margin-bottom: 1px;
-  margin-right: 2px;
-}
-.table-phieusua .badge.bg-primary,
-.table-phieusua .badge.bg-success,
-.table-phieusua .badge.bg-warning,
-.table-phieusua .badge.bg-danger {
+
+/* Badge colors */
+.table-phieusua .badge.bg-primary {
+  background: linear-gradient(135deg, #3498db, #2980b9) !important;
   color: #fff !important;
 }
+
+.table-phieusua .badge.bg-warning {
+  background: linear-gradient(135deg, #f39c12, #e67e22) !important;
+  color: #fff !important;
+}
+
+.table-phieusua .badge.bg-success {
+  background: linear-gradient(135deg, #27ae60, #229954) !important;
+  color: #fff !important;
+}
+
+.table-phieusua .badge.bg-danger {
+  background: linear-gradient(135deg, #e74c3c, #c0392b) !important;
+  color: #fff !important;
+}
+
+.table-phieusua .badge.bg-secondary {
+  background: linear-gradient(135deg, #95a5a6, #7f8c8d) !important;
+  color: #fff !important;
+}
+
+.table-phieusua .badge.bg-info {
+  background: linear-gradient(135deg, #1abc9c, #16a085) !important;
+  color: #fff !important;
+}
+
+/* Badges container */
+.table-phieusua .badges-wrap {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Button styles */
 .table-phieusua .btn {
-  padding: 0.25rem 0.5rem;
-  font-size: 15px;
+  padding: 0.4rem 0.8rem;
+  font-size: 13px;
+  font-weight: 500;
   border-radius: 8px;
   margin: 0 2px;
+  border: none;
+  transition: all 0.2s ease;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
-.table-phieusua .btn-info,
-.table-phieusua .btn-warning,
-.table-phieusua .btn-danger {
-  color: #fff;
+
+.table-phieusua .btn i {
+  margin-right: 4px;
 }
+
 .table-phieusua .btn-info {
-  background: #17a2b8;
-  border: none;
+  background: linear-gradient(135deg, #3498db, #2980b9);
+  color: #fff;
+  box-shadow: 0 2px 4px rgba(52, 152, 219, 0.3);
 }
+
+.table-phieusua .btn-info:hover {
+  background: linear-gradient(135deg, #2980b9, #21618c);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(52, 152, 219, 0.4);
+}
+
 .table-phieusua .btn-warning {
-  background: #ffc107;
-  border: none;
+  background: linear-gradient(135deg, #f39c12, #e67e22);
+  color: #fff;
+  box-shadow: 0 2px 4px rgba(243, 156, 18, 0.3);
 }
+
+.table-phieusua .btn-warning:hover {
+  background: linear-gradient(135deg, #e67e22, #d68910);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(243, 156, 18, 0.4);
+}
+
 .table-phieusua .btn-danger {
-  background: #dc3545;
+  background: linear-gradient(135deg, #e74c3c, #c0392b);
+  color: #fff;
+  box-shadow: 0 2px 4px rgba(231, 76, 60, 0.3);
+}
+
+.table-phieusua .btn-danger:hover {
+  background: linear-gradient(135deg, #c0392b, #a93226);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(231, 76, 60, 0.4);
+}
+
+.table-phieusua .btn-sm {
+  font-size: 12px;
+  padding: 0.3rem 0.6rem;
+}
+
+/* Status dropdown */
+.table-phieusua .phieusua-trangthai-dropdown {
+  border: none;
+  background: transparent;
+  font-size: 12px;
+  padding: 0.2rem 0.4rem;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.table-phieusua .phieusua-trangthai-dropdown:focus {
+  box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.3);
+  outline: none;
+}
+
+/* Mobile responsiveness */
+@media (max-width: 1200px) {
+  .table-phieusua th,
+  .table-phieusua td {
+    padding: 0.6rem 0.4rem;
+    font-size: 13px;
+  }
+
+  .table-phieusua .badge {
+    font-size: 11px;
+    padding: 0.3em 0.6em;
+  }
+
+  .table-phieusua .btn {
+    padding: 0.3rem 0.6rem;
+    font-size: 12px;
+  }
+}
+
+@media (max-width: 768px) {
+  .table-phieusua {
+    border-radius: 8px;
+    margin: 0 -0.5rem;
+  }
+
+  .table-phieusua th,
+  .table-phieusua td {
+    padding: 0.5rem 0.3rem;
+    font-size: 12px;
+  }
+
+  .table-phieusua th {
+    padding: 0.7rem 0.3rem;
+  }
+
+  .table-phieusua .badge {
+    font-size: 10px;
+    padding: 0.25em 0.5em;
+    margin: 1px;
+  }
+
+  .table-phieusua .btn {
+    padding: 0.25rem 0.4rem;
+    font-size: 11px;
+    margin: 1px;
+  }
+
+  .table-phieusua .btn i {
+    margin-right: 2px;
+  }
+}
+
+/* Loading states */
+.table-phieusua .loading {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+/* Custom scrollbar for table container */
+.table-responsive::-webkit-scrollbar {
+  height: 8px;
+}
+
+.table-responsive::-webkit-scrollbar-track {
+  background: #f1f3f4;
+  border-radius: 10px;
+}
+
+.table-responsive::-webkit-scrollbar-thumb {
+  background: linear-gradient(135deg, #bdc3c7, #95a5a6);
+  border-radius: 10px;
+}
+
+.table-responsive::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(135deg, #95a5a6, #7f8c8d);
+}
+
+/* Stats cards enhancement */
+.stats-card {
+  border-radius: 12px;
+  padding: 1.5rem;
+  color: white;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
   border: none;
 }
-.table-phieusua .btn-info:hover,
-.table-phieusua .btn-warning:hover,
-.table-phieusua .btn-danger:hover {
-  opacity: 0.85;
+
+.stats-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
 }
-.table-phieusua .badge.bg-secondary {
-  background: #6c757d !important;
+
+.stats-card h3 {
+  font-size: 2rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
 }
-.table-phieusua .badge.bg-secondary i {
-  margin-right: 2px;
+
+.stats-card p {
+  font-size: 0.9rem;
+  opacity: 0.9;
+  font-weight: 500;
+  margin-bottom: 0;
 }
-.table-phieusua .badge.bg-info {
-  background: #0dcaf0 !important;
-  color: #fff !important;
+
+.stats-card.warning {
+  background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);
 }
-.table-phieusua .badge.bg-info i {
-  margin-right: 2px;
+
+.stats-card.success {
+  background: linear-gradient(135deg, #27ae60 0%, #229954 100%);
+}
+
+/* --- PHIEUSUA TABLE MODERN STYLES --- */
+.table-phieusua {
+  background: #fff;
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 4px 24px rgba(44, 62, 80, 0.08);
+  border: none;
+  margin-bottom: 2rem;
+  min-width: 1100px;
+}
+.table-phieusua th {
+  background: linear-gradient(135deg, #f8faff 0%, #e8ecff 100%);
+  font-weight: 700;
+  color: #2c3e50;
+  text-align: center;
+  vertical-align: middle;
+  padding: 1rem 0.75rem;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border: none;
+  border-bottom: 2px solid #e3f2fd;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+.table-phieusua td {
+  vertical-align: middle;
+  text-align: center;
+  padding: 0.7rem 0.6rem;
+  font-size: 14px;
+  border: none;
+  border-bottom: 1px solid #f0f4f8;
+  white-space: nowrap;
+  background: #fff;
+}
+.table-phieusua tbody tr {
+  transition: all 0.2s;
+}
+.table-phieusua tbody tr:hover {
+  background: #f4f8ff;
+  box-shadow: 0 2px 8px rgba(52, 152, 219, 0.07);
+}
+.table-phieusua .fw-bold {
+  color: #2c3e50;
+  font-weight: 700 !important;
 }
 .table-phieusua .text-danger {
-  color: #dc3545 !important;
+  color: #e74c3c !important;
+  font-weight: 600;
 }
 .table-phieusua .text-success {
-  color: #28a745 !important;
+  color: #27ae60 !important;
+  font-weight: 600;
 }
 .table-phieusua .text-muted {
-  color: #6c757d !important;
+  color: #7f8c8d !important;
 }
-.table-phieusua .btn-sm {
-  font-size: 13px;
-  padding: 0.2rem 0.5rem;
+.table-phieusua .badge {
+  font-size: 11px;
+  font-weight: 500;
+  padding: 0.32em 0.7em;
+  border-radius: 16px;
+  margin: 0 2px 2px 0;
+  display: inline-flex;
+  align-items: center;
+  line-height: 1;
+  text-transform: uppercase;
+  letter-spacing: 0.2px;
+  box-shadow: 0 1px 2px rgba(44, 62, 80, 0.07);
+  transition: all 0.2s;
 }
-.table-phieusua .badge + .badge {
-  margin-left: 2px;
+.table-phieusua .badge i {
+  margin-right: 3px;
+  font-size: 10px;
+}
+.table-phieusua .badge.bg-primary {
+  background: #3498db !important;
+  color: #fff !important;
+}
+.table-phieusua .badge.bg-warning {
+  background: #f39c12 !important;
+  color: #fff !important;
+}
+.table-phieusua .badge.bg-success {
+  background: #27ae60 !important;
+  color: #fff !important;
+}
+.table-phieusua .badge.bg-danger {
+  background: #e74c3c !important;
+  color: #fff !important;
+}
+.table-phieusua .badge.bg-secondary {
+  background: #7f8c8d !important;
+  color: #fff !important;
+}
+.table-phieusua .badge.bg-info {
+  background: #16a085 !important;
+  color: #fff !important;
 }
 .table-phieusua .badges-wrap {
   display: flex;
   flex-wrap: wrap;
-  gap: 2px;
+  gap: 3px;
   align-items: center;
   justify-content: flex-start;
 }
-.table-phieusua .badge {
-  font-size: 11px;
-  padding: 0.12em 0.5em;
+.table-phieusua .btn {
+  padding: 0.32rem 0.7rem;
+  font-size: 12px;
+  font-weight: 500;
   border-radius: 8px;
-  margin: 0;
+  margin: 0 2px;
+  border: none;
+  transition: all 0.2s;
   display: inline-flex;
   align-items: center;
-  line-height: 1.1;
+  justify-content: center;
 }
-.table-phieusua .badge i {
+.table-phieusua .btn i {
   margin-right: 3px;
-  font-size: 12px;
-  vertical-align: middle;
+}
+.table-phieusua .btn-info {
+  background: #3498db;
+  color: #fff;
+}
+.table-phieusua .btn-warning {
+  background: #f39c12;
+  color: #fff;
+}
+.table-phieusua .btn-danger {
+  background: #e74c3c;
+  color: #fff;
+}
+.table-phieusua .btn-info:hover {
+  background: #2980b9;
+}
+.table-phieusua .btn-warning:hover {
+  background: #e67e22;
+}
+.table-phieusua .btn-danger:hover {
+  background: #c0392b;
+}
+.table-phieusua .btn-sm {
+  font-size: 11px;
+  padding: 0.22rem 0.5rem;
+}
+@media (max-width: 1200px) {
+  .table-phieusua {
+    min-width: 900px;
+  }
+  .phieusua-table-responsive {
+    overflow-x: auto;
+  }
 }
 @media (max-width: 900px) {
+  .table-phieusua {
+    min-width: 700px;
+  }
   .table-phieusua th,
   .table-phieusua td {
-    font-size: 13px;
-    padding: 0.3rem 0.2rem;
+    font-size: 11px;
+    padding: 0.4rem 0.2rem;
   }
   .table-phieusua .badge {
-    font-size: 11px;
-    padding: 0.2em 0.5em;
+    font-size: 9px;
+    padding: 0.18em 0.4em;
+  }
+  .table-phieusua .btn {
+    font-size: 10px;
+    padding: 0.15rem 0.3rem;
   }
 }
+@media (max-width: 600px) {
+  .table-phieusua {
+    min-width: 500px;
+  }
+  .table-phieusua th,
+  .table-phieusua td {
+    font-size: 9px;
+    padding: 0.2rem 0.1rem;
+  }
+  .table-phieusua .badge {
+    font-size: 8px;
+    padding: 0.12em 0.2em;
+  }
+  .table-phieusua .btn {
+    font-size: 9px;
+    padding: 0.1rem 0.2rem;
+  }
+}
+/* --- END PHIEUSUA TABLE MODERN STYLES --- */

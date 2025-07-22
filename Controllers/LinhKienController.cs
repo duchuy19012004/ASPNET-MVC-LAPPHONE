@@ -447,6 +447,22 @@ namespace phonev2.Controllers
             return Json(linhKiens);
         }
 
+        // API: Lấy theo dịch vụ
+        [HttpGet]
+        public IActionResult GetByDichVu(int maDichVu)
+        {
+            // Lấy các linh kiện liên kết với dịch vụ này, kèm giá bán
+            var linhKiens = _context.DichVuLinhKien
+                .Where(x => x.MaDichVu == maDichVu)
+                .Select(x => new {
+                    maLinhKien = x.MaLinhKien,
+                    tenLinhKien = x.LinhKien.TenLinhKien,
+                    giaBan = x.LinhKien.GiaBan
+                })
+                .ToList();
+            return Json(linhKiens);
+        }
+
         // Báo cáo lợi nhuận
         public async Task<IActionResult> ProfitReport()
         {

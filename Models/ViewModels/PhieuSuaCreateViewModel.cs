@@ -16,6 +16,7 @@ namespace phonev2.Models.ViewModels
         public int MaLinhKien { get; set; }
         public string TenLinhKien { get; set; } = string.Empty;
         public int SoLuong { get; set; } = 1;
+        public int MaDichVu { get; set; } // Bổ sung để tick lại đúng linh kiện theo dịch vụ
     }
     public class DichVuOptionVM
     {
@@ -32,5 +33,6 @@ namespace phonev2.Models.ViewModels
         public IEnumerable<SelectListItem> NhanVienList { get; set; } = new List<SelectListItem>();
         public List<DichVuOptionVM> DichVuList { get; set; } = new List<DichVuOptionVM>();
         public IEnumerable<SelectListItem> LinhKienList { get; set; } = new List<SelectListItem>();
+        public KhachHang? KhachHang { get; set; }
     }
 } 

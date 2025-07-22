@@ -1,253 +1,676 @@
 @model phonev2.Models.ViewModels.PhieuSuaEditViewModel
-@using phonev2.Models
-@using Microsoft.AspNetCore.Mvc.Rendering
 @{
+    Layout = null;
 }
 
-<style>
-    .is-invalid {
-        border-color: #dc3545 !important;
-        box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25) !important;
+@functions {
+    string RenderDichVuSelect(List<phonev2.Models.ViewModels.DichVuOptionVM> dichVuList, string selectedValue, string selectName, string selectClass, string dataDvIdx)
+    {
+        var sb = new System.Text.StringBuilder();
+        sb.Append($"<select name='{selectName}' class='{selectClass}' data-dv-idx='{dataDvIdx}' required>");
+        sb.Append("<option value=''>-- Chọn dịch vụ --</option>");
+        foreach (var dvOpt in dichVuList)
+        {
+            var selected = dvOpt.Value == selectedValue ? "selected" : "";
+            sb.Append($"<option value='{dvOpt.Value}' data-gia='{dvOpt.GiaDichVu}' {selected}>{dvOpt.Text}</option>");
+        }
+        sb.Append("</select>");
+        return sb.ToString();
     }
-    
-    .form-label .text-danger {
-        font-weight: bold;
+}
+
+@{
+    // Chuẩn bị dữ liệu linh kiện đã chọn cho từng dịch vụ
+    var selectedLinhKiensByDichVu = new System.Text.StringBuilder();
+    selectedLinhKiensByDichVu.Append("{");
+    if (Model.DichVus != null && Model.LinhKiens != null)
+    {
+        for (int dvIdx = 0; dvIdx < Model.DichVus.Count; dvIdx++)
+        {
+            var dv = Model.DichVus[dvIdx];
+            var linhKienDict = Model.LinhKiens
+                .Where(lk => lk.MaDichVu == dv.MaDichVu)
+                .ToDictionary(lk => lk.MaLinhKien, lk => lk.SoLuong);
+            var json = System.Text.Json.JsonSerializer.Serialize(linhKienDict);
+            selectedLinhKiensByDichVu.Append($"\"{dvIdx}\":{json},");
+        }
+        if (Model.DichVus.Count > 0)
+            selectedLinhKiensByDichVu.Length--; // remove last comma
     }
-    
-    .btn:disabled {
-        cursor: not-allowed;
-    }
-    
-    .spinner-border-sm {
-        width: 1rem;
-        height: 1rem;
-    }
-</style>
+    selectedLinhKiensByDichVu.Append("}");
+}
+<script>
+window.selectedLinhKiensByDichVu = @Html.Raw(selectedLinhKiensByDichVu.ToString());
+console.log('selectedLinhKiensByDichVu', window.selectedLinhKiensByDichVu);
+</script>
+
+<script>
+// Render option dịch vụ ra biến JS từ Razor
+var dichVuOptionsHtml = '@Html.Raw(string.Join("", Model.DichVuList.Select(dv => $"<option value='{dv.Value}' data-gia='{dv.GiaDichVu}'>{dv.Text}</option>")))';
+</script>
+
+@* Debug: Kiểm tra dữ liệu khách hàng *@
+@if (Model.PhieuSua.KhachHang != null)
+{
+    <script>
+        console.log("DEBUG - KhachHang data:", {
+            MaKhachHang: @Model.PhieuSua.MaKhachHang,
+            HoTen: "@Model.PhieuSua.KhachHang.HoTen",
+            SoDienThoai: "@Model.PhieuSua.KhachHang.SoDienThoai",
+            DiaChi: "@Model.PhieuSua.KhachHang.DiaChi"
+        });
+    </script>
+}
+else
+{
+    <script>
+        console.log("DEBUG - KhachHang is NULL, MaKhachHang:", @(Model.PhieuSua.MaKhachHang?.ToString() ?? "null"));
+    </script>
+}
 
 <div class="modal-header bg-warning text-dark">
-    <h5 class="modal-title"><i class="fas fa-edit"></i> Chỉnh sửa Phiếu Sửa #@Model.PhieuSua.MaPhieuSua</h5>
+    <h5 class="modal-title"><i class="fas fa-edit me-2"></i>Chỉnh sửa Phiếu Sửa #@Model.PhieuSua.MaPhieuSua</h5>
     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
 </div>
 
 <div class="modal-body">
-    <form id="edit-phieusua-form" asp-action="Edit" method="post">
+    <form asp-action="Edit" method="post" id="editPhieuSuaForm">
+        <div id="alertValidation" class="alert alert-danger d-none">
+            <i class="fas fa-exclamation-triangle me-2"></i>
+            <strong>Vui lòng kiểm tra lại các thông tin sau:</strong>
+        </div>
+        
         <input type="hidden" asp-for="PhieuSua.MaPhieuSua" />
-        <div class="row">
-            <div class="col-lg-5 mb-4">
-                <div class="card shadow-sm">
+        
+        <div class="row g-3">
+            <!-- Thông tin cơ bản -->
+            <div class="col-lg-6">
+                <div class="card border-primary h-100">
                     <div class="card-header bg-primary text-white">
-                        <h5 class="mb-0"><i class="fas fa-user-edit me-2"></i>Thông Tin Phiếu Sửa</h5>
+                        <h6 class="mb-0"><i class="fas fa-info-circle me-2"></i>Thông tin cơ bản</h6>
                     </div>
                     <div class="card-body">
-                        <!-- Thông tin chung: ngày, khách, nhân viên, ghi chú, trạng thái -->
-                        <div class="mb-3">
-                            <label asp-for="PhieuSua.NgaySua" class="form-label">Ngày Sửa <span class="text-danger">*</span></label>
-                            <input asp-for="PhieuSua.NgaySua" class="form-control" type="date" min="2020-01-01" max="2030-12-31" required />
-                            <span asp-validation-for="PhieuSua.NgaySua" class="text-danger"></span>
-                        </div>
-                        <div class="mb-3">
-                            <label asp-for="PhieuSua.NgayHenTra" class="form-label">Ngày Hẹn Trả</label>
-                            <input asp-for="PhieuSua.NgayHenTra" class="form-control" type="datetime-local" />
-                            <span asp-validation-for="PhieuSua.NgayHenTra" class="text-danger"></span>
-                            <small class="text-muted">Ngày hẹn trả phải lớn hơn hoặc bằng ngày sửa</small>
-                        </div>
-                        <div class="mb-3">
-                            <label asp-for="PhieuSua.MaKhachHang" class="form-label">Khách Hàng <span class="text-danger">*</span></label>
-                            <select asp-for="PhieuSua.MaKhachHang" class="form-select" asp-items="Model.KhachHangList" required>
-                                <option value="">-- Chọn khách hàng --</option>
-                            </select>
-                            <span asp-validation-for="PhieuSua.MaKhachHang" class="text-danger"></span>
-                        </div>
-                        <div class="mb-3">
-                            <label asp-for="PhieuSua.MaNhanVien" class="form-label">Nhân Viên <span class="text-danger">*</span></label>
-                            <select asp-for="PhieuSua.MaNhanVien" class="form-select" asp-items="Model.NhanVienList" required>
-                                <option value="">-- Chọn nhân viên --</option>
-                            </select>
-                            <span asp-validation-for="PhieuSua.MaNhanVien" class="text-danger"></span>
-                        </div>
-                        <div class="mb-3">
-                            <label asp-for="PhieuSua.TrangThai" class="form-label">Trạng Thái</label>
-                            <select asp-for="PhieuSua.TrangThai" class="form-select">
-                                <option value="0">Tiếp nhận</option>
-                                <option value="1">Đang sửa</option>
-                                <option value="2">Hoàn thành</option>
-                                <option value="3">Hủy</option>
-                            </select>
-                            <span asp-validation-for="PhieuSua.TrangThai" class="text-danger"></span>
-                        </div>
-                        <div class="mb-3">
-                            <label asp-for="PhieuSua.GhiChu" class="form-label">Ghi Chú</label>
-                            <textarea asp-for="PhieuSua.GhiChu" class="form-control" rows="3" placeholder="Nhập ghi chú..."></textarea>
-                            <span asp-validation-for="PhieuSua.GhiChu" class="text-danger"></span>
+                        <div class="row g-3">
+                            <div class="col-12">
+                                <label asp-for="PhieuSua.NgaySua" class="form-label fw-bold">
+                                    <i class="fas fa-calendar me-1"></i>Ngày Sửa <span class="text-danger">*</span>
+                                </label>
+                                <input asp-for="PhieuSua.NgaySua" class="form-control" type="date" required />
+                                <span asp-validation-for="PhieuSua.NgaySua" class="text-danger small"></span>
+                            </div>
+                            
+                            <div class="col-12">
+                                <label asp-for="PhieuSua.NgayHenTra" class="form-label fw-bold">
+                                    <i class="fas fa-clock me-1"></i>Ngày Hẹn Trả
+                                </label>
+                                <input asp-for="PhieuSua.NgayHenTra" class="form-control" type="datetime-local" />
+                                <span asp-validation-for="PhieuSua.NgayHenTra" class="text-danger small"></span>
+                            </div>
+                            
+                            <div class="col-12">
+                                <label class="form-label fw-bold">
+                                    <i class="fas fa-user me-1"></i>Nhân Viên <span class="text-danger">*</span>
+                                </label>
+                                <select asp-for="PhieuSua.MaNhanVien" class="form-select" asp-items="Model.NhanVienList" required>
+                                    <option value="">-- Chọn nhân viên --</option>
+                                </select>
+                                <span asp-validation-for="PhieuSua.MaNhanVien" class="text-danger small"></span>
+                            </div>
+                            
+                            <div class="col-12">
+                                <label asp-for="PhieuSua.TrangThai" class="form-label fw-bold">
+                                    <i class="fas fa-tasks me-1"></i>Trạng thái
+                                </label>
+                                <select asp-for="PhieuSua.TrangThai" class="form-select">
+                                    <option value="0">📋 Tiếp nhận</option>
+                                    <option value="1">🔧 Đang sửa</option>
+                                    <option value="2">✅ Hoàn thành</option>
+                                    <option value="3">❌ Hủy</option>
+                                </select>
+                            </div>
+                            
+                            <div class="col-12">
+                                <label asp-for="PhieuSua.GhiChu" class="form-label fw-bold">
+                                    <i class="fas fa-sticky-note me-1"></i>Ghi chú
+                                </label>
+                                <textarea asp-for="PhieuSua.GhiChu" class="form-control" rows="3" placeholder="Nhập ghi chú nếu có..."></textarea>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
-            <div class="col-lg-7 mb-4">
-                <div class="card shadow-sm">
+            
+            <!-- Thông tin khách hàng -->
+            <div class="col-lg-6">
+                <div class="card border-success h-100">
                     <div class="card-header bg-success text-white">
-                        <h5 class="mb-0"><i class="fas fa-tools me-2"></i>Dịch Vụ & Linh Kiện</h5>
+                        <h6 class="mb-0"><i class="fas fa-user-friends me-2"></i>Thông tin khách hàng</h6>
                     </div>
                     <div class="card-body">
-                        <!-- Dịch vụ -->
-                        <div class="mb-3">
-                            <label class="form-label fw-bold">Chọn Dịch Vụ</label>
-                            <select name="DichVus[0].MaDichVu" class="form-select dichvu-select form-select-lg mb-2">
-                                <option value="">-- Chọn dịch vụ --</option>
-                                @foreach (var dv in Model.DichVuList)
-                                {
-                                    var isSelected = Model.PhieuSua.ChiTietPhieuSuas.Any(x => x.MaDichVu == int.Parse(dv.Value));
-                                    if (isSelected)
+                        <div class="row g-3">
+                            <div class="col-12">
+                                <div id="khachHangInfo" class="alert alert-success py-2">
+                                    @if (Model.PhieuSua.KhachHang != null)
                                     {
-                                        <option value="@dv.Value" selected>@dv.Text</option>
+                                        <i class="fas fa-user-check me-2"></i>
+                                        <strong>@Model.PhieuSua.KhachHang.HoTen</strong> 
+                                        <span class="text-muted">(@Model.PhieuSua.KhachHang.SoDienThoai)</span>
+                                        <br>
+                                        <small class="text-muted">
+                                            <i class="fas fa-map-marker-alt me-1"></i>@Model.PhieuSua.KhachHang.DiaChi
+                                        </small>
                                     }
                                     else
                                     {
-                                        <option value="@dv.Value">@dv.Text</option>
+                                        <i class="fas fa-info-circle me-2"></i>
+                                        <span class="text-muted">Chưa có thông tin khách hàng</span>
                                     }
-                                }
-                            </select>
-                            <div class="dichvu-desc text-muted small mt-1"></div>
-                            <div class="linhkien-of-dichvu mt-2"></div>
-                        </div>
-                        <!-- Linh kiện -->
-                        <div class="mb-3">
-                            <label class="form-label fw-bold">Chọn Linh Kiện</label>
-                            <div id="linhkien-container"></div>
-                        </div>
-                        <!-- Tổng tiền nổi bật -->
-                        <div class="alert alert-info text-end fw-bold fs-5 mt-4" id="tongTienPhieuSuaBox" style="display:none;">
-                            Tổng tiền phiếu sửa: <span id="tongTienPhieuSua">0</span> VNĐ
+                                </div>
+                            </div>
+                            
+                            <div class="col-12">
+                                <label class="form-label fw-bold">
+                                    <i class="fas fa-phone me-1"></i>Số điện thoại <span class="text-danger">*</span>
+                                </label>
+                                <div class="input-group">
+                                    <input type="text" id="searchKhachHangPhone" class="form-control" placeholder="Nhập số điện thoại..." autocomplete="off" value="@Model.PhieuSua.KhachHang?.SoDienThoai" />
+                                    <button type="button" class="btn btn-outline-primary" id="btnAddKhachHang" title="Thêm khách hàng mới">
+                                        <i class="fas fa-user-plus"></i>
+                                    </button>
+                                    <button type="button" class="btn btn-outline-warning" id="btnEditKhachHang" title="Sửa khách hàng">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button type="button" class="btn btn-outline-info" id="btnViewKhachHang" title="Xem thông tin">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                </div>
+                                <input type="hidden" name="PhieuSua.MaKhachHang" id="maKhachHangHidden" value="@Model.PhieuSua.MaKhachHang" />
+                                <small class="form-text text-muted">
+                                    <i class="fas fa-info-circle me-1"></i>
+                                    Thông tin khách hàng đã được lưu. Chỉ cần nhập lại nếu muốn thay đổi.
+                                </small>
+                            </div>
+                            
+                            <div class="col-12">
+                                <label class="form-label fw-bold">
+                                    <i class="fas fa-user me-1"></i>Tên khách hàng
+                                </label>
+                                <input type="text" id="tenKhachHangInput" class="form-control" name="KhachHang.HoTen" value="@Model.PhieuSua.KhachHang?.HoTen" placeholder="Nhập tên khách hàng..." />
+                                <small class="form-text text-muted">
+                                    <i class="fas fa-info-circle me-1"></i>
+                                    Để trống nếu không muốn thay đổi thông tin khách hàng hiện tại.
+                                </small>
+                            </div>
+                            
+                            <div class="col-12">
+                                <label class="form-label fw-bold">
+                                    <i class="fas fa-map-marker-alt me-1"></i>Địa chỉ
+                                </label>
+                                <input type="text" id="diaChiKhachHangInput" class="form-control" name="KhachHang.DiaChi" value="@Model.PhieuSua.KhachHang?.DiaChi" placeholder="Nhập địa chỉ..." />
+                                <small class="form-text text-muted">
+                                    <i class="fas fa-info-circle me-1"></i>
+                                    Để trống nếu không muốn thay đổi địa chỉ hiện tại.
+                                </small>
+                            </div>
+                            
+                            <div class="col-12">
+                                <span class="text-danger small" id="khachHangError"></span>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-        <div class="row">
-            <div class="col-12 text-end">
-                <button type="submit" class="btn btn-warning btn-lg px-5"><i class="fas fa-save"></i> Cập nhật</button>
-                <button type="button" class="btn btn-secondary btn-lg" data-bs-dismiss="modal"><i class="fas fa-times"></i> Hủy</button>
+        
+        <!-- Dịch vụ & Linh kiện -->
+        <div class="row g-3 mt-3">
+            <div class="col-12">
+                <div class="card border-info">
+                    <div class="card-header bg-info text-white">
+                        <h6 class="mb-0"><i class="fas fa-tools me-2"></i>Dịch vụ & Linh kiện</h6>
+                    </div>
+                    <div class="card-body">
+                        <div id="dichvu-linhkien-list">
+                            @if (Model.DichVus != null && Model.DichVus.Any())
+                            {
+                                var dvIdx = 0;
+                                foreach (var dv in Model.DichVus)
+                                {
+                                    <div class="dichvu-block mb-4 border rounded p-3" data-dv-idx="@dvIdx">
+                                        <div class="row align-items-center mb-2">
+                                            <div class="col-lg-8">
+                                                @Html.Raw(RenderDichVuSelect(Model.DichVuList, dv.MaDichVu.ToString(), $"DichVus[{dvIdx}].MaDichVu", "form-select dichvu-select", dvIdx.ToString()))
+                                            </div>
+                                            <div class="col-lg-2">
+                                                <span class="gia-dichvu fw-bold text-primary"></span>
+                                            </div>
+                                            <div class="col-lg-2 text-end">
+                                                <button type="button" class="btn btn-outline-danger btn-remove-dv" data-dv-idx="@dvIdx"><i class="fas fa-trash"></i></button>
+                                            </div>
+                                        </div>
+                                        <div class="linhkien-list" data-dv-idx="@dvIdx">
+                                            <!-- Linh kiện sẽ được load bằng JS -->
+                                        </div>
+                                    </div>
+                                    dvIdx++;
+                                }
+                            }
+                        </div>
+                        <button type="button" class="btn btn-success btn-sm mt-2" id="btnAddDichVu">
+                            <i class="fas fa-plus me-1"></i>Thêm dịch vụ
+                        </button>
+                        <div class="row mt-4">
+                            <div class="col-12">
+                                <div class="alert alert-warning border-warning">
+                                    <div class="row text-center">
+                                        <div class="col-md-4">
+                                            <div class="fw-bold text-primary">Giá dịch vụ</div>
+                                            <div class="h5 mb-0"><span id="giaDichVu">0</span> ₫</div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="fw-bold text-success">Giá linh kiện</div>
+                                            <div class="h5 mb-0"><span id="giaLinhKien">0</span> ₫</div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="fw-bold text-danger">Tổng tiền</div>
+                                            <div class="h4 mb-0"><span id="tongTienPhieuSua">0</span> ₫</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </form>
 </div>
 
-<script>
-    // Handle form submission
-    $('#edit-phieusua-form').on('submit', function(e) {
-        e.preventDefault();
-        var form = $(this);
-        var submitBtn = $('.btn-warning'); // Assuming the submit button is the one with btn-warning class
-        
-        // Disable submit button to prevent double submission
-        submitBtn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Đang cập nhật...');
-        
-        $.ajax({
-            url: form.attr('action'),
-            type: 'POST',
-            data: form.serialize(),
-            dataType: 'json',
-            success: function(response) {
-                if (response.success) {
-                    // Show success message
-                    alert('Cập nhật phiếu sửa thành công!');
-                    $('#phieusua-edit-modal').modal('hide');
-                    location.reload(); // Reload page to show updated data
+<div class="modal-footer bg-light">
+    <button type="submit" form="editPhieuSuaForm" class="btn btn-warning">
+        <i class="fas fa-save me-2"></i>Cập nhật
+    </button>
+    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+        <i class="fas fa-times me-2"></i>Hủy
+    </button>
+</div>
+
+<!-- Modals cho khách hàng -->
+<div class="modal fade" id="addKhachHangModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content"></div>
+    </div>
+</div>
+<div class="modal fade" id="editKhachHangModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content"></div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        // Render option dịch vụ ra biến JS
+        var dichVuOptionsHtml = `
+@foreach (var dvOpt in Model.DichVuList)
+{
+    <text><option value="@dvOpt.Value" data-gia="@dvOpt.GiaDichVu">@dvOpt.Text</option></text>
+}
+`;
+
+        // Autocomplete tìm kiếm khách hàng
+        $(function() {
+            $("#searchKhachHangPhone").autocomplete({
+                source: function(request, response) {
+                    $.getJSON("/KhachHang/Search", { term: request.term }, function(data) {
+                        response($.map(data, function(item) {
+                            return {
+                                label: `${item.hoTen} (${item.soDienThoai})`,
+                                value: item.soDienThoai,
+                                id: item.maKhachHang
+                            };
+                        }));
+                    });
+                },
+                select: function(event, ui) {
+                    $("#maKhachHangHidden").val(ui.item.id);
+                    $("#tenKhachHangInput").val(ui.item.label.split('(')[0].trim());
+                    $("#searchKhachHangPhone").val(ui.item.value);
+                    $("#khachHangError").text('');
+                    updateKhachHangStatus();
+                    return false;
+                }
+            });
+        });
+
+        // Thêm dịch vụ mới
+        $("#btnAddDichVu").click(function() {
+            var dvIdx = $(".dichvu-block").length;
+            var newDvBlock = `
+                <div class="dichvu-block mb-4 border rounded p-3" data-dv-idx="${dvIdx}">
+                    <div class="row align-items-center mb-2">
+                        <div class="col-lg-8">
+                            ${dichVuOptionsHtml}
+                        </div>
+                        <div class="col-lg-2">
+                            <span class="gia-dichvu fw-bold text-primary"></span>
+                        </div>
+                        <div class="col-lg-2 text-end">
+                            <button type="button" class="btn btn-outline-danger btn-remove-dv" data-dv-idx="${dvIdx}"><i class="fas fa-trash"></i></button>
+                        </div>
+                    </div>
+                    <div class="linhkien-list" data-dv-idx="${dvIdx}">
+                        <!-- Linh kiện sẽ được load bằng JS -->
+                    </div>
+                </div>
+            `;
+            $("#dichvu-linhkien-list").append(newDvBlock);
+            updateDichVuGia(); // Cập nhật giá dịch vụ mới
+            updateLinhKienList(dvIdx); // Load linh kiện cho dịch vụ mới
+        });
+
+        // Xóa dịch vụ
+        $(document).on("click", ".btn-remove-dv", function() {
+            var dvIdx = $(this).data("dv-idx");
+            $(".dichvu-block").each(function(index) {
+                if (index == dvIdx) {
+                    $(this).remove();
+                }
+            });
+            updateTongTien();
+        });
+
+        // Xử lý tăng/giảm số lượng linh kiện
+        $(document).on("click", ".btn-plus", function () {
+            var idx = $(this).data("idx");
+            var input = $(`input.soLuongInput[data-idx="${idx}"]`);
+            var val = parseInt(input.val()) || 1;
+            input.val(val + 1).trigger("input");
+        });
+
+        $(document).on("click", ".btn-minus", function () {
+            var idx = $(this).data("idx");
+            var input = $(`input.soLuongInput[data-idx="${idx}"]`);
+            var val = parseInt(input.val()) || 1;
+            if (val > 1) input.val(val - 1).trigger("input");
+        });
+
+        // Xử lý checkbox linh kiện
+        $(document).on("change", "input[type=checkbox]", function () {
+            var idx = $(this).data("idx");
+            var group = $(`.input-group[data-idx="${idx}"]`);
+            if ($(this).is(":checked")) {
+                group.show();
+            } else {
+                group.hide();
+            }
+            updateTongTien();
+        });
+
+        // Cập nhật số lượng khi thay đổi input
+        $(document).on("input", "input.soLuongInput", function () {
+            updateTongTien();
+        });
+
+        // Cập nhật trạng thái khách hàng khi thay đổi input
+        $(document).on("input", "#searchKhachHangPhone, #tenKhachHangInput", function() {
+            updateKhachHangStatus();
+        });
+
+        // Xử lý khi chọn khách hàng từ autocomplete
+        $(document).on("autocompleteselect", "#searchKhachHangPhone", function(event, ui) {
+            setTimeout(function() {
+                updateKhachHangStatus();
+            }, 100);
+        });
+
+        // Cập nhật trạng thái khách hàng
+        function updateKhachHangStatus() {
+            var maKh = $("#maKhachHangHidden").val();
+            var tenKh = $("#tenKhachHangInput").val();
+            var soDienThoai = $("#searchKhachHangPhone").val();
+            
+            console.log("updateKhachHangStatus called:", {
+                maKh: maKh,
+                tenKh: tenKh,
+                soDienThoai: soDienThoai
+            });
+            
+            // Kiểm tra xem có thông tin khách hàng từ server không
+            var hasExistingCustomer = @(Model.PhieuSua.KhachHang != null ? "true" : "false");
+            var existingTenKh = @Html.Raw(Json.Serialize(Model.PhieuSua.KhachHang?.HoTen ?? ""));
+            var existingSoDienThoai = @Html.Raw(Json.Serialize(Model.PhieuSua.KhachHang?.SoDienThoai ?? ""));
+            var existingDiaChi = @Html.Raw(Json.Serialize(Model.PhieuSua.KhachHang?.DiaChi ?? ""));
+            var existingMaKhachHang = @(Model.PhieuSua.MaKhachHang?.ToString() ?? "null");
+            
+            console.log("Server data:", {
+                hasExistingCustomer: hasExistingCustomer,
+                existingTenKh: existingTenKh,
+                existingSoDienThoai: existingSoDienThoai,
+                existingDiaChi: existingDiaChi,
+                existingMaKhachHang: existingMaKhachHang
+            });
+            
+            // Nếu có MaKhachHang, hiển thị thông tin khách hàng
+            if (existingMaKhachHang && existingMaKhachHang !== "null") {
+                // Luôn hiển thị thông tin cũ nếu không có thông tin mới
+                var displayTenKh = tenKh || existingTenKh;
+                var displaySoDienThoai = soDienThoai || existingSoDienThoai;
+                
+                var html = `<i class="fas fa-user-check me-2"></i><strong>${displayTenKh}</strong> <span class="text-muted">(${displaySoDienThoai})</span>`;
+                
+                if (existingDiaChi) {
+                    html += `<br><small class="text-muted"><i class="fas fa-map-marker-alt me-1"></i>${existingDiaChi}</small>`;
+                }
+                
+                if (tenKh || soDienThoai) {
+                    html += `<br><small class="text-success"><i class="fas fa-sync-alt me-1"></i>Thông tin sẽ được cập nhật</small>`;
+                }
+                
+                $("#khachHangInfo").html(html).removeClass("alert-warning").addClass("alert-success");
+                $("#khachHangError").text('');
+                console.log("Updated khachHangInfo with existing data");
+            } else if (maKh && tenKh && soDienThoai) {
+                // Có thông tin mới được nhập đầy đủ
+                $("#khachHangInfo").html(
+                    `<i class="fas fa-user-check me-2"></i><strong>${tenKh}</strong> <span class="text-muted">(${soDienThoai})</span>`
+                ).removeClass("alert-warning").addClass("alert-success");
+                $("#khachHangError").text('');
+                console.log("Updated khachHangInfo with new data");
+            } else {
+                // Chưa có thông tin khách hàng
+                $("#khachHangInfo").html(
+                    `<i class="fas fa-info-circle me-2"></i><span class="text-muted">Chưa có thông tin khách hàng</span>`
+                ).removeClass("alert-success alert-warning");
+                console.log("Updated khachHangInfo with no data");
+            }
+        }
+
+        // --- Load linh kiện cho từng dịch vụ khi chọn ---
+        function loadLinhKienByDichVu(dvIdx, maDichVu, selectedLinhKiens) {
+            var $lkList = $(`.linhkien-list[data-dv-idx='${dvIdx}']`);
+            if (!maDichVu) {
+                $lkList.html('<div class="text-muted text-center py-3"><i class="fas fa-info-circle me-2"></i>Chọn dịch vụ để hiển thị linh kiện</div>');
+                return;
+            }
+            $.get('/LinhKien/GetByDichVu', { maDichVu: maDichVu }, function(data) {
+                if (data && data.length > 0) {
+                    var html = '';
+                    data.forEach(function(lk, idx) {
+                        var checked = '';
+                        var soLuong = 1;
+                        if (selectedLinhKiens && selectedLinhKiens[lk.maLinhKien]) {
+                            checked = 'checked';
+                            soLuong = selectedLinhKiens[lk.maLinhKien];
+                        }
+                        html += `<div class="row align-items-center mb-2 border-bottom pb-2 linhkien-row">
+                            <div class="col-auto">
+                                <input class="form-check-input" type="checkbox" name="LinhKiens[${dvIdx}_${idx}].MaLinhKien" value="${lk.maLinhKien}" data-gia="${lk.giaBan}" data-dv-idx="${dvIdx}" data-idx="${idx}" ${checked}>
+                            </div>
+                            <div class="col">
+                                <label class="form-check-label">${lk.tenLinhKien} <span class='text-primary fw-bold'>(${lk.giaBan > 0 ? lk.giaBan.toLocaleString() + ' ₫' : 'Chưa có giá'})</span></label>
+                            </div>
+                            <div class="col-auto">
+                                <div class="input-group input-group-sm" style="width:110px;${checked ? '' : 'display:none;'}" data-idx="${idx}">
+                                    <button type="button" class="btn btn-outline-secondary btn-minus" data-idx="${idx}" data-dv-idx="${dvIdx}">-</button>
+                                    <input type="number" class="form-control soLuongInput" min="1" value="${soLuong}" data-idx="${idx}" data-dv-idx="${dvIdx}" name="LinhKiens[${dvIdx}_${idx}].SoLuong">
+                                    <button type="button" class="btn btn-outline-secondary btn-plus" data-idx="${idx}" data-dv-idx="${dvIdx}">+</button>
+                                </div>
+                            </div>
+                        </div>`;
+                    });
+                    $lkList.html(html);
                 } else {
-                    // Show error message
-                    alert('Có lỗi xảy ra: ' + response.message);
-                    submitBtn.prop('disabled', false).html('<i class="fas fa-save"></i> Cập nhật');
+                    $lkList.html('<div class="text-muted text-center py-3"><i class="fas fa-info-circle me-2"></i>Không có linh kiện nào cho dịch vụ này</div>');
                 }
-            },
-            error: function(xhr, status, error) {
-                console.log('AJAX Error:', xhr.responseText);
-                
-                // Try to parse error response
-                try {
-                    var errorResponse = JSON.parse(xhr.responseText);
-                    if (errorResponse.message) {
-                        alert('Có lỗi xảy ra: ' + errorResponse.message);
-                    } else {
-                        alert('Có lỗi xảy ra khi cập nhật phiếu sửa!');
+                updateTongTien();
+            });
+        }
+
+        // --- Khi chọn dịch vụ, load lại linh kiện ---
+        $(document).on('change', '.dichvu-select', function() {
+            var dvIdx = $(this).data('dv-idx');
+            var maDichVu = $(this).val();
+            var selectedLinhKiens = window.selectedLinhKiensByDichVu && window.selectedLinhKiensByDichVu[dvIdx] ? window.selectedLinhKiensByDichVu[dvIdx] : {};
+            loadLinhKienByDichVu(dvIdx, maDichVu, selectedLinhKiens);
+            updateDichVuGia();
+        });
+
+        // --- Tick/bỏ tick linh kiện: show/hide input số lượng ---
+        $(document).on('change', '.linhkien-list input[type=checkbox]', function() {
+            var idx = $(this).data('idx');
+            var dvIdx = $(this).data('dv-idx');
+            var group = $(`.linhkien-list[data-dv-idx='${dvIdx}'] .input-group[data-idx='${idx}']`);
+            if ($(this).is(':checked')) {
+                group.show();
+            } else {
+                group.hide();
+            }
+            updateTongTien();
+        });
+
+        // --- Tăng/giảm số lượng ---
+        $(document).on('click', '.btn-plus', function() {
+            var idx = $(this).data('idx');
+            var dvIdx = $(this).data('dv-idx');
+            var input = $(`.linhkien-list[data-dv-idx='${dvIdx}'] input.soLuongInput[data-idx='${idx}']`);
+            var val = parseInt(input.val()) || 1;
+            input.val(val + 1).trigger('input');
+        });
+        $(document).on('click', '.btn-minus', function() {
+            var idx = $(this).data('idx');
+            var dvIdx = $(this).data('dv-idx');
+            var input = $(`.linhkien-list[data-dv-idx='${dvIdx}'] input.soLuongInput[data-idx='${idx}']`);
+            var val = parseInt(input.val()) || 1;
+            if (val > 1) input.val(val - 1).trigger('input');
+        });
+        $(document).on('input', '.soLuongInput', function() {
+            updateTongTien();
+        });
+
+        // --- Cập nhật giá dịch vụ khi chọn ---
+        function updateDichVuGia() {
+            $('.dichvu-block').each(function() {
+                var dvIdx = $(this).data('dv-idx');
+                var select = $(this).find('.dichvu-select');
+                var val = select.val();
+                var gia = select.find('option:selected').data('gia') || 0;
+                $(this).find('.gia-dichvu').text(gia > 0 ? gia.toLocaleString() + ' ₫' : '');
+            });
+        }
+
+        // --- Tính tổng tiền ---
+        function updateTongTien() {
+            var tongGiaDichVu = 0;
+            var tongGiaLinhKien = 0;
+            $('.dichvu-block').each(function() {
+                var select = $(this).find('.dichvu-select');
+                var val = select.val();
+                var gia = select.find('option:selected').data('gia') || 0;
+                if (val) tongGiaDichVu += parseFloat(gia);
+                $(this).find('.linhkien-list input[type=checkbox]:checked').each(function() {
+                    var giaLK = parseFloat($(this).data('gia')) || 0;
+                    var idx = $(this).data('idx');
+                    var dvIdx = $(this).data('dv-idx');
+                    var soLuong = parseInt($(`.linhkien-list[data-dv-idx='${dvIdx}'] input.soLuongInput[data-idx='${idx}']`).val()) || 1;
+                    tongGiaLinhKien += giaLK * soLuong;
+                });
+            });
+            $('#giaDichVu').text(tongGiaDichVu.toLocaleString());
+            $('#giaLinhKien').text(tongGiaLinhKien.toLocaleString());
+            $('#tongTienPhieuSua').text((tongGiaDichVu + tongGiaLinhKien).toLocaleString());
+        }
+
+        // Validate form
+        $(document).on("submit", '#editPhieuSuaForm', function (e) {
+            var errors = [];
+            
+            // Validate ngày sửa
+            if (!$("input[name='PhieuSua.NgaySua']").val()) {
+                errors.push("Vui lòng nhập ngày sửa!");
+            }
+            
+            // Validate khách hàng - chỉ validate khi chưa có dữ liệu
+            var maKh = $("#maKhachHangHidden").val();
+            var tenKh = $("#tenKhachHangInput").val();
+            var soDienThoai = $("#searchKhachHangPhone").val();
+            
+            // Nếu đã có mã khách hàng, không cần validate thêm
+            if (!maKh) {
+                errors.push("Vui lòng chọn khách hàng!");
+            } else {
+                // Nếu có nhập thông tin mới, validate đầy đủ
+                if (tenKh || soDienThoai) {
+                    if (!tenKh) {
+                        errors.push("Vui lòng nhập tên khách hàng!");
                     }
-                } catch (e) {
-                    // If not JSON, show generic error
-                    alert('Có lỗi xảy ra khi cập nhật phiếu sửa! Vui lòng thử lại.');
+                    if (!soDienThoai) {
+                        errors.push("Vui lòng nhập số điện thoại khách hàng!");
+                    }
                 }
-                
-                submitBtn.prop('disabled', false).html('<i class="fas fa-save"></i> Cập nhật');
+            }
+            
+            // Validate nhân viên
+            if (!$("select[name='PhieuSua.MaNhanVien']").val()) {
+                errors.push("Vui lòng chọn nhân viên!");
+            }
+            
+            // Validate dịch vụ
+            if ($(".dichvu-select").filter(function(){ return $(this).val(); }).length === 0) {
+                errors.push("Vui lòng chọn ít nhất một dịch vụ!");
+            }
+            
+            // Validate linh kiện
+            if ($("input[type=checkbox]:checked").length === 0) {
+                errors.push("Vui lòng chọn ít nhất một linh kiện!");
+            }
+
+            if (errors.length > 0) {
+                $("#alertValidation").removeClass("d-none").html(
+                    '<i class="fas fa-exclamation-triangle me-2"></i><strong>Vui lòng kiểm tra lại các thông tin sau:</strong>' +
+                    errors.map(e => `<div class="mt-1">• ${e}</div>`).join("")
+                );
+                e.preventDefault();
+                return false;
+            } else {
+                $("#alertValidation").addClass("d-none");
             }
         });
-    });
-    
-    // Add validation before submit
-    $('#edit-phieusua-form').on('submit', function(e) {
-        var ngaySua = $('input[name="PhieuSua.NgaySua"]').val();
-        var maKhachHang = $('select[name="PhieuSua.MaKhachHang"]').val();
-        var maNhanVien = $('select[name="PhieuSua.MaNhanVien"]').val();
-        var isValid = true;
-        var errorMessages = [];
-        
-        // Clear previous error highlights
-        $('.form-control, .form-select').removeClass('is-invalid');
-        
-        if (!ngaySua) {
-            $('input[name="PhieuSua.NgaySua"]').addClass('is-invalid');
-            errorMessages.push('Vui lòng chọn ngày sửa!');
-            isValid = false;
-        }
-        
-        if (!maKhachHang) {
-            $('select[name="PhieuSua.MaKhachHang"]').addClass('is-invalid');
-            errorMessages.push('Vui lòng chọn khách hàng!');
-            isValid = false;
-        }
-        
-        if (!maNhanVien) {
-            $('select[name="PhieuSua.MaNhanVien"]').addClass('is-invalid');
-            errorMessages.push('Vui lòng chọn nhân viên!');
-            isValid = false;
-        }
-        
-        if (!isValid) {
-            e.preventDefault();
-            alert('Vui lòng kiểm tra lại các trường bắt buộc:\n' + errorMessages.join('\n'));
-            return false;
-        }
-    });
-    
-    // Auto-hide error highlights when user starts typing/selecting
-    $('input, select').on('input change', function() {
-        $(this).removeClass('is-invalid');
-    });
 
-    // Validation cho ngày hẹn trả
-    // Cập nhật min date cho ngày hẹn trả khi ngày sửa thay đổi
-    $('input[name="PhieuSua.NgaySua"]').on('change', function() {
-        var ngaySua = $(this).val();
-        if (ngaySua) {
-            // Set min date cho ngày hẹn trả = ngày sửa (có thể bằng)
-            $('#ngayHenTra').attr('min', ngaySua);
+        // Khởi tạo
+        $(document).ready(function() {
+            console.log("Document ready - Initializing...");
             
-            // Kiểm tra ngày hẹn trả hiện tại
-            var ngayHenTraHienTai = $('#ngayHenTra').val();
-            if (ngayHenTraHienTai && ngayHenTraHienTai < ngaySua) {
-                $('#ngayHenTra').val('');
-                alert('Ngày hẹn trả phải lớn hơn hoặc bằng ngày sửa!');
-            }
-        }
-    });
-
-    // Thêm validation cho ngày hẹn trả vào form validation
-    $('#edit-phieusua-form').on('submit', function(e) {
-        var ngaySua = $('input[name="PhieuSua.NgaySua"]').val();
-        var ngayHenTra = $('#ngayHenTra').val();
-        
-        if (ngayHenTra && ngayHenTra < ngaySua) {
-            e.preventDefault();
-            alert('Ngày hẹn trả phải lớn hơn hoặc bằng ngày sửa!');
-            $('#ngayHenTra').focus();
-            return false;
-        }
-    });
-</script> 
+            // Cập nhật trạng thái khách hàng ngay lập tức
+            updateKhachHangStatus();
+            
+            // Cập nhật lại sau 500ms để đảm bảo DOM đã sẵn sàng
+            setTimeout(function() {
+                console.log("Delayed updateKhachHangStatus");
+                updateKhachHangStatus();
+            }, 500);
+            
+            updateTongTien();
+        });
+    </script>
+} 

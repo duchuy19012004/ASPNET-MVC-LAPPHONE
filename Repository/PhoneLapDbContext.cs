@@ -228,12 +228,12 @@ namespace phonev2.Repository
                 entity.HasIndex(e => e.TrangThai);
                 entity.HasIndex(e => e.NgayHenTra);
                 entity.HasIndex(e => e.NgayTraThucTe);
-                // FK
-                entity.HasOne<KhachHang>()
+                // FK với navigation property
+                entity.HasOne(e => e.KhachHang)
                       .WithMany()
                       .HasForeignKey(e => e.MaKhachHang)
                       .OnDelete(DeleteBehavior.Restrict);
-                entity.HasOne<NhanVien>()
+                entity.HasOne(e => e.NhanVien)
                       .WithMany()
                       .HasForeignKey(e => e.MaNhanVien)
                       .OnDelete(DeleteBehavior.Restrict);

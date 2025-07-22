@@ -186,6 +186,33 @@ namespace phonev2.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(PhieuSuaCreateViewModel vm)
         {
+            // Nếu chưa chọn khách hàng cũ, nhưng có nhập thông tin khách hàng mới thì kiểm tra số điện thoại
+            if ((vm.PhieuSua.MaKhachHang == null || vm.PhieuSua.MaKhachHang == 0)
+                && !string.IsNullOrWhiteSpace(vm.KhachHang?.HoTen)
+                && !string.IsNullOrWhiteSpace(vm.KhachHang?.SoDienThoai))
+            {
+                var khachHangTonTai = _context.KhachHang.FirstOrDefault(kh => kh.SoDienThoai == vm.KhachHang.SoDienThoai);
+                if (khachHangTonTai != null)
+                {
+                    vm.PhieuSua.MaKhachHang = khachHangTonTai.MaKhachHang;
+                }
+                else
+                {
+                    var kh = new phonev2.Models.KhachHang
+                    {
+                        HoTen = vm.KhachHang.HoTen,
+                        SoDienThoai = vm.KhachHang.SoDienThoai,
+                        DiaChi = vm.KhachHang.DiaChi,
+                        TrangThai = true
+                    };
+                    _context.KhachHang.Add(kh);
+                    await _context.SaveChangesAsync();
+                    vm.PhieuSua.MaKhachHang = kh.MaKhachHang;
+                }
+                // Xóa lỗi ModelState cho trường MaKhachHang (nếu có)
+                ModelState.Remove("PhieuSua.MaKhachHang");
+            }
+
             if (ModelState.IsValid)
             {
                 var success = await _phieuSuaService.CreatePhieuSuaAsync(vm);
@@ -195,8 +222,11 @@ namespace phonev2.Controllers
                 }
             }
 
-            // Nếu lỗi, nạp lại ViewModel
-            vm = await _phieuSuaService.GetCreateViewModelAsync();
+            // Nếu lỗi, chỉ nạp lại các list, giữ nguyên dữ liệu người dùng nhập
+            vm.KhachHangList = _phieuSuaService.GetKhachHangList();
+            vm.NhanVienList = _phieuSuaService.GetNhanVienList();
+            vm.DichVuList = _phieuSuaService.GetDichVuOptionList();
+            vm.LinhKienList = _phieuSuaService.GetLinhKienList();
             return View(vm);
         }
 
@@ -219,6 +249,11 @@ namespace phonev2.Controllers
             if (id == null) return NotFound();
             var vm = await _phieuSuaService.GetPhieuSuaEditViewModelAsync(id.Value);
             if (vm == null) return NotFound();
+            
+            // Debug: Kiểm tra dữ liệu khách hàng
+            System.Diagnostics.Debug.WriteLine($"Controller Edit - PhieuSua {id}: MaKhachHang = {vm.PhieuSua.MaKhachHang}");
+            System.Diagnostics.Debug.WriteLine($"Controller Edit - PhieuSua {id}: KhachHang = {(vm.PhieuSua.KhachHang != null ? $"{vm.PhieuSua.KhachHang.HoTen} ({vm.PhieuSua.KhachHang.SoDienThoai})" : "NULL")}");
+            
             if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
             {
                 return PartialView("Edit", vm);

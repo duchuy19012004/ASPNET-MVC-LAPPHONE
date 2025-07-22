@@ -22,5 +22,6 @@ namespace phonev2.Services.PhieuSua
         Task<Models.ViewModels.PhieuSuaEditViewModel> GetPhieuSuaEditViewModelAsync(int id);
         Task<Models.ViewModels.PhieuSuaEditViewModel> GetPhieuSuaDetailsViewModelAsync(int id);
         Task<bool> UpdateTrangThaiAsync(int id, int trangThai);
+        List<phonev2.Models.ViewModels.DichVuOptionVM> GetDichVuOptionList();
     }
 } 

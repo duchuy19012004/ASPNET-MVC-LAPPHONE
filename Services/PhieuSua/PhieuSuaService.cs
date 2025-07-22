@@ -296,8 +296,32 @@ namespace phonev2.Services.PhieuSua
             var phieuSua = await _context.PhieuSua
                 .Include(p => p.ChiTietPhieuSuas).ThenInclude(ct => ct.DichVu)
                 .Include(p => p.ChiTietLinhKiens).ThenInclude(ct => ct.LinhKien)
+                .Include(p => p.KhachHang) // Bổ sung Include KhachHang
+                .Include(p => p.NhanVien) // Bổ sung Include NhanVien
                 .FirstOrDefaultAsync(p => p.MaPhieuSua == id);
             if (phieuSua == null) return null;
+
+            // Debug: Kiểm tra dữ liệu khách hàng
+            System.Diagnostics.Debug.WriteLine($"PhieuSua {id}: MaKhachHang = {phieuSua.MaKhachHang}");
+            System.Diagnostics.Debug.WriteLine($"PhieuSua {id}: KhachHang = {(phieuSua.KhachHang != null ? $"{phieuSua.KhachHang.HoTen} ({phieuSua.KhachHang.SoDienThoai})" : "NULL")}");
+            System.Diagnostics.Debug.WriteLine($"PhieuSua {id}: MaNhanVien = {phieuSua.MaNhanVien}");
+            System.Diagnostics.Debug.WriteLine($"PhieuSua {id}: NhanVien = {(phieuSua.NhanVien != null ? phieuSua.NhanVien.HoTen : "NULL")}");
+
+            // Nếu KhachHang vẫn null, load riêng biệt
+            if (phieuSua.KhachHang == null && phieuSua.MaKhachHang.HasValue)
+            {
+                System.Diagnostics.Debug.WriteLine($"Loading KhachHang separately for MaKhachHang = {phieuSua.MaKhachHang}");
+                phieuSua.KhachHang = await _context.KhachHang.FirstOrDefaultAsync(kh => kh.MaKhachHang == phieuSua.MaKhachHang.Value);
+                System.Diagnostics.Debug.WriteLine($"Loaded KhachHang = {(phieuSua.KhachHang != null ? $"{phieuSua.KhachHang.HoTen} ({phieuSua.KhachHang.SoDienThoai})" : "NULL")}");
+            }
+
+            // Nếu NhanVien vẫn null, load riêng biệt
+            if (phieuSua.NhanVien == null && phieuSua.MaNhanVien.HasValue)
+            {
+                System.Diagnostics.Debug.WriteLine($"Loading NhanVien separately for MaNhanVien = {phieuSua.MaNhanVien}");
+                phieuSua.NhanVien = await _context.NhanVien.FirstOrDefaultAsync(nv => nv.MaNhanVien == phieuSua.MaNhanVien.Value);
+                System.Diagnostics.Debug.WriteLine($"Loaded NhanVien = {(phieuSua.NhanVien != null ? phieuSua.NhanVien.HoTen : "NULL")}");
+            }
 
             var vm = new Models.ViewModels.PhieuSuaEditViewModel
             {
@@ -309,13 +333,34 @@ namespace phonev2.Services.PhieuSua
                 LinhKiens = phieuSua.ChiTietLinhKiens?.Select(lk => new Models.ViewModels.LinhKienChonVM
                 {
                     MaLinhKien = lk.MaLinhKien,
-                    SoLuong = lk.SoLuong
+                    SoLuong = lk.SoLuong,
+                    MaDichVu = 0 // Sẽ được set sau khi load từ DichVuLinhKien
                 }).ToList() ?? new List<Models.ViewModels.LinhKienChonVM>(),
                 KhachHangList = GetKhachHangList(),
                 NhanVienList = GetNhanVienList(),
                 DichVuList = GetDichVuOptionList(),
                 LinhKienList = GetLinhKienList()
             };
+
+            // Cập nhật MaDichVu cho các linh kiện dựa trên DichVuLinhKien
+            if (vm.LinhKiens.Any())
+            {
+                var linhKienIds = vm.LinhKiens.Select(lk => lk.MaLinhKien).ToList();
+                var dichVuLinhKienMapping = await _context.DichVuLinhKien
+                    .Where(dvlk => linhKienIds.Contains(dvlk.MaLinhKien))
+                    .Select(dvlk => new { dvlk.MaLinhKien, dvlk.MaDichVu })
+                    .ToListAsync();
+
+                foreach (var linhKien in vm.LinhKiens)
+                {
+                    var mapping = dichVuLinhKienMapping.FirstOrDefault(m => m.MaLinhKien == linhKien.MaLinhKien);
+                    if (mapping != null)
+                    {
+                        linhKien.MaDichVu = mapping.MaDichVu;
+                    }
+                }
+            }
+
             return vm;
         }
         public async Task<Models.ViewModels.PhieuSuaEditViewModel> GetPhieuSuaDetailsViewModelAsync(int id)

@@ -9,226 +9,161 @@
     var khachHangList = ViewBag.KhachHangList as IEnumerable<SelectListItem>;
     var nhanVienList = ViewBag.NhanVienList as IEnumerable<SelectListItem>;
 }
-
 @if (!string.IsNullOrEmpty(errorMessage))
 {
     <div class="alert alert-danger" role="alert">
         <i class="fas fa-exclamation-triangle"></i> @errorMessage
     </div>
 }
-
-<div id="phieusua-table-wrapper">
-<div class="table-responsive">
-    <table class="table table-bordered table-hover align-middle table-phieusua">
-        <thead class="table-primary text-center align-middle">
+<div class="table-responsive phieusua-table-responsive">
+    <table class="table table-phieusua align-middle">
+        <thead>
             <tr>
-                <th class="text-center">Mã Phiếu</th>
+                <th>Mã<br/>Phiếu</th>
                 <th>Ngày Sửa</th>
-                <th>Ngày Hẹn Trả</th>
+                <th>Hẹn Trả</th>
                 <th>Khách Hàng</th>
                 <th>Nhân Viên</th>
-                <th class="text-end">Tổng Tiền</th>
-                <th class="text-center">Trạng Thái</th>
-                <th class="text-center">Dịch Vụ</th>
-                <th class="text-center">Linh Kiện</th>
-                <th class="text-center">Thao Tác</th>
+                <th>Tổng Tiền</th>
+                <th>Trạng Thái</th>
+                <th>Dịch Vụ</th>
+                <th>Linh Kiện</th>
+                <th>Thao Tác</th>
             </tr>
         </thead>
         <tbody>
-            @if (Model == null)
+        @if (Model == null || !Model.Any())
+        {
+            <tr><td colspan="10" class="text-center text-danger">Không có phiếu sửa nào.</td></tr>
+        }
+        else
+        {
+            foreach (var item in Model)
             {
                 <tr>
-                    <td colspan="10" class="text-center text-danger">Không có dữ liệu hoặc đã xảy ra lỗi khi tải danh sách phiếu sửa.</td>
-                </tr>
-            }
-            else if (!Model.Any())
-            {
-                <tr>
-                    <td colspan="10" class="text-center">Không có phiếu sửa nào.</td>
-                </tr>
-            }
-            else
-            {
-                foreach (var item in Model)
-                {
-                    <tr>
-                        <td class="text-center fw-bold">@item.MaPhieuSua</td>
-                        <td>
-                            @(item.NgayGioHoanThanh?.ToString("dd/MM/yyyy HH:mm") ?? item.NgaySua.ToString("dd/MM/yyyy HH:mm"))
-                        </td>
-                        <td>
-                            @if (item.TrangThai == phonev2.Models.TrangThaiPhieuSua.HoanThanh && item.NgayGioHoanThanh != null)
-                            {
-                                @item.NgayGioHoanThanh.Value.ToString("dd/MM/yyyy HH:mm")
-                            }
-                            else if (item.NgayHenTra != null)
-                            {
-                                @item.NgayHenTra.Value.ToString("dd/MM/yyyy HH:mm")
-                            }
-                            else
-                            {
-                                <span class="text-muted">Chưa có</span>
-                            }
-                        </td>
-                        <td>
-                            @{
-                                string tenKh = !string.IsNullOrEmpty(item.TenKhachHang)
-                                    ? item.TenKhachHang
-                                    : (khachHangList?.FirstOrDefault(x => x.Value == item.MaKhachHang?.ToString())?.Text ?? "");
-                                string sdtKh = item.KhachHang?.SoDienThoai ?? "";
-                            }
-                            <div>@tenKh</div>
-                            @if (!string.IsNullOrEmpty(sdtKh))
-                            {
-                                <div class="text-muted small"><i class="fas fa-phone"></i> @sdtKh</div>
-                            }
-                        </td>
-                        <td>
-                            @if (!string.IsNullOrEmpty(item.TenNhanVien))
-                            {
-                                @item.TenNhanVien
-                            }
-                            else if (nhanVienList != null)
-                            {
-                                var nv = nhanVienList.FirstOrDefault(x => x.Value == item.MaNhanVien?.ToString());
-                                @nv?.Text
-                            }
-                        </td>
-                        <td class="text-end">
-                            @{
-                                decimal tongTienDichVu = 0;
-                                decimal tongTienLinhKien = 0;
-                                bool errorDichVu = false;
-                                bool errorLinhKien = false;
-                                
-                                if (item.ChiTietPhieuSuas != null)
-                                {
-                                    foreach (var dv in item.ChiTietPhieuSuas)
-                                    {
-                                        if (dv.DichVu == null)
-                                        {
-                                            errorDichVu = true;
-                                        }
-                                        tongTienDichVu += (dv.DichVu?.GiaDichVu ?? 0);
-                                    }
-                                }
-                                
-                                if (item.ChiTietLinhKiens != null)
-                                {
-                                    foreach (var lk in item.ChiTietLinhKiens)
-                                    {
-                                        if (lk.LinhKien == null)
-                                        {
-                                            errorLinhKien = true;
-                                        }
-                                        tongTienLinhKien += (lk.LinhKien?.GiaBan ?? 0) * lk.SoLuong;
-                                    }
-                                }
-                                
-                                decimal tongTien = item.TongTien ?? (tongTienDichVu + tongTienLinhKien);
-                            }
-                            <div class="text-center">
-                                <div class="fw-bold text-danger fs-6 mb-2">@tongTien.ToString("N0") VNĐ</div>
-                                <button class="btn btn-sm btn-outline-info" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-@item.MaPhieuSua" aria-expanded="false">
-                                    <i class="fas fa-eye"></i> Chi tiết
-                                </button>
-                                <div class="collapse mt-2" id="collapse-@item.MaPhieuSua">
-                                    <div class="card card-body p-2" style="font-size: 0.8rem;">
-                                        <div class="text-start">
-                                            <span class="text-primary">Dịch vụ:</span>
-                                            <span class="fw-bold">@tongTienDichVu.ToString("N0") VNĐ</span>
-                                            @if (errorDichVu)
-                                            {
-                                                <span class="text-danger ms-1">(Lỗi dịch vụ)</span>
-                                            }
-                                            <br />
-                                            <span class="text-success">Linh kiện:</span>
-                                            <span class="fw-bold">@tongTienLinhKien.ToString("N0") VNĐ</span>
-                                            @if (errorLinhKien)
-                                            {
-                                                <span class="text-danger ms-1">(Lỗi linh kiện)</span>
-                                            }
-                                        </div>
-                                    </div>
+                    <td class="fw-bold">@item.MaPhieuSua</td>
+                    <td>
+                        @(item.NgayGioHoanThanh?.ToString("dd/MM/yyyy HH:mm") ?? item.NgaySua.ToString("dd/MM/yyyy HH:mm"))
+                    </td>
+                    <td>
+                        @if (item.TrangThai == phonev2.Models.TrangThaiPhieuSua.HoanThanh && item.NgayGioHoanThanh != null)
+                        {
+                            @item.NgayGioHoanThanh.Value.ToString("dd/MM/yyyy HH:mm")
+                        }
+                        else if (item.NgayHenTra != null)
+                        {
+                            @item.NgayHenTra.Value.ToString("dd/MM/yyyy HH:mm")
+                        }
+                        else
+                        {
+                            <span class="text-muted">Chưa có</span>
+                        }
+                    </td>
+                    <td>
+                        @{ string tenKh = !string.IsNullOrEmpty(item.TenKhachHang) ? item.TenKhachHang : (khachHangList?.FirstOrDefault(x => x.Value == item.MaKhachHang?.ToString())?.Text ?? ""); string sdtKh = item.KhachHang?.SoDienThoai ?? ""; }
+                        <div>@tenKh</div>
+                        @if (!string.IsNullOrEmpty(sdtKh))
+                        {
+                            <div class="text-muted small"><i class="fas fa-phone"></i> @sdtKh</div>
+                        }
+                    </td>
+                    <td>
+                        @if (!string.IsNullOrEmpty(item.TenNhanVien))
+                        {
+                            @item.TenNhanVien
+                        }
+                        else if (nhanVienList != null)
+                        {
+                            var nv = nhanVienList.FirstOrDefault(x => x.Value == item.MaNhanVien?.ToString());
+                            @nv?.Text
+                        }
+                    </td>
+                    <td class="text-end">
+                        <span class="fw-bold text-danger">@((item.TongTien ?? 0).ToString("N0")) VNĐ</span>
+                        <button class="btn btn-sm btn-outline-info ms-2" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-@item.MaPhieuSua" aria-expanded="false" title="Chi tiết tổng tiền">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                        <div class="collapse mt-2" id="collapse-@item.MaPhieuSua">
+                            <div class="card card-body p-2">
+                                <div class="text-start small">
+                                    <span class="text-primary">Dịch vụ:</span> <span class="fw-bold">@((item.ChiTietPhieuSuas?.Sum(dv => dv.DichVu?.GiaDichVu ?? 0) ?? 0).ToString("N0")) VNĐ</span><br />
+                                    <span class="text-success">Linh kiện:</span> <span class="fw-bold">@((item.ChiTietLinhKiens?.Sum(lk => (lk.LinhKien?.GiaBan ?? 0) * lk.SoLuong) ?? 0).ToString("N0")) VNĐ</span>
                                 </div>
                             </div>
-                        </td>
-                        <td class="text-center">
-                            @{
-                                var isTiepNhan = item.TrangThai == phonev2.Models.TrangThaiPhieuSua.TiepNhan;
-                                var isDangSua = item.TrangThai == phonev2.Models.TrangThaiPhieuSua.DangSua;
-                                var isHoanThanh = item.TrangThai == phonev2.Models.TrangThaiPhieuSua.HoanThanh;
-                                var isHuy = item.TrangThai == phonev2.Models.TrangThaiPhieuSua.Huy;
-                            }
-                            <span class="badge px-3 py-2 @(
-                                isTiepNhan ? "bg-primary" :
-                                isDangSua ? "bg-warning text-dark" :
-                                isHoanThanh ? "bg-success" :
-                                isHuy ? "bg-danger" : "bg-secondary")">
-                                @if (isTiepNhan)
-                                { <text><i class="fas fa-clipboard-list"></i> Tiếp nhận</text> }
-                                else if (isDangSua)
-                                { <text><i class="fas fa-tools"></i> Đang sửa</text> }
-                                else if (isHoanThanh)
-                                { <text><i class="fas fa-check-circle"></i> Hoàn thành</text> }
-                                else if (isHuy)
-                                { <text><i class="fas fa-times-circle"></i> Hủy</text> }
+                        </div>
+                    </td>
+                    <td>
+                        <span class="badge px-3 py-2 @(
+                            item.TrangThai == phonev2.Models.TrangThaiPhieuSua.TiepNhan ? "bg-primary" :
+                            item.TrangThai == phonev2.Models.TrangThaiPhieuSua.DangSua ? "bg-warning text-dark" :
+                            item.TrangThai == phonev2.Models.TrangThaiPhieuSua.HoanThanh ? "bg-success" :
+                            item.TrangThai == phonev2.Models.TrangThaiPhieuSua.Huy ? "bg-danger" : "bg-secondary")">
+                            @if (item.TrangThai == phonev2.Models.TrangThaiPhieuSua.TiepNhan)
+                            { <text><i class="fas fa-clipboard-list"></i> Tiếp nhận</text> }
+                            else if (item.TrangThai == phonev2.Models.TrangThaiPhieuSua.DangSua)
+                            { <text><i class="fas fa-tools"></i> Đang sửa</text> }
+                            else if (item.TrangThai == phonev2.Models.TrangThaiPhieuSua.HoanThanh)
+                            { <text><i class="fas fa-check-circle"></i> Hoàn thành</text> }
+                            else if (item.TrangThai == phonev2.Models.TrangThaiPhieuSua.Huy)
+                            { <text><i class="fas fa-times-circle"></i> Hủy</text> }
+                            else
+                            { <text><i class="fas fa-question-circle"></i> Không xác định</text> }
+                        </span>
+                    </td>
+                    <td>
+                        <div class="badges-wrap">
+                        @if (item.ChiTietPhieuSuas != null && item.ChiTietPhieuSuas.Any())
+                        {
+                            foreach (var dv in item.ChiTietPhieuSuas)
+                            {
+                                if (dv.DichVu != null)
+                                {
+                                    <span class="badge bg-info text-dark"><i class="fas fa-tools"></i> @dv.DichVu.TenDichVu</span>
+                                }
                                 else
-                                { <text><i class="fas fa-question-circle"></i> Không xác định</text> }
-                            </span>
-                        </td>
-                        <td class="text-center">
-                            <div class="badges-wrap">
-                            @if (item.ChiTietPhieuSuas != null && item.ChiTietPhieuSuas.Any())
-                            {
-                                foreach (var dv in item.ChiTietPhieuSuas)
                                 {
-                                    if (dv.DichVu != null)
-                                    {
-                                        <span class="badge bg-info text-dark me-1 mb-1"><i class="fas fa-tools"></i> @dv.DichVu.TenDichVu</span>
-                                    }
-                                    else
-                                    {
-                                        <span class="badge bg-danger text-light me-1 mb-1"><i class="fas fa-exclamation-circle"></i> Lỗi dịch vụ</span>
-                                    }
+                                    <span class="badge bg-danger text-light"><i class="fas fa-exclamation-circle"></i> Lỗi dịch vụ</span>
                                 }
                             }
-                            else
+                        }
+                        else
+                        {
+                            <span class="text-muted">Không có</span>
+                        }
+                        </div>
+                    </td>
+                    <td>
+                        <div class="badges-wrap">
+                        @if (item.ChiTietLinhKiens != null && item.ChiTietLinhKiens.Any())
+                        {
+                            foreach (var lk in item.ChiTietLinhKiens)
                             {
-                                <span class="text-muted">Không có</span>
-                            }
-                            </div>
-                        </td>
-                        <td class="text-center">
-                            <div class="badges-wrap">
-                            @if (item.ChiTietLinhKiens != null && item.ChiTietLinhKiens.Any())
-                            {
-                                foreach (var lk in item.ChiTietLinhKiens)
+                                if (lk.LinhKien != null)
                                 {
-                                    if (lk.LinhKien != null)
-                                    {
-                                        <span class="badge bg-secondary me-1 mb-1"><i class="fas fa-microchip"></i> @lk.LinhKien.TenLinhKien (@lk.SoLuong)</span>
-                                    }
-                                    else
-                                    {
-                                        <span class="badge bg-danger text-light me-1 mb-1"><i class="fas fa-exclamation-circle"></i> Lỗi linh kiện</span>
-                                    }
+                                    <span class="badge bg-secondary"><i class="fas fa-microchip"></i> @lk.LinhKien.TenLinhKien (@lk.SoLuong)</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-danger text-light"><i class="fas fa-exclamation-circle"></i> Lỗi linh kiện</span>
                                 }
                             }
-                            else
-                            {
-                                <span class="text-muted">Không có</span>
-                            }
-                            </div>
-                        </td>
-                        <td class="text-center">
-                            <button type="button" class="btn btn-sm btn-info btn-details-modal mx-1" title="Xem" data-url="@Url.Action("Details", new { id = item.MaPhieuSua })"><i class="fas fa-eye"></i></button>
-                            <button type="button" class="btn btn-sm btn-warning btn-edit-modal mx-1" title="Sửa" data-url="@Url.Action("Edit", new { id = item.MaPhieuSua })"><i class="fas fa-edit"></i></button>
-                            <button type="button" class="btn btn-sm btn-danger btn-delete-modal mx-1" title="Xóa" data-url="@Url.Action("Delete", new { id = item.MaPhieuSua })"><i class="fas fa-trash"></i></button>
-                        </td>
-                    </tr>
-                }
+                        }
+                        else
+                        {
+                            <span class="text-muted">Không có</span>
+                        }
+                        </div>
+                    </td>
+                    <td>
+                        <div class="d-flex justify-content-center flex-wrap gap-1">
+                            <button type="button" class="btn btn-sm btn-info btn-details-modal" title="Xem" data-url="@Url.Action("Details", new { id = item.MaPhieuSua })"><i class="fas fa-eye"></i></button>
+                            <button type="button" class="btn btn-sm btn-warning btn-edit-modal" title="Sửa" data-url="@Url.Action("Edit", new { id = item.MaPhieuSua })"><i class="fas fa-edit"></i></button>
+                            <button type="button" class="btn btn-sm btn-danger btn-delete-modal" title="Xóa" data-url="@Url.Action("Delete", new { id = item.MaPhieuSua })"><i class="fas fa-trash"></i></button>
+                        </div>
+                    </td>
+                </tr>
             }
+        }
         </tbody>
     </table>
 </div>
@@ -264,4 +199,3 @@
         </li>
     </ul>
 </nav>
-</div>

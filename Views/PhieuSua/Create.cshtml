@@ -6,8 +6,17 @@
     // var dichVuOptions = string.Join("", Model.DichVuList.Select(dv => $"<option value='{dv.Value}' data-gia='{(dv is Microsoft.AspNetCore.Mvc.Rendering.SelectListItem sl && sl.Value != null && sl.Text != null && decimal.TryParse(sl.Text, out var gia) ? gia.ToString() : "0")}'>{dv.Text}</option>"));
 }
 
-<h2 class="mb-4">Thêm Phiếu Sửa</h2>
+@if (!ViewData.ModelState.IsValid)
+{
+    <div class="alert alert-danger">
+        @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+        {
+            <div>@error.ErrorMessage</div>
+        }
+    </div>
+}
 <form asp-action="Create" method="post">
+    <div id="alertValidation" class="alert alert-danger d-none"></div>
     <div class="row">
         <div class="col-md-6">
                     <div class="mb-3">
@@ -22,15 +31,18 @@
                     </div>
                     <div class="mb-3">
                 <label class="form-label fw-bold">Số điện thoại khách hàng <span class="text-danger">*</span></label>
-                        <div class="input-group">
-                    <input type="text" id="searchKhachHangPhone" class="form-control" placeholder="Nhập số điện thoại khách hàng" autocomplete="off" required />
-                    <button type="button" class="btn btn-outline-primary" id="btnAddKhachHang"><i class="fas fa-user-plus"></i> Thêm khách hàng mới</button>
-                    <button type="button" class="btn btn-warning ms-2" id="btnEditKhachHang" style="display:none;"><i class="fas fa-edit"></i> Sửa</button>
-                    <button type="button" class="btn btn-info ms-2" id="btnViewKhachHang" style="display:none;"><i class="fas fa-eye"></i></button>
-                        </div>
-                <input type="hidden" name="PhieuSua.MaKhachHang" id="maKhachHangHidden" />
-                <div id="khachHangInfo" class="mt-2"></div>
-                <span class="text-danger" id="khachHangError"></span>
+                <input type="text" id="searchKhachHangPhone" name="KhachHang.SoDienThoai" class="form-control" placeholder="Nhập số điện thoại khách hàng" autocomplete="off" required value="@Model.PhieuSua.KhachHang?.SoDienThoai" />
+                <input type="hidden" name="PhieuSua.MaKhachHang" id="maKhachHangHidden" value="@Model.PhieuSua.MaKhachHang" />
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Tên khách hàng <span class="text-danger">*</span></label>
+                <input type="text" id="tenKhachHangInput" name="KhachHang.HoTen" class="form-control" placeholder="Nhập tên khách hàng" required value="@Model.PhieuSua.KhachHang?.HoTen" />
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Địa chỉ</label>
+                <input type="text" id="diaChiKhachHangInput" name="KhachHang.DiaChi" class="form-control" placeholder="Nhập địa chỉ khách hàng" value="@Model.PhieuSua.KhachHang?.DiaChi" />
+            </div>
+            <span class="text-danger" id="khachHangError"></span>
                     </div>
                     <div class="mb-3">
                         <label asp-for="PhieuSua.MaNhanVien" class="form-label">Nhân Viên</label>
@@ -74,6 +86,8 @@
             <hr />
             <h5>Linh Kiện</h5>
             <div id="linhkien-list-by-dichvu"></div>
+            <span class="text-danger" id="linhKienError"></span>
+            <div class="form-text text-muted">Chọn linh kiện và tăng/giảm số lượng bằng nút [+] [-] hoặc nhập trực tiếp.</div>
             <div class="mt-3">
                 <div class="alert alert-info">
                     <div>Giá dịch vụ: <span id="giaDichVu">0</span> VNĐ</div>
@@ -89,317 +103,90 @@
 </div>
 </form>
 
-<div class="modal fade" id="addKhachHangModal" tabindex="-1" aria-hidden="true">
-  <div class="modal-dialog modal-lg">
-    <div class="modal-content"></div>
-  </div>
-</div>
-
-<div class="modal fade" id="editKhachHangModal" tabindex="-1" aria-hidden="true">
-  <div class="modal-dialog modal-lg">
-    <div class="modal-content"></div>
-  </div>
-</div>
-
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
     <script>
-        // Tạo mảng dịch vụ cho JS
-        const dichVuList = [
+        window.dichVuList = [
             @foreach (var dv in Model.DichVuList)
             {
                 <text>{ value: "@dv.Value", text: "@dv.Text", gia: @dv.GiaDichVu },</text>
             }
         ];
-
-        // Thêm dòng dịch vụ
-        $(document).on('click', '.btn-add-dv', function () {
-            let idx = $('#dichvu-list .dichvu-row').length;
-            let html = `<div class="row mb-2 dichvu-row">
-                <div class="col-10">
-                    <select name="DichVus[${idx}].MaDichVu" class="form-select dichvu-select" required>
-                        <option value="">-- Chọn dịch vụ --</option>`;
-            dichVuList.forEach(function(dv) {
-                html += `<option value="${dv.value}" data-gia="${dv.gia}">${dv.text}</option>`;
-            });
-            html += `</select>
-                </div>
-                <div class="col-2">
-                    <button type="button" class="btn btn-danger btn-remove-dv">-</button>
-                </div>
-            </div>`;
-            $('#dichvu-list').append(html);
-        });
-        $(document).on('click', '.btn-remove-dv', function () {
-            $(this).closest('.dichvu-row').remove();
-            updateDvIndexes();
-            updateTongTien();
-        });
-        function updateDvIndexes() {
-            $('#dichvu-list .dichvu-row').each(function (i) {
-                $(this).find('select').attr('name', `DichVus[${i}].MaDichVu`);
-            });
-        }
-
-        // Thêm dòng linh kiện
-        $(document).on('click', '.btn-add-lk', function () {
-            let idx = $('#linhkien-list .linhkien-row').length;
-            let html = `<div class="row mb-2 linhkien-row">
-                <div class="col-6">
-                    <select name="LinhKiens[${idx}].MaLinhKien" class="form-select linhkien-select" required>
-                        <option value="">-- Chọn linh kiện --</option>
-                    </select>
-                </div>
-                <div class="col-4">
-                    <input type="number" name="LinhKiens[${idx}].SoLuong" class="form-control" value="1" min="1" required />
-                    </div>
-                <div class="col-2">
-                    <button type="button" class="btn btn-danger btn-remove-lk">-</button>
-                </div>
-            </div>`;
-            $('#linhkien-list').append(html);
-        });
-        $(document).on('click', '.btn-remove-lk', function () {
-            $(this).closest('.linhkien-row').remove();
-            updateLkIndexes();
-            updateTongTien();
-        });
-        function updateLkIndexes() {
-            $('#linhkien-list .linhkien-row').each(function (i) {
-                $(this).find('select').attr('name', `LinhKiens[${i}].MaLinhKien`);
-                $(this).find('input[type=number]').attr('name', `LinhKiens[${i}].SoLuong`);
-            });
-        }
-
-        // Khi chọn dịch vụ, load và render danh sách linh kiện dạng bảng checkbox
-        $(document).on('change', '.dichvu-select', function () {
-            var maDichVu = $(this).val();
-            if (!maDichVu) {
-                $('#linhkien-list-by-dichvu').empty();
-                updateTongTien();
-                return;
-            }
-            $.get('/DichVu/GetLinhKienByDichVu', { maDichVu: maDichVu }, function (data) {
-                if (data && data.length > 0) {
-                    var html = '<table class="table table-bordered align-middle"><thead><tr><th></th><th>Linh kiện</th><th>Giá bán</th><th>Số lượng</th></tr></thead><tbody>';
-                    data.forEach(function (lk, i) {
-                        html += `<tr>
-                            <td><input type="checkbox" class="lk-checkbox" data-idx="${i}" data-giaban="${lk.giaBan}" value="${lk.maLinhKien}" name="LinhKiens[${i}].IsChecked" /></td>
-                            <td>${lk.tenLinhKien}</td>
-                            <td>${lk.giaBan.toLocaleString('vi-VN')} VNĐ</td>
-                            <td><input type="number" class="form-control form-control-sm lk-soluong" name="LinhKiens[${i}].SoLuong" value="1" min="1" style="width:80px;" disabled />
-                                <input type="hidden" name="LinhKiens[${i}].MaLinhKien" value="${lk.maLinhKien}" />
-                            </td>
-                        </tr>`;
-                    });
-                    html += '</tbody></table>';
-                    $('#linhkien-list-by-dichvu').html(html);
-                } else {
-                    $('#linhkien-list-by-dichvu').html('<i>Không có linh kiện cho dịch vụ này.</i>');
-                }
-                updateTongTien();
-            });
-        });
-        // Enable/disable input số lượng theo checkbox
-        $(document).on('change', '.lk-checkbox', function() {
-            var idx = $(this).data('idx');
-            var checked = $(this).is(':checked');
-            $(`input[name='LinhKiens[${idx}].SoLuong']`).prop('disabled', !checked);
-            updateTongTien();
-        });
-        // Khi thay đổi số lượng, cập nhật tổng tiền
-        $(document).on('input', '.lk-soluong', updateTongTien);
-        // Tính tổng tiền linh kiện và phiếu sửa
-        function updateTongTien() {
-            // Tổng giá dịch vụ
-            let tongDichVu = 0;
-            $('.dichvu-select').each(function () {
-                let gia = parseFloat($(this).find('option:selected').data('gia')) || 0;
-                if ($(this).val()) tongDichVu += gia;
-            });
-            // Tổng giá linh kiện
-            let tongLinhKien = 0;
-            $('#linhkien-list-by-dichvu .lk-checkbox:checked').each(function () {
-                let idx = $(this).data('idx');
-                let giaBan = parseFloat($(this).data('giaban')) || 0;
-                let soLuong = parseInt($(`input[name='LinhKiens[${idx}].SoLuong']`).val()) || 1;
-                tongLinhKien += giaBan * soLuong;
-            });
-            $('#giaDichVu').text(tongDichVu.toLocaleString('vi-VN'));
-            $('#giaLinhKien').text(tongLinhKien.toLocaleString('vi-VN'));
-            $('#tongTienPhieuSua').text((tongDichVu + tongLinhKien).toLocaleString('vi-VN'));
-        }
-        // Gọi lần đầu khi load
-        $(function(){ updateTongTien(); });
-
+        // --- Autocomplete tìm kiếm khách hàng ---
         $(function() {
-            // Mở modal thêm khách hàng
-            $('#btnAddKhachHang').click(function() {
-                $('#addKhachHangModal .modal-content').html('<div class="text-center p-5"><div class="spinner-border"></div></div>');
-                $('#addKhachHangModal').modal('show');
-                $.get('/KhachHang/CreateQuick', function(html) {
-                    $('#addKhachHangModal .modal-content').html(html);
-                });
-            });
-
-            // Submit form thêm khách hàng qua AJAX
-            $(document).on('submit', '#quickAddKhachHangForm', function(e) {
-                e.preventDefault();
-                var $form = $(this);
-                $.ajax({
-                    url: '/KhachHang/CreateQuick',
-                    method: 'POST',
-                    data: $form.serialize(),
-                    success: function(res) {
-                        if (res.success) {
-                            // Đóng modal
-                            $('#addKhachHangModal').modal('hide');
-                            // Reload dropdown khách hàng
-                            $.get('/KhachHang/GetActiveCustomers', function(data) {
-                                var $dropdown = $('#khachHangDropdown');
-                                $dropdown.empty();
-                                $dropdown.append('<option value="">-- Chọn khách hàng --</option>');
-                                $.each(data, function(i, kh) {
-                                    $dropdown.append('<option value="' + kh.value + '">' + kh.text + '</option>');
-                                });
-                                // Chọn khách hàng vừa tạo
-                                $dropdown.val(res.id);
-                            });
-                        } else {
-                            // Hiển thị lại form với lỗi
-                            $('#addKhachHangModal .modal-content').html(res);
-                        }
-                    }
-                });
+            $("#searchKhachHangPhone").autocomplete({
+                source: function(request, response) {
+                    $.getJSON("/KhachHang/Search", { term: request.term }, function(data) {
+                        response($.map(data, function(item) {
+                            return {
+                                label: `${item.hoTen} (${item.soDienThoai})`,
+                                value: item.soDienThoai,
+                                id: item.maKhachHang
+                            };
+                        }));
+                    });
+                },
+                select: function(event, ui) {
+                    $("#maKhachHangHidden").val(ui.item.id);
+                    $("#tenKhachHangInput").val(ui.item.label.split('(')[0].trim());
+                    $("#searchKhachHangPhone").val(ui.item.value);
+                    $("#diaChiKhachHangInput").val(ui.item.label.split('(')[1].replace(')', '').trim());
+                    $("#khachHangError").text(''); // Clear error
+                    return false;
+                }
             });
         });
-
-        // Tìm kiếm khách hàng theo số điện thoại
-        $('#searchKhachHangPhone').on('input', function() {
-            var phone = $(this).val();
-            if (phone.length > 0) {
-                $('#btnEditKhachHang').show();
-                    } else {
-                $('#btnEditKhachHang').hide();
+        // --- Validate toàn bộ form khi submit ---
+        $(document).on("submit", 'form[asp-action="Create"]', function (e) {
+            var errors = [];
+            // Validate ngày sửa
+            var ngaySua = $("input[name='PhieuSua.NgaySua']").val();
+            if (!ngaySua) {
+                errors.push("Vui lòng nhập ngày sửa!");
             }
-            if (phone.length >= 8) {
-                $.get('/KhachHang/SearchByPhone', { phone: phone }, function(res) {
-                    if (res.found) {
-                        $('#khachHangInfo').html('<span class="text-success"><i class="fas fa-user"></i> ' + res.ten + ' (' + res.sdt + ')</span>');
-                        $('#maKhachHangHidden').val(res.id);
-                        $('#khachHangError').text('');
-                    } else {
-                        $('#khachHangInfo').html('<span class="text-danger">Không tìm thấy khách hàng này.</span>');
-                        $('#maKhachHangHidden').val('');
-                    }
-                });
+            // Validate khách hàng
+            var maKh = $("#maKhachHangHidden").val();
+            if (!maKh) {
+                errors.push("Vui lòng chọn hoặc thêm khách hàng!");
+            }
+            // Validate tên khách hàng
+            var tenKh = $("#tenKhachHangInput").val();
+            if (!tenKh) {
+                errors.push("Vui lòng nhập tên khách hàng!");
+            }
+            // Validate nhân viên
+            var maNv = $("select[name='PhieuSua.MaNhanVien']").val();
+            if (!maNv) {
+                errors.push("Vui lòng chọn nhân viên!");
+            }
+            // Validate dịch vụ
+            var hasDichVu = $(".dichvu-select").filter(function(){ return $(this).val(); }).length > 0;
+            if (!hasDichVu) {
+                errors.push("Vui lòng chọn ít nhất một dịch vụ!");
+            }
+            // Validate linh kiện
+            var hasLinhKien = $("#linhkien-list-by-dichvu input[type=checkbox]:checked").length > 0;
+            if (!hasLinhKien) {
+                errors.push("Vui lòng chọn ít nhất một linh kiện!");
             } else {
-                $('#khachHangInfo').empty();
-                $('#maKhachHangHidden').val('');
+                // Kiểm tra số lượng linh kiện
+                $("#linhkien-list-by-dichvu input[type=checkbox]:checked").each(function(){
+                    var idx = $(this).data("idx");
+                    var soLuong = parseInt($("#linhkien-list-by-dichvu input.soLuongInput[data-idx='" + idx + "']").val()) || 0;
+                    if (soLuong < 1) {
+                        errors.push("Số lượng linh kiện phải lớn hơn 0!");
+                        return false;
+                    }
+                });
             }
-        });
-        // Khi submit form, kiểm tra đã chọn đúng khách hàng
-        $('form').on('submit', function(e) {
-            if (!$('#maKhachHangHidden').val()) {
-                $('#khachHangError').text('Vui lòng chọn hoặc tạo khách hàng!');
-                $('#searchKhachHangPhone').focus();
+            if (errors.length > 0) {
+                $("#alertValidation").removeClass("d-none").html(errors.map(e => `<div>${e}</div>`).join(""));
                 e.preventDefault();
                 return false;
-            }
-            $('#khachHangError').text('');
-        });
-        // Hiển thị/ẩn nút Thêm khách hàng mới
-        function updateAddButton() {
-            if ($('#maKhachHangHidden').val()) {
-                $('#btnAddKhachHang').hide();
             } else {
-                $('#btnAddKhachHang').show();
+                $("#alertValidation").addClass("d-none").html("");
             }
-        }
-        $('#searchKhachHangPhone').on('input', updateAddButton);
-        $(document).on('change', '#maKhachHangHidden', updateAddButton);
-        // Khi tìm thấy khách hàng hoặc tạo mới thành công, cũng gọi updateAddButton
-        $(document).on('submit', '#quickAddKhachHangForm', function(e) {
-            e.preventDefault();
-            var $form = $(this);
-            $.ajax({
-                url: '/KhachHang/CreateQuick',
-                method: 'POST',
-                data: $form.serialize(),
-                success: function(res) {
-                    if (res.success) {
-                        $('#addKhachHangModal').modal('hide');
-                        $('#maKhachHangHidden').val(res.id);
-                        $('#searchKhachHangPhone').val(res.sdt);
-                        $('#khachHangInfo').html('<span class="text-success"><i class="fas fa-user"></i> ' + res.ten + ' (' + res.sdt + ')</span>');
-                        $('#khachHangError').text('');
-                        updateEditViewButton();
-                        updateAddButton();
-                    } else {
-                        $('#addKhachHangModal .modal-content').html(res);
-                    }
-                }
-            });
         });
-
-        // Hiển thị nút Sửa và Eye khi đã chọn khách hàng
-        function updateEditViewButton() {
-            if ($('#maKhachHangHidden').val()) {
-                $('#btnEditKhachHang').show();
-                $('#btnViewKhachHang').show();
-            } else {
-                $('#btnEditKhachHang').hide();
-                $('#btnViewKhachHang').hide();
-            }
-        }
-        $('#searchKhachHangPhone').on('input', updateEditViewButton);
-        $(document).on('change', '#maKhachHangHidden', updateEditViewButton);
-
-        // Mở modal sửa khách hàng
-        $('#btnEditKhachHang').on('click', function() {
-            var id = $('#maKhachHangHidden').val();
-            if (!id) return;
-            $('#editKhachHangModal .modal-content').html('<div class="text-center p-5"><div class="spinner-border"></div></div>');
-            $('#editKhachHangModal').modal('show');
-            $.get('/KhachHang/EditQuick', { id: id }, function(html) {
-                $('#editKhachHangModal .modal-content').html(html);
-            });
-        });
-        // Submit form sửa khách hàng qua AJAX
-        $(document).on('submit', '#quickEditKhachHangForm', function(e) {
-            e.preventDefault();
-            var $form = $(this);
-            $.ajax({
-                url: '/KhachHang/EditQuick',
-                method: 'POST',
-                data: $form.serialize(),
-                success: function(res) {
-                    if (res.success) {
-                        $('#editKhachHangModal').modal('hide');
-                        $('#maKhachHangHidden').val(res.id);
-                        $('#searchKhachHangPhone').val(res.sdt);
-                        $('#khachHangInfo').html('<span class="text-success"><i class="fas fa-user"></i> ' + res.ten + ' (' + res.sdt + ')</span>');
-                        $('#khachHangError').text('');
-                        updateEditViewButton();
-                    } else {
-                        $('#editKhachHangModal .modal-content').html(res);
-                    }
-                }
-            });
-        });
-
-        // Mở modal xem/sửa khách hàng khi bấm eye
-        $('#btnViewKhachHang').on('click', function() {
-            var id = $('#maKhachHangHidden').val();
-            if (!id) return;
-            $('#editKhachHangModal .modal-content').html('<div class="text-center p-5"><div class="spinner-border"></div></div>');
-            $('#editKhachHangModal').modal('show');
-            $.get('/KhachHang/EditQuick', { id: id }, function(html) {
-                $('#editKhachHangModal .modal-content').html(html);
-            });
-        });
-
-        // Gọi updateEditViewButton và updateAddButton khi load
-        $(function(){ updateEditViewButton(); updateAddButton(); });
     </script>
+    <script src="~/js/phieusua-create.js"></script>
 } 
